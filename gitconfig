@@ -1,0 +1,9 @@
+[user]
+	name = Geonu Lee
+	email = ge0nu.two@gmail.com
+[alias]
+	lg = log --color --graph --pretty=format:'%Cblue%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset' --abbrev-commit
+[i18n]
+	commitEncoding = utf8
+[core]
+	editor = nvim

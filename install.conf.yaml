@@ -1,0 +1,21 @@
+- defaults:
+    link:
+      relink: true
+
+- clean: ['~']
+
+- shell:
+  - [git submodule update --init --recursive, Installing submodules]
+  - [mkdir -p ~/.config/nvim, Preparing NeoVim config directories]
+
+- link:
+    ~/.dotfiles: ''
+    ~/.gitconfig: gitconfig
+    ~/.bash_profile:
+        force: true
+        path: bash_profile
+    ~/.zshrc: zshrc
+    ~/.vimrc: vimrc # vimrc shortcut
+    ~/.config/nvim/init.vim: vimrc
+    ~/.ideavimrc: ideavimrc
+    ~/.psqlrc: psqlrc
