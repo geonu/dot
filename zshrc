@@ -11,6 +11,7 @@ zplug "sindresorhus/pure"
 zplug "Tarrasch/zsh-autoenv"
 zplug "zsh-users/zsh-syntax-highlighting"
 zplug "zsh-users/zsh-completions"
+zplug "zsh-users/zsh-autosuggestions"
 
 zplug "plugins/git",   from:oh-my-zsh, if:"(( $+commands[git] ))"
 
