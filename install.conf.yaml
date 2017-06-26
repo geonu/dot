@@ -18,4 +18,5 @@
     ~/.vimrc: vimrc # vimrc shortcut
     ~/.config/nvim/init.vim: vimrc
     ~/.ideavimrc: ideavimrc
+    ~/.tmux.conf: tmux.conf
     ~/.psqlrc: psqlrc
