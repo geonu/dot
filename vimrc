@@ -20,7 +20,6 @@ Plug 'mxw/vim-jsx'
 " Syntax Helper
 Plug 'scrooloose/syntastic'
 Plug 'alvan/vim-closetag'
-Plug 'Valloric/MatchTagAlways'
 if has('python2')
     Plug 'Rykka/riv.vim'
 endif
