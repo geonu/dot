@@ -16,6 +16,7 @@ Plug 'hail2u/vim-css3-syntax'
 Plug 'Glench/Vim-Jinja2-Syntax'
 Plug 'pangloss/vim-javascript'
 Plug 'mxw/vim-jsx'
+Plug 'stephpy/vim-yaml'
 
 " Syntax Helper
 Plug 'scrooloose/syntastic'
@@ -154,7 +155,7 @@ nnoremap <C-H> <C-W><C-H>
 let g:vim_markdown_folding_disabled=1
 
 " gitgutter
-let g:gitgutter_sign_column_always = 1
+set signcolumn=yes
 
 " Syntastic
 let g:syntastic_check_on_wq = 0

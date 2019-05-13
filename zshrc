@@ -13,6 +13,8 @@ zplug "zsh-users/zsh-syntax-highlighting"
 zplug "zsh-users/zsh-completions"
 zplug "zsh-users/zsh-autosuggestions"
 
+zplug "plugins/docker",   from:oh-my-zsh
+zplug "plugins/docker-compose",   from:oh-my-zsh
 zplug "plugins/git",   from:oh-my-zsh, if:"(( $+commands[git] ))"
 
 # Install plugins if there are plugins that have not been installed
@@ -51,10 +53,7 @@ export PYENV_ROOT="$HOME/.pyenv"
 export PATH="$PYENV_ROOT/bin:$PATH"
 
 eval "$(pyenv init - zsh)"
-
-if pyenv commands | command grep -q virtualenv-init; then
-    eval "$(pyenv virtualenv-init - zsh)"
-fi
+if which pyenv-virtualenv-init > /dev/null; then eval "$(pyenv virtualenv-init -)"; fi
 
 # set nvm
 export NVM_DIR="$HOME/.nvm"
