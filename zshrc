@@ -1,7 +1,9 @@
 #!/bin/env zsh
+#
+export ZPLUG_HOME=/usr/local/opt/zplug
+source $ZPLUG_HOME/init.zsh
 
 ##############################################################################
-source ~/.zplug/init.zsh
 
 zplug "b4b4r07/zplug"
 
