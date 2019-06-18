@@ -1,5 +1,5 @@
 #!/bin/env zsh
-#
+
 export ZPLUG_HOME=/usr/local/opt/zplug
 source $ZPLUG_HOME/init.zsh
 
@@ -8,6 +8,7 @@ source $ZPLUG_HOME/init.zsh
 zplug "b4b4r07/zplug"
 
 zplug "mafredri/zsh-async"
+zplug "lukechilds/zsh-nvm"
 zplug "sindresorhus/pure"
 
 zplug "Tarrasch/zsh-autoenv"
@@ -31,12 +32,11 @@ fi
 zplug load --verbose
 ##############################################################################
 
-export PATH="/usr/local/bin:/usr/bin:/usr/local/sbin:$PATH"
-
 # set Command
 alias cls="clear"
 alias ll="ls -al"
 alias vi="nvim"
+alias pyenv='LDFLAGS="${LDFLAGS} -L/usr/local/opt/zlib/lib -L/usr/local/opt/sqlite/lib" CPPFLAGS="${CPPFLAGS} -I/usr/local/opt/zlib/include -I/usr/local/opt/sqlite/include" PKG_CONFIG_PATH="${PKG_CONFIG_PATH} /usr/local/opt/zlib/lib/pkgconfig /usr/local/opt/sqlite/lib/pkgconfig" pyenv'
 
 export EDITOR=nvim
 
@@ -52,10 +52,10 @@ export LC_ALL=en_US.UTF-8
 
 # set pyenv
 export PYENV_ROOT="$HOME/.pyenv"
-export PATH="$PYENV_ROOT/bin:$PATH"
+export PATH="$PYENV_ROOT/shims:$PATH"
 
-eval "$(pyenv init - zsh)"
-if which pyenv-virtualenv-init > /dev/null; then eval "$(pyenv virtualenv-init -)"; fi
+if which pyenv > /dev/null; then eval "$(pyenv init --)"; fi
+if which pyenv-virtualenv-init > /dev/null; then eval "$(pyenv virtualenv-init --)"; fi
 
 # set nvm
 export NVM_DIR="$HOME/.nvm"
