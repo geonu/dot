@@ -57,6 +57,14 @@ export PATH="$PYENV_ROOT/shims:$PATH"
 if which pyenv > /dev/null; then eval "$(pyenv init --)"; fi
 if which pyenv-virtualenv-init > /dev/null; then eval "$(pyenv virtualenv-init --)"; fi
 
+# set openssl
+export PATH="/usr/local/opt/openssl/bin:$PATH"
+export LDFLAGS="-L/usr/local/opt/openssl/lib"
+export CPPFLAGS="-I/usr/local/opt/openssl/include"
+
+# set imagemagick
+export PATH="/usr/local/opt/imagemagick@6/bin:$PATH"
+
 # set nvm
 export NVM_DIR="$HOME/.nvm"
 [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh" # This loads nvm
