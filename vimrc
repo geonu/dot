@@ -20,6 +20,7 @@ Plug 'stephpy/vim-yaml'
 
 " Syntax Helper
 Plug 'scrooloose/syntastic'
+Plug 'cespare/vim-toml'
 Plug 'alvan/vim-closetag'
 if has('python2')
     Plug 'Rykka/riv.vim'
