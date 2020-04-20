@@ -33,6 +33,7 @@ Plug 'tpope/vim-fugitive'
 Plug 'junegunn/gv.vim'
 
 " Util
+Plug 'vimwiki/vimwiki'
 Plug 'godlygeek/tabular'
 Plug 'junegunn/vim-xmark', { 'do': 'make' }
 Plug 'rking/ag.vim'
@@ -195,3 +196,8 @@ let g:jsx_ext_required = 0
 let g:vim_json_syntax_conceal=0
 
 set clipboard=unnamed
+
+" vimwiki
+let g:vimwiki_list = [{'path': '/Users/geonu/workspace/geonu.github.io/content/wiki/'}]
+let g:vimwiki_global_ext = 0
+let g:vimwiki_conceallevel = 0
