@@ -40,7 +40,8 @@ Plug 'rking/ag.vim'
 Plug 'bling/vim-airline'
 Plug 'vim-airline/vim-airline-themes'
 
-Plug 'ctrlpvim/ctrlp.vim'
+Plug 'junegunn/fzf', { 'do': { -> fzf#install() } }
+Plug 'junegunn/fzf.vim'
 Plug 'ervandew/supertab'
 
 function! DoRemote(arg)
@@ -174,17 +175,13 @@ let g:airline#extensions#tabline#fnamemod = ':t'
 let g:airline#extensions#tabline#buffer_nr_show = 1
 let g:airline#extensions#tabline#buffer_nr_format = '%s:'
 
-" CtrlP
-let g:ctrlp_match_window = 'bottom,order:ttb'
-let g:ctrlp_switch_buffer = 0
-let g:ctrlp_working_path_mode = 0
-let g:ctrlp_user_command = 'ag %s -i --nocolor --nogroup --hidden
-      \ --ignore .git
-      \ --ignore .DS_Store
-      \ --ignore "*.pyc"
-      \ --ignore ".*.*.swp"
-      \ --ignore ".*.*.swo"
-      \ -g ""'
+" FZF
+nnoremap <C-p> :Files<Cr>
+
+"" FZF preview
+let g:fzf_preview_window = 'right:60%'
+command! -bang -nargs=? -complete=dir Files
+    \ call fzf#vim#files(<q-args>, fzf#vim#with_preview({'options': ['--layout=reverse', '--info=inline']}), <bang>0)
 
 " ag.vim
 nnoremap <leader>a :Ag! 

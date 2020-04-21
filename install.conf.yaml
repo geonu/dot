@@ -20,3 +20,4 @@
     ~/.ideavimrc: ideavimrc
     ~/.tmux.conf: tmux.conf
     ~/.psqlrc: psqlrc
+    ~/.fdignore: fdignore
