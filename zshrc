@@ -36,7 +36,6 @@ zplug load --verbose
 alias cls="clear"
 alias ll="exa -al"
 alias vi="nvim"
-alias pyenv='LDFLAGS="${LDFLAGS} -L/usr/local/opt/zlib/lib -L/usr/local/opt/sqlite/lib" CPPFLAGS="${CPPFLAGS} -I/usr/local/opt/zlib/include -I/usr/local/opt/sqlite/include" PKG_CONFIG_PATH="${PKG_CONFIG_PATH} /usr/local/opt/zlib/lib/pkgconfig /usr/local/opt/sqlite/lib/pkgconfig" pyenv'
 
 export FZF_DEFAULT_COMMAND='fd --type f --hidden --follow --exclude .git'
 alias fzf="fzf --preview 'bat --style=numbers --color=always {} | head -500'"
@@ -56,9 +55,8 @@ export LC_ALL=en_US.UTF-8
 # set pyenv
 export PYENV_ROOT="$HOME/.pyenv"
 export PATH="$PYENV_ROOT/shims:$PATH"
-
-if which pyenv > /dev/null; then eval "$(pyenv init --)"; fi
-if which pyenv-virtualenv-init > /dev/null; then eval "$(pyenv virtualenv-init --)"; fi
+eval "$(pyenv init -)"
+eval "$(pyenv virtualenv-init -)"
 
 # set openssl
 export PATH="/usr/local/opt/openssl/bin:$PATH"
