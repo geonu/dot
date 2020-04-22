@@ -36,7 +36,7 @@ Plug 'junegunn/gv.vim'
 Plug 'vimwiki/vimwiki'
 Plug 'godlygeek/tabular'
 Plug 'junegunn/vim-xmark', { 'do': 'make' }
-Plug 'rking/ag.vim'
+Plug 'jremmen/vim-ripgrep'
 Plug 'bling/vim-airline'
 Plug 'vim-airline/vim-airline-themes'
 
@@ -182,9 +182,6 @@ nnoremap <C-p> :Files<Cr>
 let g:fzf_preview_window = 'right:60%'
 command! -bang -nargs=? -complete=dir Files
     \ call fzf#vim#files(<q-args>, fzf#vim#with_preview({'options': ['--layout=reverse', '--info=inline']}), <bang>0)
-
-" ag.vim
-nnoremap <leader>a :Ag! 
 
 " vim-jsx
 let g:jsx_ext_required = 0
