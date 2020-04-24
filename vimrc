@@ -182,6 +182,9 @@ let g:fzf_preview_window = 'right:60%'
 command! -bang -nargs=? -complete=dir Files
     \ call fzf#vim#files(<q-args>, fzf#vim#with_preview({'options': ['--layout=reverse', '--info=inline']}), <bang>0)
 
+"" fzf.vim
+nnoremap <silent> <Leader>k :Rg <C-R><C-W><CR>
+
 " vim-jsx
 let g:jsx_ext_required = 0
 
