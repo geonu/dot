@@ -36,7 +36,6 @@ Plug 'junegunn/gv.vim'
 Plug 'vimwiki/vimwiki'
 Plug 'godlygeek/tabular'
 Plug 'junegunn/vim-xmark', { 'do': 'make' }
-Plug 'jremmen/vim-ripgrep'
 Plug 'bling/vim-airline'
 Plug 'vim-airline/vim-airline-themes'
 
