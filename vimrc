@@ -21,6 +21,8 @@ Plug 'tpope/vim-fugitive'
 Plug 'junegunn/gv.vim'
 
 " Util
+Plug 'preservim/nerdtree'
+Plug 'ryanoasis/vim-devicons'
 Plug 'neoclide/coc.nvim', {'branch': 'release'}
 Plug 'vimwiki/vimwiki'
 Plug 'bling/vim-airline'
@@ -41,6 +43,10 @@ filetype plugin indent on
 
 " Set Leader
 let mapleader = "\<Space>"
+
+" nerdtree
+map <Leader>n :NERDTreeToggle<CR>
+autocmd BufEnter * lcd %:p:h
 
 " coc.vim
 call coc#config('python', {
