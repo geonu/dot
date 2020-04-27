@@ -54,6 +54,9 @@ call plug#end()
 filetype plugin on
 filetype plugin indent on
 
+" Set Leader
+let mapleader = "\<Space>"
+
 " Set Color Scheme.
 let g:seoul256_background = 236
 colo seoul256
