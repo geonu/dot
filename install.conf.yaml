@@ -18,6 +18,7 @@
     ~/.zshrc: zshrc
     ~/.vimrc: vimrc # vimrc shortcut
     ~/.config/nvim/init.vim: vimrc
+    ~/.config/nvim/coc-settings.json: coc-settings.json
     ~/.config/alacritty/alacritty.yml: alacritty.yml
     ~/.ideavimrc: ideavimrc
     ~/.tmux.conf: tmux.conf

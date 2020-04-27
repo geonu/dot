@@ -21,6 +21,7 @@ Plug 'tpope/vim-fugitive'
 Plug 'junegunn/gv.vim'
 
 " Util
+Plug 'neoclide/coc.nvim', {'branch': 'release'}
 Plug 'vimwiki/vimwiki'
 Plug 'bling/vim-airline'
 Plug 'vim-airline/vim-airline-themes'
@@ -40,6 +41,12 @@ filetype plugin indent on
 
 " Set Leader
 let mapleader = "\<Space>"
+
+" coc.vim
+call coc#config('python', {
+\   'jediEnabled': v:false,
+\   'pythonPath': split(execute('!which python'), '\n')[-1]
+\ })
 
 " Set Color Scheme.
 colo gruvbox
