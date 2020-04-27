@@ -6,22 +6,10 @@ call plug#begin('~/.local/share/nvim/plugged')
 Plug 'morhetz/gruvbox'
 
 " Syntax
-Plug 'plasticboy/vim-markdown'
-Plug 'StanAngeloff/php.vim'
-Plug 'honza/dockerfile.vim'
-Plug 'elzr/vim-json'
-
-Plug 'othree/html5.vim'
-Plug 'hail2u/vim-css3-syntax'
-Plug 'Glench/Vim-Jinja2-Syntax'
-Plug 'pangloss/vim-javascript'
-Plug 'mxw/vim-jsx'
-Plug 'stephpy/vim-yaml'
+Plug 'sheerun/vim-polyglot'
 
 " Syntax Helper
 Plug 'scrooloose/syntastic'
-Plug 'cespare/vim-toml'
-Plug 'alvan/vim-closetag'
 if has('python2')
     Plug 'Rykka/riv.vim'
 endif
