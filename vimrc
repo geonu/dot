@@ -3,7 +3,7 @@ call plug#begin('~/.local/share/nvim/plugged')
 " Plug list -----------------------------------------------------------------
 
 " ColorScheme
-Plug 'junegunn/seoul256.vim'
+Plug 'morhetz/gruvbox'
 
 " Syntax
 Plug 'plasticboy/vim-markdown'
@@ -58,8 +58,7 @@ filetype plugin indent on
 let mapleader = "\<Space>"
 
 " Set Color Scheme.
-let g:seoul256_background = 236
-colo seoul256
+colo gruvbox
 
 " Use backspace
 set backspace=2
@@ -170,7 +169,7 @@ let g:syntastic_python_checkers = ['flake8']
 let g:syntastic_javascript_checkers=['eslint']
 
 " Airline
-let g:airline_theme='bubblegum'
+let g:airline_theme='gruvbox'
 let g:airline_powerline_fonts = 1
 let g:airline#extensions#tabline#enabled = 1
 let g:airline#extensions#tabline#fnamemod = ':t'
