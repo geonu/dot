@@ -7,6 +7,7 @@
 - shell:
   - [git submodule update --init --recursive, Installing submodules]
   - [mkdir -p ~/.config/nvim, Preparing NeoVim config directories]
+  - [mkdir -p ~/.config/alacritty, Preparing Alacritty terminal config directories]
 
 - link:
     ~/.dotfiles: ''
@@ -17,6 +18,7 @@
     ~/.zshrc: zshrc
     ~/.vimrc: vimrc # vimrc shortcut
     ~/.config/nvim/init.vim: vimrc
+    ~/.config/alacritty/alacritty.yml: alacritty.yml
     ~/.ideavimrc: ideavimrc
     ~/.tmux.conf: tmux.conf
     ~/.psqlrc: psqlrc
