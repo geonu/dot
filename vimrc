@@ -22,19 +22,15 @@ Plug 'junegunn/gv.vim'
 
 " Util
 Plug 'vimwiki/vimwiki'
-Plug 'godlygeek/tabular'
-Plug 'junegunn/vim-xmark', { 'do': 'make' }
 Plug 'bling/vim-airline'
 Plug 'vim-airline/vim-airline-themes'
 
 Plug 'junegunn/fzf', { 'do': { -> fzf#install() } }
 Plug 'junegunn/fzf.vim'
-Plug 'ervandew/supertab'
 
 function! DoRemote(arg)
   UpdateRemotePlugins
 endfunction
-"Plug 'Shougo/deoplete.nvim', { 'do': function('DoRemote') }
 
 " End plugin list -------------------------------------------------------------
 call plug#end()
