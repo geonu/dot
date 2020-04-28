@@ -31,6 +31,8 @@ Plug 'vim-airline/vim-airline-themes'
 Plug 'junegunn/fzf', { 'do': { -> fzf#install() } }
 Plug 'junegunn/fzf.vim'
 
+Plug 'benmills/vimux'
+
 function! DoRemote(arg)
   UpdateRemotePlugins
 endfunction
