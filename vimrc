@@ -50,45 +50,17 @@ call plug#end()
 filetype plugin on
 filetype plugin indent on
 
+set clipboard=unnamed
+
 " Set Leader
 let mapleader = "\<Space>"
 
-" nerdtree
-map <Leader>n :NERDTreeToggle<CR>
-autocmd BufEnter * lcd %:p:h
-
-" LSP
-inoremap <expr> <Tab>   pumvisible() ? "\<C-n>" : "\<Tab>"
-inoremap <expr> <S-Tab> pumvisible() ? "\<C-p>" : "\<S-Tab>"
-inoremap <expr> <cr>    pumvisible() ? "\<C-y>" : "\<cr>"
-imap <c-space> <Plug>(asyncomplete_force_refresh)
-set completeopt=menuone,noinsert,noselect
-autocmd! CompleteDone * if pumvisible() == 0 | pclose | endif
-
-
-"" LSP-Python
-if executable('pyls')
-    " pip install python-language-server
-    au User lsp_setup call lsp#register_server({
-        \ 'name': 'pyls',
-        \ 'cmd': {server_info->['pyls']},
-        \ 'whitelist': ['python'],
-        \ })
-endif
-function! s:on_lsp_buffer_enabled() abort
-    setlocal omnifunc=lsp#complete
-    setlocal signcolumn=yes
-    nmap <buffer> gd <plug>(lsp-definition)
-    nmap <buffer> <f2> <plug>(lsp-rename)
-    " refer to doc to add more commands
-endfunction
-
-augroup lsp_install
-    au!
-    " call s:on_lsp_buffer_enabled only for languages that has the server registered.
-    autocmd User lsp_buffer_enabled call s:on_lsp_buffer_enabled()
-augroup END
-
+" buffer
+set hidden
+nmap <leader>T :enew<cr>
+nmap <leader>l :bnext<CR>
+nmap <leader>h :bprevious<CR>
+nmap <leader>bq :bp <BAR> bd #<CR>
 
 " Set Color Scheme.
 colo gruvbox
@@ -188,6 +160,44 @@ nnoremap <C-K> <C-W><C-K>
 nnoremap <C-L> <C-W><C-L>
 nnoremap <C-H> <C-W><C-H>
 
+" Plugin Setup ---------------------------------------------------------------
+
+" nerdtree
+map <Leader>n :NERDTreeToggle<CR>
+autocmd BufEnter * lcd %:p:h
+
+" LSP
+inoremap <expr> <Tab>   pumvisible() ? "\<C-n>" : "\<Tab>"
+inoremap <expr> <S-Tab> pumvisible() ? "\<C-p>" : "\<S-Tab>"
+inoremap <expr> <cr>    pumvisible() ? "\<C-y>" : "\<cr>"
+imap <c-space> <Plug>(asyncomplete_force_refresh)
+set completeopt=menuone,noinsert,noselect
+autocmd! CompleteDone * if pumvisible() == 0 | pclose | endif
+
+
+"" LSP-Python
+if executable('pyls')
+    " pip install python-language-server
+    au User lsp_setup call lsp#register_server({
+        \ 'name': 'pyls',
+        \ 'cmd': {server_info->['pyls']},
+        \ 'whitelist': ['python'],
+        \ })
+endif
+function! s:on_lsp_buffer_enabled() abort
+    setlocal omnifunc=lsp#complete
+    setlocal signcolumn=yes
+    nmap <buffer> gd <plug>(lsp-definition)
+    nmap <buffer> <f2> <plug>(lsp-rename)
+    " refer to doc to add more commands
+endfunction
+
+augroup lsp_install
+    au!
+    " call s:on_lsp_buffer_enabled only for languages that has the server registered.
+    autocmd User lsp_buffer_enabled call s:on_lsp_buffer_enabled()
+augroup END
+
 " vim-markdown
 let g:vim_markdown_folding_disabled=1
 
@@ -210,13 +220,6 @@ let g:airline#extensions#tabline#fnamemod = ':t'
 let g:airline#extensions#tabline#buffer_nr_show = 1
 let g:airline#extensions#tabline#buffer_nr_format = '%s:'
 
-" buffer
-set hidden
-nmap <leader>T :enew<cr>
-nmap <leader>l :bnext<CR>
-nmap <leader>h :bprevious<CR>
-nmap <leader>bq :bp <BAR> bd #<CR>
-
 " FZF
 nnoremap <C-p> :Files<Cr>
 
@@ -233,8 +236,6 @@ let g:jsx_ext_required = 0
 
 " vim-json
 let g:vim_json_syntax_conceal=0
-
-set clipboard=unnamed
 
 " vimwiki
 let g:vimwiki_list = [{'path': '/Users/geonu/workspace/geonu.github.io/content/wiki/'}]
