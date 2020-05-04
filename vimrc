@@ -193,6 +193,7 @@ let g:vim_markdown_folding_disabled=1
 
 " gitgutter
 set signcolumn=yes
+autocmd BufWritePost * GitGutter
 
 " Syntastic
 let g:syntastic_check_on_wq = 0
