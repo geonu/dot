@@ -238,6 +238,9 @@ let g:jsx_ext_required = 0
 let g:vim_json_syntax_conceal=0
 
 " vimwiki
-let g:vimwiki_list = [{'path': '/Users/geonu/workspace/geonu.github.io/content/wiki/'}]
+let g:vimwiki_list = [
+\ {'path': '/Users/geonu/workspace/geonu.github.io/content/wiki/',
+\  'ext': '.md'}
+\]
 let g:vimwiki_global_ext = 0
 let g:vimwiki_conceallevel = 0
