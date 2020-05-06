@@ -221,7 +221,16 @@ let g:airline#extensions#tabline#buffer_nr_show = 1
 let g:airline#extensions#tabline#buffer_nr_format = '%s:'
 
 " FZF
-nnoremap <C-p> :Files<Cr>
+function! s:find_files()
+    let git_dir = system('git rev-parse --show-toplevel 2> /dev/null')[:-2]
+    if git_dir != ''
+        execute 'GFiles' git_dir
+    else
+        execute 'Files'
+    endif
+endfunction
+command! ProjectFiles execute s:find_files()
+nnoremap <C-p> :ProjectFiles<CR>
 
 "" FZF preview
 let g:fzf_preview_window = 'right:60%'
