@@ -1,3 +1,10 @@
+# Enable Powerlevel10k instant prompt. Should stay close to the top of ~/.zshrc.
+# Initialization code that may require console input (password prompts, [y/n]
+# confirmations, etc.) must go above this block; everything else may go below.
+if [[ -r "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh" ]]; then
+  source "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh"
+fi
+
 #!/bin/env zsh
 
 export ZPLUG_HOME=/usr/local/opt/zplug
@@ -7,15 +14,16 @@ source $ZPLUG_HOME/init.zsh
 
 zplug "b4b4r07/zplug"
 
-zplug "mafredri/zsh-async"
-zplug "lukechilds/zsh-nvm"
-zplug "sindresorhus/pure"
+# theme
+zplug "romkatv/powerlevel10k", as:theme, depth:1
 
+zplug "mafredri/zsh-async"
 zplug "Tarrasch/zsh-autoenv"
 zplug "zsh-users/zsh-syntax-highlighting"
 zplug "zsh-users/zsh-completions"
 zplug "zsh-users/zsh-autosuggestions"
 
+# shortcut
 zplug "plugins/docker",   from:oh-my-zsh
 zplug "plugins/docker-compose",   from:oh-my-zsh
 zplug "plugins/git",   from:oh-my-zsh, if:"(( $+commands[git] ))"
@@ -52,20 +60,9 @@ export LANGUAGE=en_US.UTF-8
 export LANG=en_US.UTF-8
 export LC_ALL=en_US.UTF-8
 
-# set pyenv
-export PYENV_ROOT="$HOME/.pyenv"
-export PATH="$PYENV_ROOT/shims:$PATH"
-eval "$(pyenv init -)"
-eval "$(pyenv virtualenv-init -)"
+# set homebrew
+eval "$(/opt/homebrew/bin/brew shellenv)"
 
-# set openssl
-export PATH="/usr/local/opt/openssl/bin:$PATH"
-export LDFLAGS="-L/usr/local/opt/openssl/lib"
-export CPPFLAGS="-I/usr/local/opt/openssl/include"
+# To customize prompt, run `p10k configure` or edit ~/.p10k.zsh.
+[[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
 
-# set imagemagick
-export PATH="/usr/local/opt/imagemagick@6/bin:$PATH"
-
-# set nvm
-export NVM_DIR="$HOME/.nvm"
-[ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh" # This loads nvm

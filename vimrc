@@ -222,23 +222,29 @@ let g:airline#extensions#tabline#buffer_nr_format = '%s:'
 
 " FZF
 function! s:find_files()
-    let git_dir = system('git rev-parse --show-toplevel 2> /dev/null')[:-2]
-    if git_dir != ''
-        execute 'GFiles' git_dir
-    else
-        execute 'Files'
-    endif
+    return system('git rev-parse --show-toplevel 2> /dev/null')[:-2]
 endfunction
-command! ProjectFiles execute s:find_files()
-nnoremap <C-p> :ProjectFiles<CR>
+
+let g:fzf_preview_window = 'right:60%'
+
 
 "" FZF preview
-let g:fzf_preview_window = 'right:60%'
-command! -bang -nargs=? -complete=dir Files
-    \ call fzf#vim#files(<q-args>, fzf#vim#with_preview({'options': ['--layout=reverse', '--info=inline']}), <bang>0)
+command! -bang -nargs=? -complete=dir ProjectFiles
+  \ call fzf#vim#files(
+  \ s:find_files(),
+  \ fzf#vim#with_preview({'options': ['--layout=reverse', '--info=inline']}),
+  \ <bang>0)
+nnoremap <C-p> :ProjectFiles<CR>
 
 "" fzf.vim
-nnoremap <silent> <Leader>k :Rg <C-R><C-W><CR>
+"command! ProjectRg execute s:find_files()
+command! -bang -nargs=* ProjectRg
+  \ call fzf#vim#grep(
+  \   'rg --column --line-number --no-heading --color=always --smart-case -- '.shellescape(<q-args>).' '.s:find_files(),
+  \   1,
+  \   fzf#vim#with_preview({'options': ['--layout=reverse', '--info=inline']}),
+  \   <bang>0)
+nnoremap <silent> <Leader>k :ProjectRg <C-R><C-W><CR>
 
 " vim-jsx
 let g:jsx_ext_required = 0
