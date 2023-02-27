@@ -48,7 +48,7 @@ tm_battery="#(~/.dotfiles/bin/battery-indicator.sh)"
 tm_date="#[fg=$tm_color_inactive] %R %b %d"
 tm_host="#[fg=$tm_color_feature,bold]#h"
 tm_session_name="#[fg=$tm_color_feature,bold]#S"
-tm_spotify="♫ #{spotify_status} #{spotify_artist}: #{spotify_track}"
+tm_music="♫ #{music_status} #{artist}: #{track} of [#{album}]"
 
 set -g status-left $tm_session_name' '
-set -g status-right $tm_spotify' '$tm_date' '$tm_battery' '$tm_host
+set -g status-right $tm_music' '$tm_date' '$tm_battery' '$tm_host
