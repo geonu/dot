@@ -7,7 +7,7 @@ fi
 
 #!/bin/env zsh
 
-export ZPLUG_HOME=/usr/local/opt/zplug
+export ZPLUG_HOME=~/.zplug
 source $ZPLUG_HOME/init.zsh
 
 ##############################################################################
@@ -40,6 +40,9 @@ fi
 zplug load --verbose
 ##############################################################################
 
+# set for tmux-spotify
+export MUSIC_APP="Music"
+
 # set Command
 alias cls="clear"
 alias ll="exa -al"
@@ -61,8 +64,37 @@ export LANG=en_US.UTF-8
 export LC_ALL=en_US.UTF-8
 
 # set homebrew
-eval "$(/opt/homebrew/bin/brew shellenv)"
+#if [ -e /opt/homebrew ]; then
+#    HOMEBREW_ROOT=/opt/homebrew
+#else
+#    HOMEBREW_ROOT=/usr/local
+#fi
+#  export HOMEBREW_ROOT
+#eval $(${HOMEBREW_ROOT}/bin/brew shellenv)
+# Installing x86, Apple Silicon not satisfied
+#alias brew='arch -x86_64 /usr/local/bin/brew'
 
 # To customize prompt, run `p10k configure` or edit ~/.p10k.zsh.
 [[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
 
+# pyenv
+export PYENV_ROOT="$HOME/.pyenv"
+export PATH="$PYENV_ROOT/bin:$PATH"
+eval "$(pyenv init --path)"
+eval "$(pyenv init -)"
+# pyenv installing
+export LDFLAGS="-L/usr/local/opt/zlib/lib -L/usr/local/opt/bzip2/lib"
+export CPPFLAGS="-I/usr/local/opt/zlib/include -I/usr/local/opt/bzip2/include"
+
+# set java
+export PATH="/usr/local/opt/openjdk/bin:$PATH"
+
+# set nvm
+export NVM_DIR="$HOME/.nvm"
+[ -s "/usr/local/opt/nvm/nvm.sh" ] && . "/usr/local/opt/nvm/nvm.sh"  # This loads nvm
+[ -s "/usr/local/opt/nvm/etc/bash_completion.d/nvm" ] && . "/usr/local/opt/nvm/etc/bash_completion.d/nvm"  # This loads nvm bash_completion
+
+export PATH="$HOME/.jenv/bin:$PATH"
+eval "$(jenv init -)"
+
+source /Users/geonu/.docker/init-zsh.sh || true # Added by Docker Desktop
