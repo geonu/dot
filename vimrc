@@ -10,9 +10,6 @@ Plug 'sheerun/vim-polyglot'
 
 " Syntax Helper
 Plug 'scrooloose/syntastic'
-if has('python2')
-    Plug 'Rykka/riv.vim'
-endif
 
 " Git
 Plug 'airblade/vim-gitgutter'
@@ -23,7 +20,6 @@ Plug 'junegunn/gv.vim'
 " LSP
 Plug 'prabirshrestha/async.vim'
 Plug 'prabirshrestha/vim-lsp'
-Plug 'ryanolsonx/vim-lsp-python'
 Plug 'mattn/vim-lsp-settings'
 Plug 'prabirshrestha/asyncomplete.vim'
 Plug 'prabirshrestha/asyncomplete-lsp.vim'
@@ -175,15 +171,6 @@ set completeopt=menuone,noinsert,noselect
 autocmd! CompleteDone * if pumvisible() == 0 | pclose | endif
 
 
-"" LSP-Python
-if executable('pyls')
-    " pip install python-language-server
-    au User lsp_setup call lsp#register_server({
-        \ 'name': 'pyls',
-        \ 'cmd': {server_info->['pyls']},
-        \ 'whitelist': ['python'],
-        \ })
-endif
 function! s:on_lsp_buffer_enabled() abort
     setlocal omnifunc=lsp#complete
     setlocal signcolumn=yes
@@ -207,8 +194,6 @@ autocmd BufWritePost * GitGutter
 
 " Syntastic
 let g:syntastic_check_on_wq = 0
-
-let g:syntastic_python_checkers = ['flake8']
 
 let g:syntastic_javascript_checkers=['eslint']
 
