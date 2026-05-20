@@ -1,12 +1,14 @@
 - defaults:
     link:
       relink: true
+      create: true
 
 # Remove stale symlinks that point into this repo but whose source is gone,
 # so re-running ./install converges (adds new, skips existing, drops dead).
 - clean:
-    ~:
-    ~/.config:
+    '~':
+      recursive: false
+    '~/.config':
       recursive: true
 
 - shell:
