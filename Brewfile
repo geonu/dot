@@ -22,6 +22,7 @@ brew "mise"                # polyglot runtime manager (replaces nvm/pyenv/jenv)
 brew "neovim"              # editor
 brew "pnpm"                # Node package manager
 brew "starship"            # shell prompt
+brew "tmux"                # terminal multiplexer
 
 # Node is managed by mise (see .mise.toml / `mise use -g node`). The brew
 # formula below is kept for now; remove it once mise owns the Node runtime.
