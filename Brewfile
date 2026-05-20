@@ -13,16 +13,25 @@ tap "steipete/tap"
 # --- CLI tools --------------------------------------------------------------
 brew "actionlint"          # GitHub Actions workflow linter
 brew "antidote"            # zsh plugin manager (replaces zplug)
+brew "bat"                 # modern `cat` with syntax highlighting
+brew "btop"                # modern `top` resource monitor
 brew "coreutils"           # GNU core utilities
+brew "duf"                 # modern `df` disk usage viewer
+brew "dust"                # modern `du` disk usage viewer
 brew "eza"                 # modern `ls` (maintained fork of exa)
+brew "fd"                  # modern `find` file search
 brew "gh"                  # GitHub CLI
 brew "googleworkspace-cli" # Google Workspace CLI
+brew "jq"                  # JSON processor
 brew "libpq"               # PostgreSQL client libraries (psql)
 brew "mise"                # polyglot runtime manager (replaces nvm/pyenv/jenv)
 brew "neovim"              # editor
 brew "pnpm"                # Node package manager
+brew "ripgrep"             # modern `grep` file search (used by nvim)
 brew "starship"            # shell prompt
 brew "tmux"                # terminal multiplexer
+brew "yq"                  # YAML processor
+brew "zoxide"              # modern `cd` with directory jumping
 
 # Node, Python, Java, ... are managed by mise (see mise/config.toml).
 
@@ -36,5 +45,5 @@ cask "ghostty"             # terminal emulator
 cask "google-chrome"
 cask "rectangle"           # window manager
 cask "stats"               # menu-bar system monitor
-cask "tailscale"           # mesh VPN
+cask "tailscale-app"       # mesh VPN
 cask "visual-studio-code"

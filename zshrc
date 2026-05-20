@@ -30,8 +30,13 @@ fi
 unset antidote_zsh
 
 # --- aliases ----------------------------------------------------------------
+# Modern replacements for classic coreutils commands.
 alias ls="eza"
 alias ll="eza -al"
+alias cat="bat --paging=never"
+alias top="btop"
+alias du="dust"
+alias df="duf"
 alias cls="clear"
 alias vi="nvim"
 
@@ -55,6 +60,10 @@ export PATH="$BUN_INSTALL/bin:$PATH"
 
 # PostgreSQL client (libpq is keg-only)
 [[ -n "$HOMEBREW_PREFIX" ]] && export PATH="$HOMEBREW_PREFIX/opt/libpq/bin:$PATH"
+
+# --- directory jumping ------------------------------------------------------
+# zoxide learns visited dirs; `--cmd cd` makes `cd` the smart jumper.
+command -v zoxide &>/dev/null && eval "$(zoxide init zsh --cmd cd)"
 
 # --- prompt -----------------------------------------------------------------
 command -v starship &>/dev/null && eval "$(starship init zsh)"
