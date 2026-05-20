@@ -1,21 +1,29 @@
-# Setup dotfiles For macOS
+# dotfiles
 
-This envrionment bootstrapped by [dotbot](https://github.com/anishathalye/dotbot).
+Personal macOS development environment, managed with
+[dotbot](https://github.com/anishathalye/dotbot).
 
-Prerequisites:
-- [Hack Font](https://github.com/chrissimpkins/Hack)
-- [HomeBrew](http://brew.sh)
+## What's inside
+
+| Area     | Tool                                                                                              |
+| -------- | ------------------------------------------------------------------------------------------------- |
+| Terminal | [Ghostty](https://ghostty.org)                                                                    |
+| Shell    | zsh + [antidote](https://antidote.sh) plugins + [starship](https://starship.rs) prompt            |
+| Editor   | [Neovim](https://neovim.io) (vim-plug)                                                            |
+| Runtimes | [mise](https://mise.jdx.dev) — Node, Python, Java, …                                              |
+| Packages | [Homebrew](https://brew.sh) (`Brewfile`)                                                          |
+
+## Install
+
+Requires [Homebrew](https://brew.sh).
 
 ```bash
-brew tap caskroom/cask
-brew cask tap caskroom/fonts
+git clone --recurse-submodules git@github.com:geonu/dot.git ~/.dotfiles
+cd ~/.dotfiles
 
-brew install tmux neovim 
-brew cask install google-chrome
-brew cask install font-hack-nerd-font-mono
+brew bundle install --file=Brewfile   # install packages
+./install                             # symlink configs
 ```
-    - [NeoVim](http://neovim.io)
-    - [zsh](http://www.zsh.org/)
 
-![zsh](./screenshot/zsh.png)
-![nvim](./screenshot/nvim.png)
+Open a new shell afterwards: antidote installs the zsh plugins on first
+run, and `nvim +PlugInstall +qa` installs the editor plugins.
