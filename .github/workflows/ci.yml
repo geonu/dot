@@ -13,6 +13,7 @@ jobs:
 
       - name: Shell script syntax
         run: |
+          bash -n bootstrap
           bash -n install
           bash -n bin/battery-indicator.sh
 

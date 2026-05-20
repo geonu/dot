@@ -15,15 +15,16 @@ Personal macOS development environment, managed with
 
 ## Install
 
-Requires [Homebrew](https://brew.sh).
+Fresh machine — `./bootstrap` installs Homebrew, all `Brewfile`
+packages, the dotfile symlinks, and the `mise` runtimes in one go:
 
 ```bash
 git clone --recurse-submodules git@github.com:geonu/dot.git ~/.dotfiles
 cd ~/.dotfiles
-
-brew bundle install --file=Brewfile   # install packages
-./install                             # symlink configs
+./bootstrap
 ```
 
+Already set up — `./install` just re-applies the symlinks.
+
 Open a new shell afterwards: antidote installs the zsh plugins on first
-run, and `nvim +PlugInstall +qa` installs the editor plugins.
+run, and Neovim installs its plugins (lazy.nvim) on first launch.
