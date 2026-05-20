@@ -26,7 +26,5 @@
     ~/.config/nvim: nvim
     ~/.config/ghostty/config: ghostty/config
     ~/.config/mise/config.toml: mise/config.toml
-    ~/.ideavimrc: ideavimrc
     ~/.tmux.conf: tmux.conf
     ~/.psqlrc: psqlrc
-    ~/.fdignore: fdignore
