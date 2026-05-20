@@ -6,9 +6,6 @@
 
 - shell:
   - [git submodule update --init --recursive, Installing submodules]
-  - [mkdir -p ~/.config/nvim, Preparing NeoVim config directories]
-  - [mkdir -p ~/.config/ghostty, Preparing Ghostty terminal config directories]
-  - [mkdir -p ~/.config/mise, Preparing mise config directory]
 
 - link:
     ~/.dotfiles: ''
@@ -19,8 +16,7 @@
         path: bash_profile
     ~/.zshrc: zshrc
     ~/.zsh_plugins.txt: zsh_plugins.txt
-    ~/.vimrc: vimrc # vimrc shortcut
-    ~/.config/nvim/init.vim: vimrc
+    ~/.config/nvim: nvim
     ~/.config/ghostty/config: ghostty/config
     ~/.config/mise/config.toml: mise/config.toml
     ~/.ideavimrc: ideavimrc

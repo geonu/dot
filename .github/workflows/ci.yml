@@ -23,6 +23,11 @@ jobs:
           sudo apt-get install -y zsh
           zsh -n zshrc
 
+      - name: Neovim Lua config syntax
+        run: |
+          sudo apt-get install -y luajit
+          find nvim -name '*.lua' -exec luajit -bl {} \; > /dev/null
+
       - name: Validate install.conf.yaml
         run: yq '.' install.conf.yaml > /dev/null
 
