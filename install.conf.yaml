@@ -11,6 +11,7 @@
 
 - link:
     ~/.dotfiles: ''
+    ~/.Brewfile: Brewfile
     ~/.gitconfig: gitconfig
     ~/.bash_profile:
         force: true
