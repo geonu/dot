@@ -2,7 +2,6 @@
 # syntax-highlighting must stay last for correct highlighting.
 
 zsh-users/zsh-autosuggestions
-zsh-users/zsh-completions
 
 ohmyzsh/ohmyzsh path:plugins/git
 ohmyzsh/ohmyzsh path:plugins/docker

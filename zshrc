@@ -15,14 +15,19 @@ fi
 export PATH="$HOME/.local/bin:$PATH"
 
 # --- zsh plugins (antidote) -------------------------------------------------
+# Oh My Zsh plugins cache completions here; ensure the dir exists and is ours.
+export ZSH_CACHE_DIR="${XDG_CACHE_HOME:-$HOME/.cache}/zsh"
+[[ -d "$ZSH_CACHE_DIR/completions" ]] || mkdir -p "$ZSH_CACHE_DIR/completions"
+
+# compinit must run before plugins that call compdef (e.g. the omz git plugin).
+autoload -Uz compinit && compinit
+
 antidote_zsh="$HOMEBREW_PREFIX/opt/antidote/share/antidote/antidote.zsh"
 if [[ -e "$antidote_zsh" ]]; then
   source "$antidote_zsh"
   antidote load "${ZDOTDIR:-$HOME}/.zsh_plugins.txt"
 fi
 unset antidote_zsh
-
-autoload -Uz compinit && compinit
 
 # --- aliases ----------------------------------------------------------------
 alias ls="eza"
