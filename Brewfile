@@ -24,9 +24,7 @@ brew "pnpm"                # Node package manager
 brew "starship"            # shell prompt
 brew "tmux"                # terminal multiplexer
 
-# Node is managed by mise (see .mise.toml / `mise use -g node`). The brew
-# formula below is kept for now; remove it once mise owns the Node runtime.
-brew "node@22", link: true
+# Node, Python, Java, ... are managed by mise (see mise/config.toml).
 
 # --- GUI apps (casks) -------------------------------------------------------
 cask "cmux"

@@ -8,6 +8,7 @@
   - [git submodule update --init --recursive, Installing submodules]
   - [mkdir -p ~/.config/nvim, Preparing NeoVim config directories]
   - [mkdir -p ~/.config/ghostty, Preparing Ghostty terminal config directories]
+  - [mkdir -p ~/.config/mise, Preparing mise config directory]
 
 - link:
     ~/.dotfiles: ''
@@ -21,6 +22,7 @@
     ~/.vimrc: vimrc # vimrc shortcut
     ~/.config/nvim/init.vim: vimrc
     ~/.config/ghostty/config: ghostty/config
+    ~/.config/mise/config.toml: mise/config.toml
     ~/.ideavimrc: ideavimrc
     ~/.tmux.conf: tmux.conf
     ~/.psqlrc: psqlrc

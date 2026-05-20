@@ -1,0 +1,5 @@
+# mise global tool versions - https://mise.jdx.dev
+# Run `mise install` to install everything declared here.
+
+[tools]
+node = "22"
