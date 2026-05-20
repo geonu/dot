@@ -32,6 +32,7 @@ cask "cmux"
 cask "codex"
 cask "steipete/tap/codexbar"
 cask "gcloud-cli"
+cask "font-hack-nerd-font" # terminal font (used by Ghostty config)
 cask "ghostty"             # terminal emulator
 cask "google-chrome"
 cask "rectangle"           # window manager
