@@ -1,0 +1,31 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Shell script syntax
+        run: |
+          bash -n install
+          bash -n bin/battery-indicator.sh
+
+      - name: zsh config syntax
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y zsh
+          zsh -n zshrc
+
+      - name: Validate install.conf.yaml
+        run: yq '.' install.conf.yaml > /dev/null
+
+      - name: Lint GitHub workflows
+        run: |
+          bash <(curl -sSf https://raw.githubusercontent.com/rhysd/actionlint/main/scripts/download-actionlint.bash)
+          ./actionlint -color
