@@ -1,100 +1,52 @@
-# Enable Powerlevel10k instant prompt. Should stay close to the top of ~/.zshrc.
-# Initialization code that may require console input (password prompts, [y/n]
-# confirmations, etc.) must go above this block; everything else may go below.
-if [[ -r "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh" ]]; then
-  source "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh"
+# ~/.zshrc - interactive zsh configuration
+# Managed in ~/.dotfiles - https://github.com/geonu/dot
+
+# --- Homebrew ---------------------------------------------------------------
+# Apple Silicon installs to /opt/homebrew, Intel to /usr/local.
+if [[ -x /opt/homebrew/bin/brew ]]; then
+  eval "$(/opt/homebrew/bin/brew shellenv)"
+elif [[ -x /usr/local/bin/brew ]]; then
+  eval "$(/usr/local/bin/brew shellenv)"
 fi
 
-#!/bin/env zsh
+export PATH="$HOME/.local/bin:$PATH"
 
-export ZPLUG_HOME=~/.zplug
-source $ZPLUG_HOME/init.zsh
-
-##############################################################################
-
-zplug "b4b4r07/zplug"
-
-# theme
-zplug "romkatv/powerlevel10k", as:theme, depth:1
-
-zplug "mafredri/zsh-async"
-zplug "Tarrasch/zsh-autoenv"
-zplug "zsh-users/zsh-syntax-highlighting"
-zplug "zsh-users/zsh-completions"
-zplug "zsh-users/zsh-autosuggestions"
-
-# shortcut
-zplug "plugins/docker",   from:oh-my-zsh
-zplug "plugins/docker-compose",   from:oh-my-zsh
-zplug "plugins/git",   from:oh-my-zsh, if:"(( $+commands[git] ))"
-
-# Install plugins if there are plugins that have not been installed
-if ! zplug check --verbose; then
-    printf "Install? [y/N]: "
-    if read -q; then
-        echo; zplug install
-    fi
+# --- zsh plugins (antidote) -------------------------------------------------
+antidote_zsh="$HOMEBREW_PREFIX/opt/antidote/share/antidote/antidote.zsh"
+if [[ -e "$antidote_zsh" ]]; then
+  source "$antidote_zsh"
+  antidote load "${ZDOTDIR:-$HOME}/.zsh_plugins.txt"
 fi
+unset antidote_zsh
 
-# Then, source plugins and add commands to $PATH
-zplug load --verbose
-##############################################################################
+autoload -Uz compinit && compinit
 
-# set for tmux-spotify
-export MUSIC_APP="Music"
-
-# set Command
+# --- aliases ----------------------------------------------------------------
+alias ls="eza"
+alias ll="eza -al"
 alias cls="clear"
-alias ll="exa -al"
 alias vi="nvim"
 
-export FZF_DEFAULT_COMMAND='fd --type f --hidden --follow --exclude .git'
-alias fzf="fzf --preview 'bat --style=numbers --color=always {} | head -500'"
-
+# --- environment ------------------------------------------------------------
 export EDITOR=nvim
-
-# set terminal basic color
-export TERM="xterm-256color"
 export CLICOLOR=1
-export LSCOLORS=ExFxCxDxBxegedabagacad
 
-# set language
+# locale
 export LANGUAGE=en_US.UTF-8
 export LANG=en_US.UTF-8
 export LC_ALL=en_US.UTF-8
 
-# set homebrew
-#if [ -e /opt/homebrew ]; then
-#    HOMEBREW_ROOT=/opt/homebrew
-#else
-#    HOMEBREW_ROOT=/usr/local
-#fi
-#  export HOMEBREW_ROOT
-#eval $(${HOMEBREW_ROOT}/bin/brew shellenv)
-# Installing x86, Apple Silicon not satisfied
-#alias brew='arch -x86_64 /usr/local/bin/brew'
+# --- runtimes ---------------------------------------------------------------
+# mise manages Node, Python, Java, ... (replaces nvm/pyenv/jenv).
+command -v mise &>/dev/null && eval "$(mise activate zsh)"
 
-# To customize prompt, run `p10k configure` or edit ~/.p10k.zsh.
-[[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
+# bun
+export BUN_INSTALL="$HOME/.bun"
+export PATH="$BUN_INSTALL/bin:$PATH"
+[ -s "$BUN_INSTALL/_bun" ] && source "$BUN_INSTALL/_bun"
 
-# pyenv
-export PYENV_ROOT="$HOME/.pyenv"
-export PATH="$PYENV_ROOT/bin:$PATH"
-eval "$(pyenv init --path)"
-eval "$(pyenv init -)"
-# pyenv installing
-export LDFLAGS="-L/usr/local/opt/zlib/lib -L/usr/local/opt/bzip2/lib"
-export CPPFLAGS="-I/usr/local/opt/zlib/include -I/usr/local/opt/bzip2/include"
+# PostgreSQL client (libpq is keg-only)
+[[ -n "$HOMEBREW_PREFIX" ]] && export PATH="$HOMEBREW_PREFIX/opt/libpq/bin:$PATH"
 
-# set java
-export PATH="/usr/local/opt/openjdk/bin:$PATH"
-
-# set nvm
-export NVM_DIR="$HOME/.nvm"
-[ -s "/usr/local/opt/nvm/nvm.sh" ] && . "/usr/local/opt/nvm/nvm.sh"  # This loads nvm
-[ -s "/usr/local/opt/nvm/etc/bash_completion.d/nvm" ] && . "/usr/local/opt/nvm/etc/bash_completion.d/nvm"  # This loads nvm bash_completion
-
-export PATH="$HOME/.jenv/bin:$PATH"
-eval "$(jenv init -)"
-
-source /Users/geonu/.docker/init-zsh.sh || true # Added by Docker Desktop
+# --- prompt -----------------------------------------------------------------
+command -v starship &>/dev/null && eval "$(starship init zsh)"
