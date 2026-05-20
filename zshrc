@@ -1,6 +1,9 @@
 # ~/.zshrc - interactive zsh configuration
 # Managed in ~/.dotfiles - https://github.com/geonu/dot
 
+# Keep PATH/FPATH free of duplicates so re-sourcing this file is idempotent.
+typeset -U path fpath
+
 # --- Homebrew ---------------------------------------------------------------
 # Apple Silicon installs to /opt/homebrew, Intel to /usr/local.
 if [[ -x /opt/homebrew/bin/brew ]]; then

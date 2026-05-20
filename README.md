@@ -9,7 +9,7 @@ Personal macOS development environment, managed with
 | -------- | ------------------------------------------------------------------------------------------------- |
 | Terminal | [Ghostty](https://ghostty.org)                                                                    |
 | Shell    | zsh + [antidote](https://antidote.sh) plugins + [starship](https://starship.rs) prompt            |
-| Editor   | [Neovim](https://neovim.io) (vim-plug)                                                            |
+| Editor   | [Neovim](https://neovim.io) (Lua config, lazy.nvim)                                               |
 | Runtimes | [mise](https://mise.jdx.dev) — Node, Python, Java, …                                              |
 | Packages | [Homebrew](https://brew.sh) (`Brewfile`)                                                          |
 
@@ -28,3 +28,16 @@ Already set up — `./install` just re-applies the symlinks.
 
 Open a new shell afterwards: antidote installs the zsh plugins on first
 run, and Neovim installs its plugins (lazy.nvim) on first launch.
+
+## Keeping in sync
+
+Every step is idempotent — re-run it anytime to converge:
+
+```bash
+./install                              # add new symlinks, drop dead ones
+brew bundle install   --file=Brewfile  # install missing packages
+brew bundle cleanup   --file=Brewfile  # show packages not in the Brewfile
+mise install                           # install runtimes from mise/config.toml
+```
+
+`brew bundle cleanup --force` actually removes the untracked packages.
