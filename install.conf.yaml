@@ -10,6 +10,12 @@
       recursive: false
     '~/.config':
       recursive: true
+    '~/.codex':
+      recursive: false
+    '~/.claude':
+      recursive: false
+    '~/.omp/agent':
+      recursive: false
 
 - shell:
   - [git submodule update --init --recursive, Installing submodules]
