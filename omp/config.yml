@@ -1,0 +1,21 @@
+symbolPreset: nerd
+theme: 
+  dark: titanium
+setupVersion: 1
+modelRoles: 
+  default: anthropic/claude-fable-5:low
+  smol: zai/glm-5-turbo:minimal
+  slow: openai-codex/gpt-5.5:high
+  vision: openai-codex/gpt-5.5:xhigh
+  plan: openai-codex/gpt-5.5:xhigh
+  designer: openai-codex/gpt-5.5:high
+  commit: zai/glm-5-turbo:off
+  task: anthropic/claude-sonnet-4-6:medium
+memory: 
+  backend: local
+defaultThinkingLevel: auto
+display: 
+  showTokenUsage: true
+showHardwareCursor: true
+task: 
+  showResolvedModelBadge: true

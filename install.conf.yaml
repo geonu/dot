@@ -28,3 +28,6 @@
     ~/.config/mise/config.toml: mise/config.toml
     ~/.tmux.conf: tmux.conf
     ~/.psqlrc: psqlrc
+    ~/.codex/AGENTS.md: codex/AGENTS.md
+    ~/.claude/settings.json: claude/settings.json
+    ~/.omp/agent/config.yml: omp/config.yml
