@@ -47,12 +47,63 @@ _omp_latest_session() {
   omp __complete sessions -- "" | awk 'NR == 1 { print $1; exit }'
 }
 
+_omp_descendant_pids() {
+  local -a queue out children
+  local pid child
+  queue=("$1")
+
+  while (( ${#queue[@]} )); do
+    pid="${queue[1]}"
+    queue=("${queue[@]:1}")
+    children=("${(@f)$(pgrep -P "$pid" 2>/dev/null)}")
+    for child in "${children[@]}"; do
+      [[ -n "$child" ]] || continue
+      out+=("$child")
+      queue+=("$child")
+    done
+  done
+
+  print -l -- "${out[@]}"
+}
+
+_omp_session_from_process() {
+  local pid command session_path session_id
+
+  for pid in "$@"; do
+    command="$(ps -p "$pid" -o command= 2>/dev/null || true)"
+    if [[ "$command" =~ '--resume[ =]([^ ]+)' ]]; then
+      print -- "$match[1]"
+      return 0
+    fi
+
+    session_path="$(lsof -p "$pid" 2>/dev/null | awk '/\/sessions\/.*\.jsonl/ { print $NF; exit }')"
+    if [[ -n "$session_path" ]]; then
+      session_id="${session_path:t:r}"
+      print -- "${session_id##*_}"
+      return 0
+    fi
+  done
+
+  return 1
+}
+
+_omp_session_from_tmux_pane() {
+  local pane_pid="${1:-$(tmux display-message -p '#{pane_pid}' 2>/dev/null)}"
+  local -a pids
+
+  [[ -n "$pane_pid" ]] || return 1
+  pids=("$pane_pid" "${(@f)$(_omp_descendant_pids "$pane_pid")}")
+  _omp_session_from_process "${pids[@]}"
+}
+
 _omp_resume_args() {
   local session_id
 
   if [[ $# -gt 0 && "$1" != -* ]]; then
     session_id="$1"
     shift
+  elif [[ -n "${OMP_RESUME_SESSION_ID:-}" ]]; then
+    session_id="$OMP_RESUME_SESSION_ID"
   else
     session_id="$(_omp_latest_session)"
   fi
@@ -139,6 +190,26 @@ ompcombo_gptr() {
   ompcombo_gpt "${args[@]}"
 }
 
+
+ompr_tmux_respawn() {
+  local profile="${1:-gpt}"
+  local pane_pid pane_path session_id
+
+  pane_pid="$(tmux display-message -p '#{pane_pid}')"
+  pane_path="$(tmux display-message -p '#{pane_current_path}')"
+  session_id="$(_omp_session_from_tmux_pane "$pane_pid" || true)"
+
+  if [[ -z "$session_id" ]]; then
+    session_id="$(_omp_latest_session)"
+  fi
+
+  if [[ -z "$session_id" ]]; then
+    print -u2 "ompr_tmux_respawn: no OMP session found for this pane"
+    return 1
+  fi
+
+  tmux respawn-pane -k -c "$pane_path" "env OMP_RESUME_SESSION_ID=$session_id zsh -lic 'ompr $profile'"
+}
 ompr() {
   local profile="${1:-gpt}"
   [[ $# -gt 0 ]] && shift

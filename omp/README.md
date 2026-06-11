@@ -27,10 +27,12 @@ overlay한다.
 | `combo-gpt` | `omp/profiles/combo-gpt.yml` | GPT default + Claude utility/task |
 | `config` | 없음 | override 없이 현재 `config.yml` 그대로 resume |
 
-tmux 안에서는 `Ctrl-a R`을 누르면 현재 pane을 같은 cwd에서 respawn하고, 프롬프트에
-`gpt`, `claude`, `combo-claude`, `combo-gpt`, `config` 중 하나를 입력해 최신 세션을
-이어간다. OMP TUI의 config hot reload가 없고 resume이 세션의 active model을 복원할
-수 있어, wrapper가 `--resume <session-id>`와 provider override를 함께 전달한다.
+tmux 안에서는 `Ctrl-a R`을 누르면 현재 pane에서 실행 중인 OMP 프로세스의 session id를
+먼저 읽고, 같은 cwd에서 pane을 respawn한다. 프롬프트에 `gpt`, `claude`,
+`combo-claude`, `combo-gpt`, `config` 중 하나를 입력하면 **현재 pane의 세션**을 해당
+프로필로 이어간다. OMP TUI의 config hot reload가 없고 resume이 세션의 active model을
+복원할 수 있어, wrapper가 현재 pane의 `--resume <session-id>`와 provider override를 함께
+전달한다. 세션 id를 못 읽은 경우에만 cwd의 최신 세션으로 fallback한다.
 
 정합성 체크는 `bin/omp-profile-check.sh`로 한다. 이 스크립트는 `omp/config.yml`,
 `omp/profiles/*.yml`, 이 README의 프로필 목록, 그리고 로컬 `~/.omp/agent/models.db`의
