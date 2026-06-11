@@ -24,12 +24,6 @@
         "superpowers@claude-plugins-official": true
     },
     "extraKnownMarketplaces": {
-        "omc": {
-            "source": {
-                "source": "git",
-                "url": "https://github.com/Yeachan-Heo/oh-my-claudecode.git"
-            }
-        },
         "openai-codex": {
             "source": {
                 "source": "github",
