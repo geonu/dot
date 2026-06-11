@@ -1,0 +1,12 @@
+# Mixed OMP model profile, Claude-primary.
+# Use when both subscriptions have quota and Claude should own long-running context.
+# Codex/GPT is reserved for burst reasoning and visual/design-heavy work.
+modelRoles:
+  default: anthropic/claude-opus-4-8:low
+  smol: anthropic/claude-haiku-4-5:minimal
+  slow: openai-codex/gpt-5.5:high
+  vision: openai-codex/gpt-5.5:high
+  plan: openai-codex/gpt-5.5:high
+  designer: openai-codex/gpt-5.5:high
+  commit: anthropic/claude-haiku-4-5:off
+  task: anthropic/claude-sonnet-4-6:medium
