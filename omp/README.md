@@ -16,11 +16,27 @@ fable-5는 2026-06-09 출시~**06-22까지** 유료 구독(Pro/Max/Team/Enterpri
 | default  | anthropic/claude-fable-5:low       | API "medium". :low 유지는 레이턴시 때문(fable은 +30% 느림 [S3]) |
 | smol     | anthropic/claude-haiku-4-5:minimal | budget 모드 최소 thinking |
 | slow     | anthropic/claude-fable-5:high      | API "xhigh". 어려운 단발 작업 최강 [S2] |
-| vision   | openai-codex/gpt-5.5:high          | Codex 구독 활용 유지 |
+| vision   | openai-codex/gpt-5.5:medium        | AA: medium은 high 대비 -2pt/토큰 -51% [S10] — 이미지 QA에 충분 |
 | plan     | anthropic/claude-fable-5:high      | 복합 계획 = fable 본령, 1M ctx |
 | designer | openai-codex/gpt-5.5:high          | Codex 구독 활용 유지 |
 | commit   | anthropic/claude-haiku-4-5:off     | thinking 비활성 |
-| task     | anthropic/claude-opus-4-8:low      | opus 적극 투입 슬롯. adaptive thinking [S5] |
+| task     | anthropic/claude-opus-4-8:low      | API "medium" 착지(effortMap [S9]). opus 적극 투입 슬롯 [S5] |
+
+### Effort 레벨별 정량 비교 (gpt-5.5, 독립 측정 [S10])
+
+| effort | AA 지능지수 | 토큰 사용량(Index 전체) | 상대 토큰 | 속도 |
+|--------|------------|------------------------|-----------|------|
+| xhigh  | 60         | 75M                    | 3.4x      | 49.8 tok/s |
+| high   | 59         | 45M                    | 2.0x      | 49.1 tok/s |
+| medium | 57         | 22M                    | 1.0x      | 45.7 tok/s |
+
+→ xhigh의 한계효용이 극히 낮음(+1pt에 토큰 +67%). **effort 상한은 high, xhigh는 예외적
+용도만.** 비용은 토큰량에 비례하므로($30/M 출력 지배) medium 대비 high 2배, xhigh 3.4배.
+
+opus-4.8은 effort별 독립 측정이 없고 벤더 서술만 존재 [S11]: API low는 "특정 작업에서
+토큰 2~3x 절감, 고볼륨 최적", high(API 기본)가 "최적 밸런스". task의 `:low`는 omp
+effortMap을 거쳐 API "medium"에 착지하므로 그 사이 지점. fable-5는 adaptive 단일
+모드(effort별 데이터 없음 [S5]) — omp 레벨은 adaptive 강도 힌트로만 작동.
 
 ## 복귀 플랜 (06-23 적용)
 
@@ -31,7 +47,7 @@ fable을 전 역할에서 제거하고, 구독 포함 최상위인 opus-4-8을 d
 # 구독 내 분산 모드: 버스트는 Codex로, Anthropic 쿼터는 default 전용 보호
 default: anthropic/claude-opus-4-8:low      # 구독 포함 최상위. adaptive thinking
 slow: openai-codex/gpt-5.5:high
-plan: openai-codex/gpt-5.5:xhigh
+plan: openai-codex/gpt-5.5:high             # xhigh는 +1pt에 토큰 +67% [S10] — 비효율
 task: anthropic/claude-sonnet-4-6:medium    # 고볼륨은 경량으로 복귀
 # smol/vision/designer/commit 그대로
 ```
@@ -102,3 +118,16 @@ modelRoles:
   fable 배치 $5/$25 [agentpedia](https://agentpedia.codes/blog/claude-fable-5-benchmark-prompting-guide)).
 - **[S9] ◎ effort 매핑** — `~/.omp/agent/models.db`의 `thinking.effortMap`/`mode` 필드 + omp://models.md.
   로컬에서 직접 검증 가능.
+- **[S10] ◎ gpt-5.5 effort별 독립 측정** — Artificial Analysis가 전 effort 레벨 직접 평가:
+  지능지수 xhigh 60 / high 59 / medium 57, Index 평가 토큰 75M / 45M / 22M, 속도 49.8 /
+  49.1 / 45.7 tok/s ([AA xhigh](https://artificialanalysis.ai/models/gpt-5-5),
+  [AA high](https://artificialanalysis.ai/models/gpt-5-5-high),
+  [AA medium](https://artificialanalysis.ai/models/gpt-5-5-medium),
+  [AA 분석](https://artificialanalysis.ai/articles/openai-gpt5-5-is-the-new-leading-AI-model)).
+  벤더 독립 측정으로 이 문서에서 가장 신뢰도 높은 정량 데이터. low/non-reasoning은 미게재.
+- **[S11] ○ opus-4.8 effort별 특성** — API low "특정 작업 토큰 2~3x 절감, 고볼륨 최적"
+  ([believemy](https://believemy.com/en/r/claude-opus-4-8-features-benchmarks-complete-guide),
+  [digitalapplied](https://www.digitalapplied.com/blog/claude-opus-4-8-release-dynamic-workflows-2026)),
+  high(API 기본)가 "최적 밸런스", 4.8:high ≈ 4.7 기본값 토큰에 더 높은 점수
+  ([computingforgeeks](https://computingforgeeks.com/claude-opus-4-8-released-features-benchmarks/)).
+  effort별 벤치마크 점수표는 미공개 — 정성 서술만 존재.

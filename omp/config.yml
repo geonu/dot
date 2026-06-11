@@ -6,7 +6,7 @@ modelRoles:
   default: anthropic/claude-fable-5:low
   smol: anthropic/claude-haiku-4-5:minimal
   slow: anthropic/claude-fable-5:high
-  vision: openai-codex/gpt-5.5:high
+  vision: openai-codex/gpt-5.5:medium
   plan: anthropic/claude-fable-5:high
   designer: openai-codex/gpt-5.5:high
   commit: anthropic/claude-haiku-4-5:off
