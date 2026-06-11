@@ -4,13 +4,13 @@ theme:
 setupVersion: 1
 modelRoles: 
   default: anthropic/claude-fable-5:low
-  smol: zai/glm-5-turbo:minimal
-  slow: openai-codex/gpt-5.5:high
-  vision: openai-codex/gpt-5.5:xhigh
-  plan: openai-codex/gpt-5.5:xhigh
+  smol: anthropic/claude-haiku-4-5:minimal
+  slow: anthropic/claude-fable-5:high
+  vision: openai-codex/gpt-5.5:high
+  plan: anthropic/claude-fable-5:high
   designer: openai-codex/gpt-5.5:high
-  commit: zai/glm-5-turbo:off
-  task: anthropic/claude-sonnet-4-6:medium
+  commit: anthropic/claude-haiku-4-5:off
+  task: anthropic/claude-opus-4-8:low
 memory: 
   backend: local
 defaultThinkingLevel: auto
