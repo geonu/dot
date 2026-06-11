@@ -40,6 +40,125 @@ alias df="duf"
 alias cls="clear"
 alias vi="nvim"
 
+
+# OMP session helpers. Resume can restore the session's active model, so these
+# wrappers force the provider profile while preserving the latest session id.
+_omp_latest_session() {
+  omp __complete sessions -- "" | awk 'NR == 1 { print $1; exit }'
+}
+
+_omp_resume_args() {
+  local session_id
+
+  if [[ $# -gt 0 && "$1" != -* ]]; then
+    session_id="$1"
+    shift
+  else
+    session_id="$(_omp_latest_session)"
+  fi
+
+  if [[ -z "$session_id" ]]; then
+    print -u2 "omp resume: no OMP session found for this directory"
+    return 1
+  fi
+
+  print -- "--resume"
+  print -- "$session_id"
+  printf '%s\n' "$@"
+}
+
+_omp_profile_path() {
+  print -- "$HOME/.dotfiles/omp/profiles/$1.yml"
+}
+
+ompgpt() {
+  omp \
+    --config "$(_omp_profile_path gpt)" \
+    --model openai-codex/gpt-5.5 \
+    --thinking medium \
+    --smol openai-codex/gpt-5.4-nano \
+    --slow openai-codex/gpt-5.5 \
+    --plan openai-codex/gpt-5.5 \
+    "$@"
+}
+
+ompclaude() {
+  omp \
+    --config "$(_omp_profile_path claude)" \
+    --model anthropic/claude-fable-5 \
+    --thinking low \
+    --smol anthropic/claude-haiku-4-5 \
+    --slow anthropic/claude-fable-5 \
+    --plan anthropic/claude-fable-5 \
+    "$@"
+}
+
+ompcombo_claude() {
+  omp \
+    --config "$(_omp_profile_path combo-claude)" \
+    --model anthropic/claude-opus-4-8 \
+    --thinking low \
+    --smol anthropic/claude-haiku-4-5 \
+    --slow openai-codex/gpt-5.5 \
+    --plan openai-codex/gpt-5.5 \
+    "$@"
+}
+
+ompcombo_gpt() {
+  omp \
+    --config "$(_omp_profile_path combo-gpt)" \
+    --model openai-codex/gpt-5.5 \
+    --thinking medium \
+    --smol anthropic/claude-haiku-4-5 \
+    --slow openai-codex/gpt-5.5 \
+    --plan openai-codex/gpt-5.5 \
+    "$@"
+}
+
+ompgptr() {
+  local -a args
+  args=("${(@f)$(_omp_resume_args "$@")}") || return 1
+  ompgpt "${args[@]}"
+}
+
+ompclauder() {
+  local -a args
+  args=("${(@f)$(_omp_resume_args "$@")}") || return 1
+  ompclaude "${args[@]}"
+}
+
+ompcombo_clauder() {
+  local -a args
+  args=("${(@f)$(_omp_resume_args "$@")}") || return 1
+  ompcombo_claude "${args[@]}"
+}
+
+ompcombo_gptr() {
+  local -a args
+  args=("${(@f)$(_omp_resume_args "$@")}") || return 1
+  ompcombo_gpt "${args[@]}"
+}
+
+ompr() {
+  local profile="${1:-gpt}"
+  [[ $# -gt 0 ]] && shift
+
+  case "$profile" in
+    gpt) ompgptr "$@" ;;
+    claude) ompclauder "$@" ;;
+    combo-claude|combo|combination|mixed) ompcombo_clauder "$@" ;;
+    combo-gpt) ompcombo_gptr "$@" ;;
+    config|default)
+      local -a args
+      args=("${(@f)$(_omp_resume_args "$@")}") || return 1
+      omp "${args[@]}"
+      ;;
+    *)
+      print -u2 "usage: ompr [gpt|claude|combo-claude|combo-gpt|config] [session-id-prefix] [omp flags...]"
+      return 2
+      ;;
+  esac
+}
 # --- environment ------------------------------------------------------------
 export EDITOR=nvim
 export CLICOLOR=1

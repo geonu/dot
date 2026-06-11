@@ -1,8 +1,6 @@
-symbolPreset: nerd
-theme: 
-  dark: titanium
-setupVersion: 1
-modelRoles: 
+# GPT-only OMP model profile.
+# Use when Anthropic/Claude quota is exhausted or intentionally avoided.
+modelRoles:
   default: openai-codex/gpt-5.5:medium
   smol: openai-codex/gpt-5.4-nano:low
   slow: openai-codex/gpt-5.5:high
@@ -11,11 +9,3 @@ modelRoles:
   designer: openai-codex/gpt-5.5:high
   commit: openai-codex/gpt-5.4-nano:off
   task: openai-codex/gpt-5.5:medium
-memory: 
-  backend: local
-defaultThinkingLevel: auto
-display: 
-  showTokenUsage: true
-showHardwareCursor: true
-task: 
-  showResolvedModelBadge: true
