@@ -39,3 +39,4 @@
     ~/.omp/agent/config.yml: omp/config.yml
     ~/.claude/CLAUDE.md: claude/CLAUDE.md
     ~/.config/starship.toml: starship/starship.toml
+    ~/.claude/skills: claude/skills
