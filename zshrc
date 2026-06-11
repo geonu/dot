@@ -193,10 +193,11 @@ ompcombo_gptr() {
 
 ompr_tmux_respawn() {
   local profile="${1:-gpt}"
+  local pane="${2:-$(tmux display-message -p '#{pane_id}')}"
   local pane_pid pane_path session_id
 
-  pane_pid="$(tmux display-message -p '#{pane_pid}')"
-  pane_path="$(tmux display-message -p '#{pane_current_path}')"
+  pane_pid="$(tmux display-message -t "$pane" -p '#{pane_pid}')"
+  pane_path="$(tmux display-message -t "$pane" -p '#{pane_current_path}')"
   session_id="$(_omp_session_from_tmux_pane "$pane_pid" || true)"
 
   if [[ -z "$session_id" ]]; then
@@ -204,12 +205,16 @@ ompr_tmux_respawn() {
   fi
 
   if [[ -z "$session_id" ]]; then
-    print -u2 "ompr_tmux_respawn: no OMP session found for this pane"
+    tmux display-message "ompr_tmux_respawn: no OMP session found for this pane"
     return 1
   fi
 
-  tmux respawn-pane -k -c "$pane_path" "env OMP_RESUME_SESSION_ID=$session_id zsh -lic 'ompr $profile'"
+  # Fall back to an interactive shell when ompr exits or fails so the pane
+  # never dies (remain-on-exit is off).
+  tmux respawn-pane -k -t "$pane" -c "$pane_path" \
+    "env OMP_RESUME_SESSION_ID=$session_id zsh -lic 'ompr $profile; exec zsh -i'"
 }
+
 ompr() {
   local profile="${1:-gpt}"
   [[ $# -gt 0 ]] && shift
