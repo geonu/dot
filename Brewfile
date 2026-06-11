@@ -7,6 +7,7 @@
 # `./install` symlinks this to ~/.Brewfile so `brew bundle --global` works too.
 
 # --- taps -------------------------------------------------------------------
+tap "can1357/tap"
 tap "manaflow-ai/cmux"
 tap "steipete/tap"
 
@@ -26,6 +27,7 @@ brew "jq"                  # JSON processor
 brew "libpq"               # PostgreSQL client libraries (psql)
 brew "mise"                # polyglot runtime manager (replaces nvm/pyenv/jenv)
 brew "neovim"              # editor
+brew "can1357/tap/omp"     # oh-my-pi coding agent (config in omp/)
 brew "pnpm"                # Node package manager
 brew "ripgrep"             # modern `grep` file search (used by nvim)
 brew "starship"            # shell prompt
