@@ -1,0 +1,4 @@
+# Starship prompt — https://starship.rs/config/
+# Currently stock defaults; customize here so changes are tracked.
+
+add_newline = true

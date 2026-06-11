@@ -37,3 +37,5 @@
     ~/.codex/AGENTS.md: codex/AGENTS.md
     ~/.claude/settings.json: claude/settings.json
     ~/.omp/agent/config.yml: omp/config.yml
+    ~/.claude/CLAUDE.md: claude/CLAUDE.md
+    ~/.config/starship.toml: starship/starship.toml
