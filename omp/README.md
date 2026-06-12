@@ -58,7 +58,7 @@ tmux 안에서는 `Ctrl-a R`을 누르면 현재 pane에서 실행 중인 OMP �
 | commit   | openai-codex/gpt-5.4-nano:off | thinking 비활성 |
 | task     | openai-codex/gpt-5.5:medium   | 병렬 서브태스크 품질 하한 보강. high는 토큰 2x라 미사용 [S10] |
 
-## 현재 세팅: Claude only (Fable 과금 회피)
+## Claude only (Fable 과금 회피)
 
 `omp/profiles/claude.yml`. 06-23 이후 fable-5가 구독 미포함 크레딧 과금으로 전환되는
 상황을 기본으로 둔다 [S7]. OpenAI/Codex 쿼터를 보호해야 할 때만 사용한다.
@@ -133,7 +133,7 @@ fallback 조건 [S12]. OMP의 `:low/:medium/:high` suffix는 모델별 effortMap
 구독제만 유지할 때는 fable을 전 역할에서 제거한다. 이때 주 모델을 누구로 둘지에 따라
 프로필을 둘로 나눈다.
 
-### `combo-claude`: Claude 메인 + Codex 버스트
+### 현재 세팅 · `combo-claude`: Claude 메인 + Codex 버스트
 
 `omp/profiles/combo-claude.yml`. 장기 컨텍스트 안정성과 Anthropic 품질을 우선한다.
 Codex/GPT는 slow/plan/vision/designer처럼 실패 비용이 큰 버스트 역할에 투입한다.
