@@ -34,10 +34,11 @@ tmux 안에서는 `Ctrl-a R`을 누르면 현재 pane에서 실행 중인 OMP �
 `combo-claude`, `combo-gpt`, `config` 중 하나를 입력하면 **현재 pane의 세션**을 해당
 프로필로 이어간다. OMP TUI의 config hot reload가 없고 resume이 세션의 active model을
 복원할 수 있어, wrapper가 현재 pane의 `--resume <session-id>`와 provider override를 함께
-전달한다. 라이브 프로세스에서 세션 id를 못 읽으면 **pane의 cwd**에서 최신 세션으로
-fallback하고(`run-shell`은 pane cwd를 상속하지 않으므로 pane 디렉토리 기준으로 조회),
-그래도 세션이 없으면 해당 프로필로 새 세션을 띄운다. respawn은 항상 수행되어 pane이
-죽지 않는다.
+전달한다. 세션 id 결정 우선순위는 ① pane의 라이브 omp 프로세스(`ps --resume` / 열린
+`.jsonl`) → ② pane에 기록해 둔 `@omp_session` tmux 옵션(omp가 종료돼도 남아 다음
+전환에서 같은 대화로 복귀) → ③ pane cwd의 최신 세션(`run-shell`은 pane cwd를 상속하지
+않으므로 pane 디렉토리 기준으로 조회)이다. 그래도 세션이 없으면 해당 프로필로 새 세션을
+띄운다. respawn은 항상 수행되어 pane이 죽지 않는다.
 
 정합성 체크는 `bin/omp-profile-check.sh`로 한다. 이 스크립트는 `omp/config.yml`,
 `omp/profiles/*.yml`, 이 README의 프로필 목록, 그리고 로컬 `~/.omp/agent/models.db`의

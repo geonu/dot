@@ -216,18 +216,27 @@ ompr_tmux_respawn() {
 
   pane_pid="$(tmux display-message -t "$pane" -p '#{pane_pid}')"
   pane_path="$(tmux display-message -t "$pane" -p '#{pane_current_path}')"
+  # 1. Exact: read the session straight from the live omp process in this pane.
   session_id="$(_omp_session_from_tmux_pane "$pane_pid" || true)"
 
-  # run-shell does not inherit the pane cwd, so resolve the latest session
-  # inside the pane's own directory.
+  # 2. Exact-ish: the session we last recorded for THIS pane. A pane option
+  #    survives omp exiting, so a re-press after omp quit still hits the right
+  #    conversation instead of guessing.
+  if [[ -z "$session_id" ]]; then
+    session_id="$(tmux show-options -pqv -t "$pane" @omp_session)"
+  fi
+
+  # 3. Heuristic last resort: newest session in the pane's own directory.
+  #    run-shell does not inherit the pane cwd, so resolve it there explicitly.
   if [[ -z "$session_id" && -n "$pane_path" ]]; then
     session_id="$(cd "$pane_path" 2>/dev/null && _omp_latest_session)"
   fi
 
-  # Always respawn so the pane is never left dead. Resume when we found a
+  # Always respawn so the pane is never left dead. Resume when we have a
   # session; otherwise start a fresh one for the chosen profile. `exec zsh -i`
   # keeps the pane alive after omp exits (remain-on-exit is off).
   if [[ -n "$session_id" ]]; then
+    tmux set-option -p -t "$pane" @omp_session "$session_id"
     launch="env OMP_RESUME_SESSION_ID=$session_id zsh -lic 'ompr $profile; exec zsh -i'"
   else
     launch="zsh -lic 'ompr_fresh $profile; exec zsh -i'"
