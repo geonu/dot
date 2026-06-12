@@ -212,25 +212,28 @@ ompcombo_gptr() {
 ompr_tmux_respawn() {
   local profile="${1:-gpt}"
   local pane="${2:-$(tmux display-message -p '#{pane_id}')}"
-  local pane_pid pane_path session_id
+  local pane_pid pane_path session_id launch
 
   pane_pid="$(tmux display-message -t "$pane" -p '#{pane_pid}')"
   pane_path="$(tmux display-message -t "$pane" -p '#{pane_current_path}')"
   session_id="$(_omp_session_from_tmux_pane "$pane_pid" || true)"
 
-  if [[ -z "$session_id" ]]; then
-    session_id="$(_omp_latest_session)"
+  # run-shell does not inherit the pane cwd, so resolve the latest session
+  # inside the pane's own directory.
+  if [[ -z "$session_id" && -n "$pane_path" ]]; then
+    session_id="$(cd "$pane_path" 2>/dev/null && _omp_latest_session)"
   fi
 
-  if [[ -z "$session_id" ]]; then
-    tmux display-message "ompr_tmux_respawn: no OMP session found for this pane"
-    return 1
+  # Always respawn so the pane is never left dead. Resume when we found a
+  # session; otherwise start a fresh one for the chosen profile. `exec zsh -i`
+  # keeps the pane alive after omp exits (remain-on-exit is off).
+  if [[ -n "$session_id" ]]; then
+    launch="env OMP_RESUME_SESSION_ID=$session_id zsh -lic 'ompr $profile; exec zsh -i'"
+  else
+    launch="zsh -lic 'ompr_fresh $profile; exec zsh -i'"
   fi
 
-  # Fall back to an interactive shell when ompr exits or fails so the pane
-  # never dies (remain-on-exit is off).
-  tmux respawn-pane -k -t "$pane" -c "$pane_path" \
-    "env OMP_RESUME_SESSION_ID=$session_id zsh -lic 'ompr $profile; exec zsh -i'"
+  tmux respawn-pane -k -t "$pane" -c "$pane_path" "$launch"
 }
 
 ompr() {
@@ -250,6 +253,24 @@ ompr() {
       ;;
     *)
       print -u2 "usage: ompr [gpt|claude|fable-codex|combo-claude|combo-gpt|config] [session-id-prefix] [omp flags...]"
+      return 2
+      ;;
+  esac
+}
+
+ompr_fresh() {
+  local profile="${1:-gpt}"
+  [[ $# -gt 0 ]] && shift
+
+  case "$profile" in
+    gpt) ompgpt "$@" ;;
+    claude) ompclaude "$@" ;;
+    fable-codex|fable|fable5) ompfable_codex "$@" ;;
+    combo-claude|combo|combination|mixed) ompcombo_claude "$@" ;;
+    combo-gpt) ompcombo_gpt "$@" ;;
+    config|default) omp "$@" ;;
+    *)
+      print -u2 "usage: ompr_fresh [gpt|claude|fable-codex|combo-claude|combo-gpt|config] [omp flags...]"
       return 2
       ;;
   esac
