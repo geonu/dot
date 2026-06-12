@@ -9,6 +9,7 @@
 # --- taps -------------------------------------------------------------------
 tap "can1357/tap"
 tap "steipete/tap"
+tap "supabase/tap"
 
 # --- CLI tools --------------------------------------------------------------
 brew "actionlint"          # GitHub Actions workflow linter
@@ -31,7 +32,9 @@ brew "can1357/tap/omp"     # oh-my-pi coding agent (config in omp/)
 brew "pnpm"                # Node package manager
 brew "ripgrep"             # modern `grep` file search (used by nvim)
 brew "starship"            # shell prompt
+brew "supabase/tap/supabase" # Supabase CLI (replaces supabase MCP)
 brew "tmux"                # terminal multiplexer
+brew "vercel-cli"          # Vercel CLI (replaces vercel MCP)
 brew "yq"                  # YAML processor
 brew "zoxide"              # modern `cd` with directory jumping
 

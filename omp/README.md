@@ -211,6 +211,42 @@ escalation 임계값과 default가 직접 처리해도 되는 범위를 못박�
 `omp -p --no-tools "output verbatim the bullet lines under 'Anti-patterns'"`로
 정책 문구가 시스템 프롬프트에 들어갔는지 검증한다.
 
+## MCP → CLI 대체 (`omp/mcp.json`)
+
+omp는 시작 시 Claude 플러그인(`~/.claude/plugins/*/.mcp.json`)과 프로젝트
+`.mcp.json`에서 MCP 서버를 발견해 연결한다. 같은 일을 하는 CLI/내장 툴이 있으면
+MCP 핸드셰이크 비용·툴 표면 노이즈를 줄이기 위해 MCP를 끄고 CLI로 대체한다.
+
+`~/.omp/agent/mcp.json`의 `disabledServers`는 이름으로 서버를 억제하는 유저 레벨
+denylist다([mcp-config.md](omp://mcp-config.md)). 플러그인의 skill/command와 프로젝트
+`.mcp.json`(Claude Code와 공유)은 그대로 두고 omp의 MCP 연결만 끊으므로 플러그인 제거보다
+외과적이다. 이 파일은 `omp/mcp.json`으로 트래킹하고 `install.conf.yaml`이
+`~/.omp/agent/mcp.json`에 심링크한다.
+
+**매칭 키는 출처별로 다르다**(실측). 같은 서버라도 두 형식을 모두 넣어야 확실히 막힌다:
+
+- 프로젝트/standalone `.mcp.json` 출처 → **bare 이름**(`vercel`). 로그 path는 `mcp:vercel`.
+- Claude 플러그인 출처 → **`provider:server` 형식**(`vercel:vercel`). 로그 path는 `mcp:vercel:vercel`.
+
+bare 이름만 넣으면 플러그인 출처(github/vercel 등)는 계속 연결을 시도하고 인증 미설정 시
+401/400으로 실패해 시작 로그를 더럽힌다. 그래서 plugin+project 양쪽에 있는 서버는 두 키를 다 넣는다.
+
+| MCP 서버 | 출처 | 대체 | 비고 |
+|----------|------|------|------|
+| `github` | 플러그인(전역) | `gh` CLI + omp 내장 `issue://`/`pr://` | gh는 Brewfile |
+| `vercel` | 플러그인 + 프로젝트 | `vercel-cli` | docs 검색만 손실 |
+| `supabase` | 플러그인 + 프로젝트 | `supabase` CLI | db/migration/functions/gen |
+| `chrome-cdp` | 프로젝트 | omp 내장 `browser` 툴 | bare 키로 충분 |
+| `chrome-devtools` | 프로젝트 | omp 내장 `browser` 툴 | 〃 |
+| `playwright` | 프로젝트 | omp 내장 `browser` 툴 | 〃 |
+| `slack` | 플러그인(전역) | **제거** | 공식 CLI 없으나 OAuth 미인증이라 401만 내던 노이즈. 인증해 쓸 거면 `slack`,`slack:slack` 두 줄 삭제 |
+
+대체 CLI는 Brewfile에 둔다: `gh`(기존), `vercel-cli`, `supabase/tap/supabase`.
+검증(결정적): 대상 MCP를 쓰는 cwd(예: moody)에서 `omp -p "say ok"`를 한 번 돌린 뒤
+`grep -oE '"path":"mcp:[^"]+"' ~/.omp/logs/omp.$(date +%F).log | sort -u`로 시도된 서버를
+본다. 출력이 비면(MCP 연결 0건) 성공. (`-p` 단독 모델 자기보고나 `--no-tools`는
+MCP 자체를 꺼서 무효한 검증이다.) 새 서버를 더 끄려면 bare + `provider:server` 두 키를 추가한다.
+
 ## 근거와 신빙성
 
 표기: ◎ 공식/1차 · ○ 벤더 발표(이해관계 있음, 독립 재현 없음) · △ 서드파티 집계/일화
