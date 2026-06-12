@@ -188,6 +188,28 @@ Glasswing 승인 고객 한정 [S6]. fable-5와 동일 가중치(안전 분류�
 
 주의: gpt 계열은 `minimal` 미지원(low부터). `:off`는 effort가 아닌 thinking 비활성로 전 모델 유효.
 
+## 오케스트레이션 정책 (APPEND_SYSTEM)
+
+모델 effort를 올리는 것보다, `default`(메인 루프)가 언제 `plan`/`slow`/`task`로
+넘기는지를 강제하는 게 효율적이다. OMP는 `SYSTEM.md`(기본 블록 교체)와
+`APPEND_SYSTEM.md`(기본 지침 + skills/rules/tool 가이드 유지하고 블록 추가) 두 경로를
+제공한다. delegation 규칙은 기본 지침을 살려야 하므로 `APPEND_SYSTEM.md`를 쓴다.
+
+- 글로벌: `~/.omp/agent/APPEND_SYSTEM.md` ← `omp/APPEND_SYSTEM.md` 심링크(`install.conf.yaml`).
+- 프로젝트: 해당 repo에서 `omp`를 띄우는 cwd에 `<repo>/.omp/APPEND_SYSTEM.md`를 둔다.
+  조상 디렉토리 walk-up은 없으므로 launch cwd 바로 아래여야 한다.
+- 우선순위: `--append-system-prompt` > 프로젝트 `APPEND_SYSTEM.md` > 유저 `APPEND_SYSTEM.md`.
+  단 셋 다 누적이 아니라 가장 높은 한 경로만 적용된다 — 프로젝트 파일을 두면 글로벌은
+  무시되므로 프로젝트 파일에 글로벌 규칙을 포함하거나 글로벌만 유지한다.
+
+글로벌 정책은 default를 "작업자"가 아닌 "오케스트레이터"로 규정하고, plan/slow/task
+escalation 임계값과 default가 직접 처리해도 되는 범위를 못박는다. 모델 프로필과 독립이라
+`gpt`/`claude`/`fable-codex`/`combo-*` 어디서나 동일하게 적용된다.
+
+로드 확인: 새 세션에서
+`omp -p --no-tools "output verbatim the bullet lines under 'Anti-patterns'"`로
+정책 문구가 시스템 프롬프트에 들어갔는지 검증한다.
+
 ## 근거와 신빙성
 
 표기: ◎ 공식/1차 · ○ 벤더 발표(이해관계 있음, 독립 재현 없음) · △ 서드파티 집계/일화
