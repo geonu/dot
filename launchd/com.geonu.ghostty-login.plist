@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!-- Open Ghostty at login so a tmux window pops up after a reboot. The zshrc
+     auto-attach block then cold-starts tmux, which triggers @continuum-restore
+     and brings back the last saved session. Managed in ~/.dotfiles. -->
+<plist version="1.0">
+<dict>
+  <key>Label</key>
+  <string>com.geonu.ghostty-login</string>
+  <key>ProgramArguments</key>
+  <array>
+    <string>/usr/bin/open</string>
+    <string>-a</string>
+    <string>Ghostty</string>
+  </array>
+  <key>RunAtLoad</key>
+  <true/>
+</dict>
+</plist>

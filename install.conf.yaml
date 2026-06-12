@@ -37,10 +37,12 @@
     ~/.codex/AGENTS.md: codex/AGENTS.md
     ~/.claude/settings.json: claude/settings.json
     ~/.omp/agent/config.yml: omp/config.yml
+    ~/.omp/agent/mcp.json: omp/mcp.json
     ~/.omp/agent/APPEND_SYSTEM.md: omp/APPEND_SYSTEM.md
     ~/.claude/CLAUDE.md: claude/CLAUDE.md
     ~/.config/starship.toml: starship/starship.toml
     ~/.claude/skills: claude/skills
+    ~/Library/LaunchAgents/com.geonu.ghostty-login.plist: launchd/com.geonu.ghostty-login.plist
 
 # Converge Homebrew to the Brewfile (mirrors the `clean` directive for symlinks):
 # trust the taps the Brewfile declares, install anything missing, and uninstall
@@ -54,5 +56,18 @@
       brew bundle install --global
       brew bundle cleanup --global --force
     description: Syncing Homebrew packages from Brewfile
+    stdout: true
+    stderr: true
+
+# Bootstrap tmux plugins: clone TPM if missing, then install/update the plugins
+# declared in tmux.conf (resurrect, continuum, yank, sensible). Without this a
+# fresh machine has no plugins and @continuum-restore silently does nothing.
+- shell:
+  - command: |
+      command -v tmux >/dev/null 2>&1 || { echo "tmux not installed; skipping plugin bootstrap"; exit 0; }
+      tpm_dir="$HOME/.tmux/plugins/tpm"
+      [ -d "$tpm_dir" ] || git clone --depth 1 https://github.com/tmux-plugins/tpm "$tpm_dir"
+      TMUX_PLUGIN_MANAGER_PATH="$HOME/.tmux/plugins/" "$tpm_dir/bin/install_plugins"
+    description: Installing tmux plugins via TPM
     stdout: true
     stderr: true
