@@ -18,7 +18,7 @@ profiles_dir = Path(sys.argv[2])
 readme = Path(sys.argv[3])
 models_db = Path(sys.argv[4])
 role_keys = ["default", "smol", "slow", "vision", "plan", "designer", "commit", "task"]
-profile_names = ["gpt", "claude", "combo-claude", "combo-gpt"]
+profile_names = ["gpt", "claude", "fable-codex", "combo-claude", "combo-gpt"]
 
 
 def parse_roles(path: Path) -> dict[str, str]:

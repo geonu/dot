@@ -9,8 +9,9 @@
 
 - **GPT only**: Claude 구독 쿼터를 이미 소진했거나 Anthropic 호출을 의도적으로 막을 때. 현재 `config.yml`.
 - **Claude only**: Claude 구독 쿼터가 충분하고 OpenAI/Codex 쿼터를 아낄 때.
+- **fable-codex**: 06-22까지 임시. Fable이 계획/리뷰 품질을 맡고 Codex GPT-5.5가 실행 fan-out을 맡는다.
 - **combo-claude**: Claude가 장기 컨텍스트의 주 모델, Codex/GPT는 고추론·비전 버스트.
-- **combo-gpt**: Codex/GPT가 장기 컨텍스트의 주 모델, Claude는 smol/commit/task 보조.
+- **combo-gpt**: Codex/GPT가 장기 컨텍스트의 주 모델, Claude는 smol/commit 보조.
 
 
 ## 프로필 파일과 tmux 재시작
@@ -23,12 +24,13 @@ overlay한다.
 |---------|------|------|
 | `gpt` | `omp/profiles/gpt.yml` | Claude 쿼터 소진/Anthropic 차단 시 |
 | `claude` | `omp/profiles/claude.yml` | Claude 쿼터 여유, Codex 쿼터 보호 시 |
+| `fable-codex` | `omp/profiles/fable-codex.yml` | 06-22 Fable 무료 윈도우: Fable plan + Codex execution |
 | `combo-claude` | `omp/profiles/combo-claude.yml` | Claude default + Codex burst |
 | `combo-gpt` | `omp/profiles/combo-gpt.yml` | GPT default + Claude utility/task |
 | `config` | 없음 | override 없이 현재 `config.yml` 그대로 resume |
 
 tmux 안에서는 `Ctrl-a R`을 누르면 현재 pane에서 실행 중인 OMP 프로세스의 session id를
-먼저 읽고, 같은 cwd에서 pane을 respawn한다. 프롬프트에 `gpt`, `claude`,
+먼저 읽고, 같은 cwd에서 pane을 respawn한다. 프롬프트에 `gpt`, `claude`, `fable-codex`,
 `combo-claude`, `combo-gpt`, `config` 중 하나를 입력하면 **현재 pane의 세션**을 해당
 프로필로 이어간다. OMP TUI의 config hot reload가 없고 resume이 세션의 active model을
 복원할 수 있어, wrapper가 현재 pane의 `--resume <session-id>`와 provider override를 함께
@@ -52,22 +54,40 @@ tmux 안에서는 `Ctrl-a R`을 누르면 현재 pane에서 실행 중인 OMP �
 | commit   | openai-codex/gpt-5.4-nano:off | thinking 비활성 |
 | task     | openai-codex/gpt-5.5:medium   | 병렬 서브태스크 품질 하한 보강. high는 토큰 2x라 미사용 [S10] |
 
-## Claude only 참고안: 무료 윈도우 공격 모드 (2026-06-22까지)
+## Claude only 기본안: Fable 과금 회피
 
-fable-5는 2026-06-09 출시~**06-22까지** 유료 구독(Pro/Max/Team/Enterprise)에 추가 비용
-없이 포함, **06-23부터 플랜에서 제거**되어 사용 시 API 단가($10/$50)로 크레딧 과금 [S7].
-Claude 쿼터와 무료 윈도우가 모두 남아 있을 때만 아래 구성을 쓴다.
+`omp/profiles/claude.yml`. 06-23 이후 fable-5가 구독 미포함 크레딧 과금으로 전환되는
+상황을 기본으로 둔다 [S7]. OpenAI/Codex 쿼터를 보호해야 할 때만 사용한다.
 
 | role     | model                              | 비고 |
 |----------|------------------------------------|------|
-| default  | anthropic/claude-fable-5:low       | API "medium". :low 유지는 레이턴시 때문(fable은 +30% 느림 [S3]) |
+| default  | anthropic/claude-opus-4-8:low      | 구독 포함 최상위 Claude. AA 61.4로 GPT-5.5 xhigh보다 높음 [S11] |
 | smol     | anthropic/claude-haiku-4-5:minimal | budget 모드 최소 thinking |
-| slow     | anthropic/claude-fable-5:high      | API "xhigh". 어려운 단발 작업 최강 [S2] |
-| vision   | anthropic/claude-fable-5:medium    | 이미지 입력 QA. 실패 비용이 큰 경우 high |
-| plan     | anthropic/claude-fable-5:high      | 복합 계획 = fable 본령, 1M ctx |
-| designer | anthropic/claude-sonnet-4-6:high   | UI/디자인 구현 전용. fable 쿼터 보호 |
+| slow     | anthropic/claude-opus-4-8:high     | Claude-only 고추론 버스트 |
+| vision   | anthropic/claude-opus-4-8:medium   | 이미지 입력 QA |
+| plan     | anthropic/claude-opus-4-8:high     | Claude-only 복합 계획 |
+| designer | anthropic/claude-sonnet-4-6:high   | UI/디자인 구현 전용 |
 | commit   | anthropic/claude-haiku-4-5:off     | thinking 비활성 |
-| task     | anthropic/claude-opus-4-8:low      | API "medium" 착지(effortMap [S9]). opus 적극 투입 슬롯 [S5] |
+| task     | anthropic/claude-sonnet-4-6:medium | 고볼륨 task용. Opus task는 쿼터 소진 가속 |
+
+### `fable-codex`: Fable 계획 + Codex 실행 (06-22까지 임시)
+
+`omp/profiles/fable-codex.yml`. X 사례 [S15]의 라우팅과 DeepSWE [S14]를 반영한
+무료 윈도우용 공격 모드다. Fable은 intent 해석·계획·리뷰 품질에 쓰고, 실행 fan-out은
+DeepSWE에서 강한 GPT-5.5 xhigh에 맡긴다. 06-23 이후에는 fable 호출이 크레딧 과금이므로
+이 프로필을 기본값으로 두지 않는다.
+
+```yaml
+default: anthropic/claude-fable-5:low
+smol: anthropic/claude-haiku-4-5:minimal
+slow: anthropic/claude-fable-5:high
+vision: anthropic/claude-fable-5:medium
+plan: anthropic/claude-fable-5:high
+designer: openai-codex/gpt-5.5:high
+commit: anthropic/claude-haiku-4-5:off
+task: openai-codex/gpt-5.5:xhigh
+```
+
 
 ### 상위 모델 직접 비교 (공식/독립 벤치마크)
 
@@ -79,11 +99,13 @@ Claude 쿼터와 무료 윈도우가 모두 남아 있을 때만 아래 구성�
 | HLE(no tools / tools) | 59.0% / 64.5% | 49.8% / 57.9% | 41.4% / 52.2% | Anthropic 공식 표 [S1] |
 | AA Intelligence Index | 64.9 | 61.4 | medium 57 / high 59 / xhigh 60 | Artificial Analysis 독립 측정 [S10][S11][S12] |
 | GDPval-AA Elo | 1932 | 1890 | 1769 | Anthropic/AA 공통 [S1][S12] |
+| DeepSWE pass@1 / median cost | 미공개 | 미공개 | 70.0% / $5.76 | Datacurve 독립 벤치. fable 수치는 미공개/비공식 유출만 존재 [S14] |
 
-결론: 공식·독립 수치 모두 `fable-5 > opus-4.8 > gpt-5.5` 순서다. 다만 AA의
-fable-5 측정은 **adaptive max effort + Opus 4.8 fallback** 조건 [S12]이고,
-OMP의 `fable-5:low`는 실제 API에서 같은 max 조건이 아닐 수 있다. 따라서 아래 역할별
-점수는 벤치마크 순위를 반영한 운용 추정이지, 동일 harness 실측값이 아니다.
+결론: 일반 지능·장기추론 벤치에서는 `fable-5 > opus-4.8 > gpt-5.5` 순서가 가장 강한
+신호다. 반면 실제 coding execution 벤치인 DeepSWE에서는 **공식 공개 수치 기준 GPT-5.5
+xhigh가 가장 신뢰 가능한 선택지**다 [S14]. AA의 fable-5 측정은 **adaptive max effort +
+Opus 4.8 fallback** 조건 [S12]이고, OMP의 `fable-5:low`는 같은 max 조건이 아닐 수 있다.
+따라서 role 점수는 벤치마크 순위를 반영한 운용 추정이지, 동일 harness 실측값이 아니다.
 
 ### Effort 레벨별 정량 비교 (gpt-5.5, 독립 측정 [S10])
 
@@ -117,26 +139,26 @@ default: anthropic/claude-opus-4-8:low
 smol: anthropic/claude-haiku-4-5:minimal
 slow: openai-codex/gpt-5.5:high
 vision: openai-codex/gpt-5.5:high
-plan: openai-codex/gpt-5.5:high
+plan: openai-codex/gpt-5.5:xhigh
 designer: openai-codex/gpt-5.5:high
 commit: anthropic/claude-haiku-4-5:off
-task: anthropic/claude-sonnet-4-6:medium
+task: openai-codex/gpt-5.5:high
 ```
 
 ### `combo-gpt`: Codex/GPT 메인 + Claude 보조
 
 `omp/profiles/combo-gpt.yml`. Claude 쿼터를 아끼면서 GPT를 기본 장기 작업에 둔다.
-Claude는 smol/commit/task로 남겨 모델 다양성과 Anthropic 보조 경로를 유지한다.
+Claude는 smol/commit으로 남기고, coding execution 성격의 task는 GPT-5.5로 유지한다.
 
 ```yaml
 default: openai-codex/gpt-5.5:medium
 smol: anthropic/claude-haiku-4-5:minimal
 slow: openai-codex/gpt-5.5:high
 vision: openai-codex/gpt-5.5:high
-plan: openai-codex/gpt-5.5:high
+plan: openai-codex/gpt-5.5:xhigh
 designer: openai-codex/gpt-5.5:high
 commit: anthropic/claude-haiku-4-5:off
-task: anthropic/claude-sonnet-4-6:medium
+task: openai-codex/gpt-5.5:medium
 ```
 
 default 다운시프트 순서(쿼터 압박 정도에 따라): ① opus-4-8:low ② sonnet-4-6:medium
@@ -150,13 +172,15 @@ Glasswing 승인 고객 한정 [S6]. fable-5와 동일 가중치(안전 분류�
 ## 운용 원칙 (구독 내 기준)
 
 1. **모드 선택**: Claude 쿼터 소진 시 GPT only, OpenAI/Codex 쿼터 압박 시 Claude only,
-   둘 다 여유가 있으면 `combo-claude` 또는 `combo-gpt`.
+   06-22까지 Fable 무료 윈도우와 Codex 쿼터가 모두 남아 있으면 `fable-codex`, 이후에는
+   `combo-claude` 또는 `combo-gpt`.
 2. **장기·복합(default)**: 선택한 모드 안에서 가장 안정적인 상위 모델을 낮은~중간 effort로 둔다.
    adaptive thinking은 필요한 곳에만 컴퓨트 배분 [S5]. (fable-5:low는 무료 윈도우 한정 특례 [S3])
-3. **고볼륨(task/smol/commit)**: 반복 서브태스크와 커밋 메시지는 경량 모델. Mythos급을 task에
-   쓰면 쿼터 소진 가속 — 무료 윈도우/쿼터 여유에서만 opus 이상 투입.
+3. **고볼륨(task/smol/commit)**: 반복 서브태스크와 커밋 메시지는 경량 모델이 기본. 다만 coding
+   execution 품질이 중요한 프로필은 task를 GPT-5.5로 올린다. `fable-codex`만 xhigh, 일반
+   GPT/Combo는 medium~high.
 4. **고추론 버스트(slow/plan)**: 단발 고난도 작업, 설계 결정, 실패 재시도 비용이 큰 작업에만 high.
-   xhigh는 gpt-5.5 기준 +1pt에 토큰 +67%라 예외적으로만 쓴다 [S10].
+   GPT-5.5의 xhigh는 기본적으로 plan 전용. execution one-shot이 중요할 때만 task xhigh [S14][S15].
 5. **vision**: 이미지 QA는 기본 medium. 실패 비용이 큰 시각 검증만 high.
 
 주의: gpt 계열은 `minimal` 미지원(low부터). `:off`는 effort가 아닌 thinking 비활성로 전 모델 유효.
@@ -218,3 +242,15 @@ Glasswing 승인 고객 한정 [S6]. fable-5와 동일 가중치(안전 분류�
   Terminal-Bench 2.0 82.7, Expert-SWE Internal 73.1. OpenAI는 medium을 기본 균형점,
   high를 어려운 reasoning/debugging/planning, xhigh를 deep research·long rollout·hard coding에
   권장한다 ([OpenAI GPT-5.5](https://openai.com/index/introducing-gpt-5-5/)).
+- **[S14] ◎ DeepSWE / Datacurve** — contamination-free long-horizon coding benchmark.
+  113개 task, 91개 repo, mini-swe-agent 고정. 공식 공개 leaderboard 기준 GPT-5.5 xhigh
+  pass@1 70.0%, pass@4 88.3%, median cost $5.76; GPT-5.4 xhigh 55.5%;
+  Claude Opus 4.7 max 54.2%; Sonnet 4.6 high 31.6%
+  ([DeepSWE](https://deepswe.datacurve.ai/),
+  [leaderboard JSON](https://deepswe.datacurve.ai/artifacts/leaderboard.json)).
+  트윗의 fable-5 70% / opus-4.8 58% 수치는 Datacurve 공식 leaderboard에 아직 없음.
+- **[S15] △ X 운용 사례** — CJ Zafir는 “Fable 5 high planning → Codex 5.5 xhigh execution
+  → Fable 5 max review”로 Claude Code limits를 50% 덜 태운다고 보고. Justin Schroeder는
+  GPT-5.5 xhigh가 Opus 4.8 low보다 낫다고 주장하면서 UI는 Opus 우세 가능성을 별도 언급.
+  Haider는 DeepSWE 비공식 유출을 인용해 fable-5와 GPT-5.5가 둘 다 70%라고 주장.
+  모두 실사용/전언이라 보조 신호이며, 공식 설정 판단은 [S1][S10][S13][S14]가 우선.

@@ -125,44 +125,56 @@ _omp_profile_path() {
 ompgpt() {
   omp \
     --config "$(_omp_profile_path gpt)" \
-    --model openai-codex/gpt-5.5 \
+    --model openai-codex/gpt-5.5:medium \
     --thinking medium \
-    --smol openai-codex/gpt-5.4-nano \
-    --slow openai-codex/gpt-5.5 \
-    --plan openai-codex/gpt-5.5 \
+    --smol openai-codex/gpt-5.4-nano:low \
+    --slow openai-codex/gpt-5.5:high \
+    --plan openai-codex/gpt-5.5:xhigh \
     "$@"
 }
 
 ompclaude() {
   omp \
     --config "$(_omp_profile_path claude)" \
-    --model anthropic/claude-fable-5 \
+    --model anthropic/claude-opus-4-8:low \
     --thinking low \
-    --smol anthropic/claude-haiku-4-5 \
-    --slow anthropic/claude-fable-5 \
-    --plan anthropic/claude-fable-5 \
+    --smol anthropic/claude-haiku-4-5:minimal \
+    --slow anthropic/claude-opus-4-8:high \
+    --plan anthropic/claude-opus-4-8:high \
+    "$@"
+}
+
+
+ompfable_codex() {
+  omp \
+    --config "$(_omp_profile_path fable-codex)" \
+    --model anthropic/claude-fable-5:low \
+    --thinking low \
+    --smol anthropic/claude-haiku-4-5:minimal \
+    --slow anthropic/claude-fable-5:high \
+    --plan anthropic/claude-fable-5:high \
     "$@"
 }
 
 ompcombo_claude() {
   omp \
     --config "$(_omp_profile_path combo-claude)" \
-    --model anthropic/claude-opus-4-8 \
+    --model anthropic/claude-opus-4-8:low \
     --thinking low \
-    --smol anthropic/claude-haiku-4-5 \
-    --slow openai-codex/gpt-5.5 \
-    --plan openai-codex/gpt-5.5 \
+    --smol anthropic/claude-haiku-4-5:minimal \
+    --slow openai-codex/gpt-5.5:high \
+    --plan openai-codex/gpt-5.5:xhigh \
     "$@"
 }
 
 ompcombo_gpt() {
   omp \
     --config "$(_omp_profile_path combo-gpt)" \
-    --model openai-codex/gpt-5.5 \
+    --model openai-codex/gpt-5.5:medium \
     --thinking medium \
-    --smol anthropic/claude-haiku-4-5 \
-    --slow openai-codex/gpt-5.5 \
-    --plan openai-codex/gpt-5.5 \
+    --smol anthropic/claude-haiku-4-5:minimal \
+    --slow openai-codex/gpt-5.5:high \
+    --plan openai-codex/gpt-5.5:xhigh \
     "$@"
 }
 
@@ -176,6 +188,12 @@ ompclauder() {
   local -a args
   args=("${(@f)$(_omp_resume_args "$@")}") || return 1
   ompclaude "${args[@]}"
+}
+
+ompfable_codexr() {
+  local -a args
+  args=("${(@f)$(_omp_resume_args "$@")}") || return 1
+  ompfable_codex "${args[@]}"
 }
 
 ompcombo_clauder() {
@@ -222,6 +240,7 @@ ompr() {
   case "$profile" in
     gpt) ompgptr "$@" ;;
     claude) ompclauder "$@" ;;
+    fable-codex|fable|fable5) ompfable_codexr "$@" ;;
     combo-claude|combo|combination|mixed) ompcombo_clauder "$@" ;;
     combo-gpt) ompcombo_gptr "$@" ;;
     config|default)
@@ -230,7 +249,7 @@ ompr() {
       omp "${args[@]}"
       ;;
     *)
-      print -u2 "usage: ompr [gpt|claude|combo-claude|combo-gpt|config] [session-id-prefix] [omp flags...]"
+      print -u2 "usage: ompr [gpt|claude|fable-codex|combo-claude|combo-gpt|config] [session-id-prefix] [omp flags...]"
       return 2
       ;;
   esac
