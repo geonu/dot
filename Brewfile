@@ -8,7 +8,6 @@
 
 # --- taps -------------------------------------------------------------------
 tap "can1357/tap"
-tap "manaflow-ai/cmux"
 tap "steipete/tap"
 
 # --- CLI tools --------------------------------------------------------------
@@ -38,7 +37,6 @@ brew "zoxide"              # modern `cd` with directory jumping
 # Node, Python, Java, ... are managed by mise (see mise/config.toml).
 
 # --- GUI apps (casks) -------------------------------------------------------
-cask "cmux"
 cask "codex"
 cask "steipete/tap/codexbar"
 cask "gcloud-cli"
@@ -46,6 +44,5 @@ cask "font-hack-nerd-font" # terminal font (used by Ghostty config)
 cask "ghostty"             # terminal emulator
 cask "google-chrome"
 cask "rectangle"           # window manager
-cask "stats"               # menu-bar system monitor
 cask "tailscale-app"       # mesh VPN
 cask "visual-studio-code"
