@@ -3,14 +3,14 @@ theme:
   dark: titanium
 setupVersion: 1
 modelRoles: 
-  default: openai-codex/gpt-5.5:medium
-  smol: openai-codex/gpt-5.4-nano:low
-  slow: openai-codex/gpt-5.5:high
-  vision: openai-codex/gpt-5.5:high
-  plan: openai-codex/gpt-5.5:xhigh
-  designer: openai-codex/gpt-5.5:high
-  commit: openai-codex/gpt-5.4-nano:off
-  task: openai-codex/gpt-5.5:medium
+  default: anthropic/claude-opus-4-8:low
+  smol: anthropic/claude-haiku-4-5:minimal
+  slow: anthropic/claude-opus-4-8:high
+  vision: anthropic/claude-opus-4-8:medium
+  plan: anthropic/claude-opus-4-8:high
+  designer: anthropic/claude-sonnet-4-6:high
+  commit: anthropic/claude-haiku-4-5:off
+  task: anthropic/claude-sonnet-4-6:medium
 memory: 
   backend: local
 defaultThinkingLevel: auto

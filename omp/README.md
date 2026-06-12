@@ -45,7 +45,7 @@ tmux 안에서는 `Ctrl-a R`을 누르면 현재 pane에서 실행 중인 OMP �
 모델/effort 메타데이터를 함께 검증한다. 모델 가이드를 바꾸거나 OMP 업데이트 후에는 이
 체크를 먼저 돌린다.
 
-## 현재 세팅: GPT only (Claude 쿼터 소진 대응)
+## GPT only (Claude 쿼터 소진 대응)
 
 | role     | model                         | 비고 |
 |----------|-------------------------------|------|
@@ -58,7 +58,7 @@ tmux 안에서는 `Ctrl-a R`을 누르면 현재 pane에서 실행 중인 OMP �
 | commit   | openai-codex/gpt-5.4-nano:off | thinking 비활성 |
 | task     | openai-codex/gpt-5.5:medium   | 병렬 서브태스크 품질 하한 보강. high는 토큰 2x라 미사용 [S10] |
 
-## Claude only 기본안: Fable 과금 회피
+## 현재 세팅: Claude only (Fable 과금 회피)
 
 `omp/profiles/claude.yml`. 06-23 이후 fable-5가 구독 미포함 크레딧 과금으로 전환되는
 상황을 기본으로 둔다 [S7]. OpenAI/Codex 쿼터를 보호해야 할 때만 사용한다.

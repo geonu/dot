@@ -2,12 +2,12 @@
 set -euo pipefail
 
 repo_root="${1:-$(pwd)}"
+active_profile="${OMP_ACTIVE_PROFILE:-claude}"
 config="$repo_root/omp/config.yml"
 profiles_dir="$repo_root/omp/profiles"
 readme="$repo_root/omp/README.md"
 models_db="${PI_CODING_AGENT_DIR:-$HOME/.omp/agent}/models.db"
-
-python3 - "$config" "$profiles_dir" "$readme" "$models_db" <<'PY'
+python3 - "$config" "$profiles_dir" "$readme" "$models_db" "$active_profile" <<'PY'
 import json
 import sqlite3
 import sys
@@ -17,6 +17,7 @@ config = Path(sys.argv[1])
 profiles_dir = Path(sys.argv[2])
 readme = Path(sys.argv[3])
 models_db = Path(sys.argv[4])
+active_profile = sys.argv[5]
 role_keys = ["default", "smol", "slow", "vision", "plan", "designer", "commit", "task"]
 profile_names = ["gpt", "claude", "fable-codex", "combo-claude", "combo-gpt"]
 
@@ -67,9 +68,11 @@ for name, path in paths.items():
                 errors.append(f"{path}: {role}: unsupported effort {effort} for {provider}/{model}; available={efforts}")
 
 config_roles = parse_roles(config)
-gpt_roles = parse_roles(profiles_dir / "gpt.yml")
-if config_roles != gpt_roles:
-    errors.append("omp/config.yml must match omp/profiles/gpt.yml while GPT-only is the temporary default")
+active_path = profiles_dir / f"{active_profile}.yml"
+if not active_path.exists():
+    errors.append(f"unknown active profile: {active_profile} ({active_path} missing)")
+elif config_roles != parse_roles(active_path):
+    errors.append(f"omp/config.yml must match omp/profiles/{active_profile}.yml (active default profile)")
 
 readme_text = readme.read_text()
 for name in profile_names:
