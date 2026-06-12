@@ -41,3 +41,18 @@
     ~/.claude/CLAUDE.md: claude/CLAUDE.md
     ~/.config/starship.toml: starship/starship.toml
     ~/.claude/skills: claude/skills
+
+# Converge Homebrew to the Brewfile (mirrors the `clean` directive for symlinks):
+# trust the taps the Brewfile declares, install anything missing, and uninstall
+# anything not listed. Runs after `link` so ~/.Brewfile exists for `--global`.
+# DESTRUCTIVE: `cleanup --force` removes brew packages/casks/taps absent from the
+# Brewfile. No-op (clean exit) when Homebrew is not installed.
+- shell:
+  - command: |
+      command -v brew >/dev/null 2>&1 || { echo "Homebrew not installed; skipping Brewfile sync"; exit 0; }
+      grep -E '^tap "' ~/.Brewfile | sed -E 's/.*"([^"]+)".*/\1/' | while read -r t; do brew trust "$t"; done
+      brew bundle install --global
+      brew bundle cleanup --global --force
+    description: Syncing Homebrew packages from Brewfile
+    stdout: true
+    stderr: true

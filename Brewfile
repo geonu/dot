@@ -15,6 +15,7 @@ brew "actionlint"          # GitHub Actions workflow linter
 brew "antidote"            # zsh plugin manager (replaces zplug)
 brew "bat"                 # modern `cat` with syntax highlighting
 brew "btop"                # modern `top` resource monitor
+brew "cocoapods"           # CocoaPods dependency manager (iOS/macOS)
 brew "coreutils"           # GNU core utilities
 brew "duf"                 # modern `df` disk usage viewer
 brew "dust"                # modern `du` disk usage viewer
