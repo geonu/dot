@@ -129,44 +129,50 @@ fallback 조건 [S12]. OMP의 `:low/:medium/:high` suffix는 모델별 effortMap
 
 ### 모델 × effort 통합 랭킹 (구독 내)
 
-한 줄 = (모델, OMP effort suffix). effort는 `models.db`의 `efforts`에서 가져온 실제
-지원 레벨을 **높은→낮은** 순으로 모두 넣는다. 읽는 법:
-- **내부 effort**: OMP suffix는 모델별 `effortMap`을 거쳐 변환된다. adaptive 모델
-  (fable/opus)은 `minimal→low / low→medium / medium→high / high→xhigh / xhigh→max`로
-  +1 시프트, sonnet은 `minimal→low`만, haiku는 budget(매핑 없음), gpt 계열은 항등 [S9].
-- **§ = 모델 단위 1회 측정**(effort별 분해 아님): 모델의 **최상단 행에만** 적고, 하위
-  effort 행은 `↑`로 그 값을 참조한다. gpt-5.5의 AA Index/rel-token만 effort별 실측이라
-  행마다 다른 값을 넣는다 [S10].
-- `—` = 미공개/미측정. cost는 $/Mtok (input/output), `models.db` 실측 [S8][S9].
+한 줄 = (모델, OMP effort suffix). effort는 `models.db`의 `efforts`에서 가져온 실제 지원
+레벨을 전부 넣는다. **정렬 = SWE-bench Pro 내림차순 → AA Index 내림차순 → 출력 $/Mtok
+오름차순** (`#`은 그 랭크). 읽는 법:
+- effort 행끼리는 SWE-Pro가 같으므로(모델 단위 측정) AA Index가 타이브레이커다. AA가
+  effort별 실측인 모델은 gpt-5.5뿐 [S10]; Claude 계열은 모델 단위 1회 측정값(§)을 최상위
+  effort 행에만 싣고 하위 행 AA는 `—`(미측정)다.
+- **§ = 모델 단위 1회 측정**(effort별 분해 아님). SWE-Pro는 전부 §. fable/opus AA도 §.
+- **내부 effort**: OMP suffix는 `effortMap`을 거친다 — adaptive(fable/opus)는 +1 시프트
+  (`xhigh→max`…), sonnet은 `minimal→low`만, haiku는 budget(매핑 없음), gpt는 항등 [S9].
+- **cost = $/Mtok `in/out/cacheRead/cacheWrite`**, `models.db` 실측 [S8][S9]. `rel tok`은
+  AA Index 평가 전체 토큰 상대비(gpt-5.5만 실측) [S10]. `—` = 미공개/미측정.
 
-| model | suffix | 내부 effort | AA Index | SWE-Pro§ | DeepSWE§ | $/Mtok | rel tok | 신빙성 |
-|-------|--------|-------------|----------|----------|----------|--------|---------|--------|
-| fable-5 | :xhigh | max | 64.9§ | 80.3 | — | 10/50 | — | AA는 이 max+fallback 조건 [S12], SWE [S1] |
-| fable-5 | :high | xhigh | ↑ | ↑ | — | 10/50 | — | |
-| fable-5 | :medium | high | ↑ | ↑ | — | 10/50 | — | |
-| fable-5 | :low | medium | ↑ | ↑ | — | 10/50 | — | 무료 윈도우 default 특례 [S3] |
-| fable-5 | :minimal | low | ↑ | ↑ | — | 10/50 | — | |
-| opus-4.8 | :xhigh | max | 61.4§ | 69.2 | — | 5/25 | — | AA 모델단위 [S11], SWE [S1] |
-| opus-4.8 | :high | xhigh | ↑ | ↑ | — | 5/25 | — | Claude-only slow/plan |
-| opus-4.8 | :medium | high | ↑ | ↑ | — | 5/25 | — | vision |
-| opus-4.8 | :low | medium | ↑ | ↑ | — | 5/25 | — | combo-claude default |
-| opus-4.8 | :minimal | low | ↑ | ↑ | — | 5/25 | — | |
-| gpt-5.5 | :xhigh | xhigh | 60 | 58.6§ | 70.0% / $5.76 | 5/30 | 3.4x | plan 전용; DeepSWE는 xhigh 실측 [S14] |
-| gpt-5.5 | :high | high | 59 | ↑ | — | 5/30 | 2.0x | slow/vision/designer |
-| gpt-5.5 | :medium | medium | 57 | ↑ | — | 5/30 | 1.0x | default/task 기본 [S10] |
-| gpt-5.5 | :low | low | — | ↑ | — | 5/30 | — | AA low 미게재 [S10] |
-| sonnet-4.6 | :high | high | — | — | — | 3/15 | — | claude designer; effort별 공개 점수 없음 |
-| sonnet-4.6 | :medium | medium | — | — | — | 3/15 | — | claude task |
-| sonnet-4.6 | :low | low | — | — | — | 3/15 | — | |
-| sonnet-4.6 | :minimal | low | — | — | — | 3/15 | — | effortMap minimal→low |
-| haiku-4.5 | :xhigh..:minimal | budget(매핑 없음) | — | — | — | 1/5 | — | smol/commit; 벤치 비대상 |
-| gpt-5.4-nano | :xhigh..:low | 항등 | — | — | — | 0.2/1.25 | — | gpt smol/commit |
+| # | model:suffix | 내부 effort | SWE-Pro§ | AA Index | DeepSWE§ | $/Mtok (i/o/cR/cW) | rel tok | role/근거 |
+|---|--------------|-------------|----------|----------|----------|--------------------|---------|-----------|
+| 1 | fable-5:xhigh | max | 80.3 | 64.9§ | — | 10/50/1/12.5 | — | AA=max+fallback [S12], SWE [S1] |
+| 2 | fable-5:high | xhigh | 80.3 | — | — | 10/50/1/12.5 | — | |
+| 3 | fable-5:medium | high | 80.3 | — | — | 10/50/1/12.5 | — | |
+| 4 | fable-5:low | medium | 80.3 | — | — | 10/50/1/12.5 | — | 무료 윈도우 default 특례 [S3] |
+| 5 | fable-5:minimal | low | 80.3 | — | — | 10/50/1/12.5 | — | |
+| 6 | opus-4.8:xhigh | max | 69.2 | 61.4§ | — | 5/25/0.5/6.25 | — | AA 모델단위 [S11], SWE [S1] |
+| 7 | opus-4.8:high | xhigh | 69.2 | — | — | 5/25/0.5/6.25 | — | claude-only slow/plan |
+| 8 | opus-4.8:medium | high | 69.2 | — | — | 5/25/0.5/6.25 | — | vision |
+| 9 | opus-4.8:low | medium | 69.2 | — | — | 5/25/0.5/6.25 | — | combo-claude default |
+| 10 | opus-4.8:minimal | low | 69.2 | — | — | 5/25/0.5/6.25 | — | |
+| 11 | gpt-5.5:xhigh | xhigh | 58.6 | 60 | 70.0% / $5.76 | 5/30/0.5/0 | 3.4x | plan 전용; DeepSWE xhigh 실측 [S14] |
+| 12 | gpt-5.5:high | high | 58.6 | 59 | — | 5/30/0.5/0 | 2.0x | slow/vision/designer |
+| 13 | gpt-5.5:medium | medium | 58.6 | 57 | — | 5/30/0.5/0 | 1.0x | default/task 기본 [S10] |
+| 14 | gpt-5.5:low | low | 58.6 | — | — | 5/30/0.5/0 | — | AA low 미게재 [S10] |
+| 15 | gpt-5.4-nano:xhigh..:low | 항등 | — | — | — | 0.2/1.25/0.02/0 | — | gpt smol/commit; 벤치 비대상 |
+| 16 | haiku-4.5:xhigh..:minimal | budget(매핑 없음) | — | — | — | 1/5/0.1/1.25 | — | smol/commit; 벤치 비대상 |
+| 17 | sonnet-4.6:high..:minimal | (minimal→low) | — | — | — | 3/15/0.3/3.75 | — | claude task/designer; effort별 점수 없음 |
 
-읽기 결론: 구독 내 지능 상한은 `fable-5(64.9) > opus-4.8(61.4) > gpt-5.5 xhigh(60)`이고
-cost는 그 역순(`gpt-5.5 5/30 < opus 5/25 < fable 10/50` — opus가 토큰당 가장 저렴).
-effort별 실측이 있는 건 gpt-5.5뿐이라, Claude 계열 하위 effort 행의 점수 칸은 비교용이
-아니라 **운용상 어떤 내부 effort로 도는지**를 보여주는 용도다. 이 표는 위 [랭킹 갱신 규약]에
-따라 새 데이터가 나오면 갱신한다. 구독 밖(GLM-5.2/Kimi)은 [오픈웨이트 코딩 모델 검토] 표 참조.
+읽기 결론: SWE-Pro 순위는 `fable-5(80.3) > opus-4.8(69.2) > gpt-5.5(58.6)`. 단 출력 토큰
+단가는 그 반대로 `opus 25 < gpt-5.5 30 < fable 50`이고, gpt-5.5는 cacheWrite=0(캐시 쓰기
+무료)이라 장기 agentic 반복 호출에서 유효 단가가 더 눌린다. 그래서 정확도 상한은 fable,
+토큰 효율 균형은 opus(default)·gpt-5.5(execution)로 갈린다. 15~17행은 벤치 미공개 유틸
+모델이라 출력단가 오름차순으로만 둔다. 이 표는 위 [랭킹 갱신 규약]대로 새 데이터가 나오면
+갱신한다. 구독 밖(GLM-5.2/Kimi)은 [오픈웨이트 코딩 모델 검토] 표 참조.
+
+DeepSWE 각주: 표의 DeepSWE 칸은 공식 leaderboard(gpt-5.5 xhigh 70.0% / median $5.76)만
+싣는다. fable-5·opus-4.8 칸이 `—`인 건 미측정이 아니라 **공식 미등재**다 — 비공식 X 유출
+(fable 70% @ $10.3/task, opus 58% @ $12.6/task, gpt-5.5 70% @ $6.6/task)은 △ 신호라 랭킹
+셀로 올리지 않는다. 다만 방향은 본문 결론과 일치한다: 성공률 fable≈gpt-5.5인데 task당 비용은
+gpt가 절반 수준 → execution은 gpt-5.5 [S15].
 
 ## Combination 복귀 플랜 (06-23 적용)
 
@@ -393,11 +399,16 @@ MCP 자체를 꺼서 무효한 검증이다.) 새 서버를 더 끄려면 bare +
   Claude Opus 4.7 max 54.2%; Sonnet 4.6 high 31.6%
   ([DeepSWE](https://deepswe.datacurve.ai/),
   [leaderboard JSON](https://deepswe.datacurve.ai/artifacts/leaderboard.json)).
-  트윗의 fable-5 70% / opus-4.8 58% 수치는 Datacurve 공식 leaderboard에 아직 없음.
+  비공식 X 유출(Haider, 06-11)은 같은 DeepSWE 하네스에서 fable-5 70% @ $10.3/task,
+  gpt-5.5 70% @ $6.6/task, opus-4.8 58% @ $12.6/task로 인용하나 Datacurve 공식 leaderboard에
+  미등재이고 cost도 공식 median $5.76과 어긋난다(△, [S15]). mythos-5 수치는 Theo 유튜브 유출뿐.
 - **[S15] △ X 운용 사례** — CJ Zafir는 “Fable 5 high planning → Codex 5.5 xhigh execution
   → Fable 5 max review”로 Claude Code limits를 50% 덜 태운다고 보고. Justin Schroeder는
   GPT-5.5 xhigh가 Opus 4.8 low보다 낫다고 주장하면서 UI는 Opus 우세 가능성을 별도 언급.
-  Haider는 DeepSWE 비공식 유출을 인용해 fable-5와 GPT-5.5가 둘 다 70%라고 주장.
+  Haider(06-11)는 DeepSWE 비공식 유출로 fable-5 70% @ $10.3/task·gpt-5.5 70% @ $6.6/task·
+  opus-4.8 58% @ $12.6/task를 공유 — 성공률은 fable≈gpt-5.5지만 task당 비용은 gpt가 약 60%.
+  답글에선 fable 점수가 Opus fallback으로 오염됐을 수 있다는 지적도 있음
+  ([haider1](https://x.com/haider1/status/2065046388254056944)).
   모두 실사용/전언이라 보조 신호이며, 공식 설정 판단은 [S1][S10][S13][S14]가 우선.
 - **[S16] ○/△ Kimi K2.7-Code (Moonshot)** — 2026-06-12 공개, 1T MoE(32B active, 384 expert),
   256K, Modified MIT 가중치(HF). 배포는 Kimi API + 오픈소스 Kimi Code CLI(TS/npm), 멤버십
