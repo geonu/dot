@@ -173,6 +173,34 @@ Anthropic이 "capacity 확보 시 일부 표준 플랜 접근 복원 계획"을 
 Glasswing 승인 고객 한정 [S6]. fable-5와 동일 가중치(안전 분류기 3종 차이만 [S6])라
 백업으로서의 의미도 없음. *카탈로그 존재 ≠ 호출 가능.*
 
+## 오픈웨이트 코딩 모델 검토 (Kimi K2.7-Code / GLM-5.2)
+
+06-12 Moonshot **Kimi K2.7-Code** [S16], 06-13 Zhipu **GLM-5.2** [S17]가 연달아 공개됐다.
+둘 다 coding-first 오픈웨이트에 Claude Code 호환을 표방하지만, **현 구독 조합(Anthropic +
+OpenAI Codex) 밖**이라 토큰/쿼터 효율 기준에 그대로 들어오지 않는다. 결론부터: **지금은
+어느 프로필에도 편입하지 않는다.** 두 가지가 동시에 막는다 — (a) 별도 유료 접근이 필요해
+구독 쿼터 효율 전제를 깨고, (b) 이 README가 쓰는 표준 벤치(SWE-bench Pro, DeepSWE, AA
+Index)의 **독립 수치가 아직 없다**.
+
+| 항목 | Kimi K2.7-Code | GLM-5.2 |
+|------|----------------|---------|
+| 공개일 | 2026-06-12 [S16] | 2026-06-13 [S17] |
+| 구조/컨텍스트 | 1T MoE(32B active, 384 expert), 256K | 1M 컨텍스트(`glm-5.2[1m]`), 출력 최대 131,072 |
+| OMP 카탈로그 | **없음** — `google-vertex/moonshotai/kimi-k2-thinking-maas`만 존재(K2 thinking, 2.7-Code 아님) [S9] | **있음** — `zai/glm-5.2` (단 `authoritative=0` 정적 카탈로그) [S9] |
+| 접근 경로 | Kimi API + Kimi Code CLI(오픈소스 TS/npm), 멤버십 $19~199/mo, Modified MIT 가중치(HF)·OpenRouter/Moonshot 별도 키. Claude Code/Cline/Roo 호환 엔드포인트 [S16] | Z.ai GLM Coding Plan(별도 구독, effort **High/Max** 2단·코딩은 Max 권장) 또는 다음 주 MIT 가중치. Claude Code 호환 [S17] |
+| 공개 벤치 | **1차 자체 벤치 델타만** (Kimi Code Bench v2 50.9→62.0 +21.8%, Program Bench +11%, MLS Bench Lite +31.5%, MCP Atlas/Mark/Claw ~+10%, reasoning 토큰 -30% vs K2.6). 표준 SWE-bench Pro/Terminal-Bench/LiveCodeBench **미공개** [S16] | **출시 시 공식 0개** (SWE-bench·LiveCodeBench·AIDER 전부 미공개) [S17] |
+| 독립 검증 | 초기 시그널: MCPMark Verified **81.1% > Opus 4.8 76.4**(툴호출/MCP 한정, 모델카드 분석·leaderboard 재실행 아님; raw 코드생성은 Opus 4.8/GPT-5.5 우세). KernelBench-Hard는 K2.6 대비 후퇴(0.222→0.157) [S16] | BridgeBench 추론 스위트 **42.8%**(30태스크, niche). GLM-5 base SWE-bench Verified 77.8 보조 신호 [S17] |
+
+재평가 트리거: ① GLM-5.2/K2.7-Code의 **SWE-bench Pro·DeepSWE·AA Index 독립 수치**가
+나오고(현재 나온 MCPMark 81.1·BridgeBench 42.8은 niche 스위트라 이 README의 랭킹 기준이
+아니다), ② 사용자가 GLM Coding Plan/Kimi 멤버십 등 별도 구독 의사를 보일 때. 그 시점에
+후보가 되는 건 GLM-5.2 쪽이다 — OMP 카탈로그에 ID가 이미 있고(`zai/glm-5.2`), effort가
+High/Max 2단이라 OMP effortMap으로 `:high`/상한 suffix에 매핑 가능하며, Claude Code 하네스
+호환에 GLM-5.1 대비 추가 과금이 없다 [S17]. 들어온다면 `task`/`smol` 같은 고볼륨·저단가
+coding fan-out 역할 후보다. Kimi K2.7-Code는 카탈로그 부재(현 catalog는 K2 thinking뿐) +
+표준 벤치 공백 + KernelBench 회귀 신호로 우선순위가 더 낮다. *카탈로그 존재 ≠ 호출 가능*은
+mythos-5와 동일하게 적용된다.
+
 ## 운용 원칙 (구독 내 기준)
 
 1. **모드 선택**: Claude 쿼터 소진 시 GPT only, OpenAI/Codex 쿼터 압박 시 Claude only,
@@ -247,6 +275,20 @@ bare 이름만 넣으면 플러그인 출처(github/vercel 등)는 계속 연결
 본다. 출력이 비면(MCP 연결 0건) 성공. (`-p` 단독 모델 자기보고나 `--no-tools`는
 MCP 자체를 꺼서 무효한 검증이다.) 새 서버를 더 끄려면 bare + `provider:server` 두 키를 추가한다.
 
+## 랭킹 갱신 규약 (에이전트가 직접 수행)
+
+이 표들이 곧 "랭킹"이다. 별도 프로그램을 짜지 않는다 — **새 모델/벤치/단가 데이터가 나오면
+에이전트가 실시간 리서치로 확인해 이 README를 직접 갱신**한다. 매번 같은 절차를 밟는다:
+
+1. 실시간 리서치로 모델/effort 레벨별 (벤치 점수 · 토큰 비용 · 효율)을 확인한다.
+   입력원: `~/.omp/agent/models.db`의 effortMap/budget, AA Intelligence Index·SWE-bench
+   Pro·DeepSWE 등 공개 벤치, 구독/크레딧 단가.
+2. 출처마다 신빙성 등급(◎/○/△)을 매기고 `## 근거와 신빙성`에 `[S*]`로 추가한다.
+   1차 자체 벤치/niche 스위트는 랭킹 근거로 승격하지 않는다(보조 신호로만).
+3. 그 근거로 비교 표·role 추천·프로필을 갱신하고, 구독(Anthropic+OpenAI Codex) 안인지
+   밖인지 명시한다.
+4. `bin/omp-profile-check.sh`로 README·프로필·`models.db` 정합성을 검증한 뒤 커밋한다.
+
 ## 근거와 신빙성
 
 표기: ◎ 공식/1차 · ○ 벤더 발표(이해관계 있음, 독립 재현 없음) · △ 서드파티 집계/일화
@@ -316,3 +358,29 @@ MCP 자체를 꺼서 무효한 검증이다.) 새 서버를 더 끄려면 bare +
   GPT-5.5 xhigh가 Opus 4.8 low보다 낫다고 주장하면서 UI는 Opus 우세 가능성을 별도 언급.
   Haider는 DeepSWE 비공식 유출을 인용해 fable-5와 GPT-5.5가 둘 다 70%라고 주장.
   모두 실사용/전언이라 보조 신호이며, 공식 설정 판단은 [S1][S10][S13][S14]가 우선.
+- **[S16] ○/△ Kimi K2.7-Code (Moonshot)** — 2026-06-12 공개, 1T MoE(32B active, 384 expert),
+  256K, Modified MIT 가중치(HF). 배포는 Kimi API + 오픈소스 Kimi Code CLI(TS/npm), 멤버십
+  $19(Moderato)~199(Vivace)/mo, 6x High-Speed Mode 예고(미정). Claude Code/Cline/Roo 호환
+  엔드포인트. 런치 수치는 전부 1차 자체 벤치(Kimi Code Bench v2 50.9→62.0 +21.8%, Program
+  Bench +11%, MLS Bench Lite +31.5%, MCP Atlas/Mark/Claw ~+10%, reasoning 토큰 -30% vs K2.6)
+  이고 표준 SWE-bench Verified/Pro·Terminal-Bench·LiveCodeBench는 미공개. 초기 독립 시그널은
+  MCPMark Verified 81.1%로 Opus 4.8 76.4 상회(툴호출/MCP 한정, 모델카드 분석이지 leaderboard
+  재실행 아님; raw 코드생성은 Opus 4.8/GPT-5.5 우세). 다른 독립 테스트(Elliot Arledge,
+  KernelBench-Hard)는 K2.6 대비 후퇴(MoE 커널 0.222→0.157), "more honest but not more
+  capable". 참고로 K2.6은 SWE-bench Verified 80.2%(Opus 4.7 87.6% 미달)·SWE-bench Pro 58.6%,
+  AA Intelligence Index 54
+  ([codersera](https://codersera.com/blog/kimi-k2-7-complete-guide-2026/),
+  [digitalapplied](https://www.digitalapplied.com/blog/kimi-k2-7-code-release-open-source-coding-model),
+  [VentureBeat](https://venturebeat.com/technology/kimi-k2-7-code-cuts-thinking-tokens-30-practitioners-say-benchmarks-dont-check-out),
+  [HF 가중치](https://huggingface.co/moonshotai/Kimi-K2.7-Code)).
+- **[S17] ○/△ GLM-5.2 (Zhipu/Z.ai)** — 2026-06-13 공개, 1M 컨텍스트(`glm-5.2[1m]`), 출력
+  최대 131,072, GLM Coding Plan 전 티어(Lite/Pro/Max/Team), 기존 구독자는 GLM-5.1 대비 추가
+  과금 없음, MIT 가중치·standalone API는 다음 주. effort는 **High/Max 2단**(코딩은 Max 권장,
+  Z.ai 공식). **출시 시 공식 벤치 0개**(SWE-bench·LiveCodeBench·AIDER 전부 미공개). 독립
+  측정으로는 BridgeBench 추론 스위트 42.8%(30태스크, niche 스위트라 SWE-bench/AA Index 대체
+  아님)만 존재. 참고: GLM-5 base는 SWE-bench Verified 77.8%(Opus 4.5 80.9·GPT-5.2 80.0 근접,
+  당시 오픈소스 최고), GLM-5.1은 Claude Code 하네스에서 Opus 4.6 코딩의 ~94.6% 주장(자체 보고,
+  독립 미검증). Claude Code/Cline/OpenCode 등 기본 호환
+  ([codersera](https://codersera.com/blog/glm-5-2-release-1m-context-coding-2026/),
+  [digitalapplied](https://www.digitalapplied.com/blog/glm-5-2-zai-flagship-coding-plan-release),
+  [BridgeBench](https://www.bridgebench.ai/reasoning/glm-5-2)).
