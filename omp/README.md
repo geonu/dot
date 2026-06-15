@@ -127,6 +127,47 @@ opus-4.8은 AA Intelligence Index 61.4로 gpt-5.5 xhigh(60)보다 높지만, eff
 fallback 조건 [S12]. OMP의 `:low/:medium/:high` suffix는 모델별 effortMap을 거치므로
 동일 벤치의 effort 레벨과 1:1 대응한다고 보면 안 된다 [S9].
 
+### 모델 × effort 통합 랭킹 (구독 내)
+
+한 줄 = (모델, OMP effort suffix). effort는 `models.db`의 `efforts`에서 가져온 실제
+지원 레벨을 **높은→낮은** 순으로 모두 넣는다. 읽는 법:
+- **내부 effort**: OMP suffix는 모델별 `effortMap`을 거쳐 변환된다. adaptive 모델
+  (fable/opus)은 `minimal→low / low→medium / medium→high / high→xhigh / xhigh→max`로
+  +1 시프트, sonnet은 `minimal→low`만, haiku는 budget(매핑 없음), gpt 계열은 항등 [S9].
+- **§ = 모델 단위 1회 측정**(effort별 분해 아님): 모델의 **최상단 행에만** 적고, 하위
+  effort 행은 `↑`로 그 값을 참조한다. gpt-5.5의 AA Index/rel-token만 effort별 실측이라
+  행마다 다른 값을 넣는다 [S10].
+- `—` = 미공개/미측정. cost는 $/Mtok (input/output), `models.db` 실측 [S8][S9].
+
+| model | suffix | 내부 effort | AA Index | SWE-Pro§ | DeepSWE§ | $/Mtok | rel tok | 신빙성 |
+|-------|--------|-------------|----------|----------|----------|--------|---------|--------|
+| fable-5 | :xhigh | max | 64.9§ | 80.3 | — | 10/50 | — | AA는 이 max+fallback 조건 [S12], SWE [S1] |
+| fable-5 | :high | xhigh | ↑ | ↑ | — | 10/50 | — | |
+| fable-5 | :medium | high | ↑ | ↑ | — | 10/50 | — | |
+| fable-5 | :low | medium | ↑ | ↑ | — | 10/50 | — | 무료 윈도우 default 특례 [S3] |
+| fable-5 | :minimal | low | ↑ | ↑ | — | 10/50 | — | |
+| opus-4.8 | :xhigh | max | 61.4§ | 69.2 | — | 5/25 | — | AA 모델단위 [S11], SWE [S1] |
+| opus-4.8 | :high | xhigh | ↑ | ↑ | — | 5/25 | — | Claude-only slow/plan |
+| opus-4.8 | :medium | high | ↑ | ↑ | — | 5/25 | — | vision |
+| opus-4.8 | :low | medium | ↑ | ↑ | — | 5/25 | — | combo-claude default |
+| opus-4.8 | :minimal | low | ↑ | ↑ | — | 5/25 | — | |
+| gpt-5.5 | :xhigh | xhigh | 60 | 58.6§ | 70.0% / $5.76 | 5/30 | 3.4x | plan 전용; DeepSWE는 xhigh 실측 [S14] |
+| gpt-5.5 | :high | high | 59 | ↑ | — | 5/30 | 2.0x | slow/vision/designer |
+| gpt-5.5 | :medium | medium | 57 | ↑ | — | 5/30 | 1.0x | default/task 기본 [S10] |
+| gpt-5.5 | :low | low | — | ↑ | — | 5/30 | — | AA low 미게재 [S10] |
+| sonnet-4.6 | :high | high | — | — | — | 3/15 | — | claude designer; effort별 공개 점수 없음 |
+| sonnet-4.6 | :medium | medium | — | — | — | 3/15 | — | claude task |
+| sonnet-4.6 | :low | low | — | — | — | 3/15 | — | |
+| sonnet-4.6 | :minimal | low | — | — | — | 3/15 | — | effortMap minimal→low |
+| haiku-4.5 | :xhigh..:minimal | budget(매핑 없음) | — | — | — | 1/5 | — | smol/commit; 벤치 비대상 |
+| gpt-5.4-nano | :xhigh..:low | 항등 | — | — | — | 0.2/1.25 | — | gpt smol/commit |
+
+읽기 결론: 구독 내 지능 상한은 `fable-5(64.9) > opus-4.8(61.4) > gpt-5.5 xhigh(60)`이고
+cost는 그 역순(`gpt-5.5 5/30 < opus 5/25 < fable 10/50` — opus가 토큰당 가장 저렴).
+effort별 실측이 있는 건 gpt-5.5뿐이라, Claude 계열 하위 effort 행의 점수 칸은 비교용이
+아니라 **운용상 어떤 내부 effort로 도는지**를 보여주는 용도다. 이 표는 위 [랭킹 갱신 규약]에
+따라 새 데이터가 나오면 갱신한다. 구독 밖(GLM-5.2/Kimi)은 [오픈웨이트 코딩 모델 검토] 표 참조.
+
 ## Combination 복귀 플랜 (06-23 적용)
 
 06-23부터 fable-5는 구독 미포함(크레딧 추가 과금 [S7]). Claude 쿼터가 회복되고
