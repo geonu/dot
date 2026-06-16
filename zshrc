@@ -51,7 +51,7 @@ alias du="dust"
 alias df="duf"
 alias cls="clear"
 alias vi="nvim"
-alias img="chafa -f sixel"  # inline image viewer (sixel works through tmux)
+alias img="chafa -f kitty"  # inline image viewer (Kitty graphics; works in tmux+Ghostty)
 
 
 # OMP session helpers. Resume can restore the session's active model, so these
