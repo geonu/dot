@@ -60,6 +60,18 @@ _omp_latest_session() {
   omp __complete sessions -- "" | awk 'NR == 1 { print $1; exit }'
 }
 
+# True when $1 is a prefix of some real session id for the current directory.
+# Used to reject stale/poisoned ids (e.g. a subagent name like "SuccessiveBat")
+# before they reach `--resume`, which would otherwise hard-fail the launch.
+_omp_session_valid() {
+  local id="$1"
+  [[ -n "$id" ]] || return 1
+  omp __complete sessions -- "" 2>/dev/null | awk -v id="$id" '
+    index($1, id) == 1 { found = 1; exit }
+    END { exit found ? 0 : 1 }
+  '
+}
+
 _omp_descendant_pids() {
   local -a queue out children
   local pid child
@@ -89,10 +101,14 @@ _omp_session_from_process() {
       return 0
     fi
 
+    # Session files are stored as `<ts>_<uuid>.jsonl` (top-level) or
+    # `<ts>_<uuid>/<AgentName>.jsonl` (subagent transcript). Resume needs the
+    # parent session UUID in both cases — never the bare subagent name, which
+    # `--resume` cannot find. Pull the UUID straight out of the path.
     session_path="$(lsof -p "$pid" 2>/dev/null | awk '/\/sessions\/.*\.jsonl/ { print $NF; exit }')"
-    if [[ -n "$session_path" ]]; then
-      session_id="${session_path:t:r}"
-      print -- "${session_id##*_}"
+    if [[ -n "$session_path" && \
+          "$session_path" =~ '_([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})' ]]; then
+      print -- "$match[1]"
       return 0
     fi
   done
@@ -243,6 +259,16 @@ ompr_tmux_respawn() {
   #    run-shell does not inherit the pane cwd, so resolve it there explicitly.
   if [[ -z "$session_id" && -n "$pane_path" ]]; then
     session_id="$(cd "$pane_path" 2>/dev/null && _omp_latest_session)"
+  fi
+
+  # Discard any resolved id that no longer maps to a real session (stale pane
+  # option, a baked-in `--resume <subagent>` from an earlier poisoned respawn,
+  # etc.). Validate in the pane's own directory, since sessions are dir-scoped.
+  # Drop the stale pane option too so the poison does not survive the respawn.
+  if [[ -n "$session_id" ]] && \
+     ! ( cd "$pane_path" 2>/dev/null && _omp_session_valid "$session_id" ); then
+    tmux set-option -pu -t "$pane" @omp_session
+    session_id=""
   fi
 
   # Always respawn so the pane is never left dead. Resume when we have a
