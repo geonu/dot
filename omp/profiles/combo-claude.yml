@@ -2,7 +2,7 @@
 # Use when both subscriptions have quota and Claude should own long-running context.
 # Codex/GPT is reserved for burst reasoning and visual/design-heavy work.
 modelRoles:
-  default: anthropic/claude-opus-4-8:low
+  default: anthropic/claude-opus-4-8:medium
   smol: anthropic/claude-haiku-4-5:minimal
   slow: openai-codex/gpt-5.5:high
   vision: openai-codex/gpt-5.5:high

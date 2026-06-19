@@ -1,7 +1,7 @@
 # Claude-only OMP model profile without Fable 5 credit spend.
 # Use when Anthropic quota is available and Codex/OpenAI quota should be protected after the Fable free window.
 modelRoles:
-  default: anthropic/claude-opus-4-8:low
+  default: anthropic/claude-opus-4-8:medium
   smol: anthropic/claude-haiku-4-5:minimal
   slow: anthropic/claude-opus-4-8:high
   vision: anthropic/claude-opus-4-8:medium

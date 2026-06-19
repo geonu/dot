@@ -3,7 +3,7 @@ theme:
   dark: titanium
 setupVersion: 1
 modelRoles: 
-  default: anthropic/claude-opus-4-8:low
+  default: anthropic/claude-opus-4-8:medium
   smol: anthropic/claude-haiku-4-5:minimal
   slow: openai-codex/gpt-5.5:high
   vision: openai-codex/gpt-5.5:high
@@ -19,3 +19,6 @@ display:
 showHardwareCursor: true
 task: 
   showResolvedModelBadge: true
+dev: 
+  autoqa: 
+    consent: granted

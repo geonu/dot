@@ -65,7 +65,7 @@ tmux 안에서는 `Ctrl-a R`을 누르면 현재 pane에서 실행 중인 OMP �
 
 | role     | model                              | 비고 |
 |----------|------------------------------------|------|
-| default  | anthropic/claude-opus-4-8:low      | 구독 포함 최상위 Claude. AA 61.4로 GPT-5.5 xhigh보다 높음 [S11] |
+| default  | anthropic/claude-opus-4-8:medium   | 구독 포함 최상위 Claude. AA 61.4로 GPT-5.5 xhigh보다 높음 [S11] |
 | smol     | anthropic/claude-haiku-4-5:minimal | budget 모드 최소 thinking |
 | slow     | anthropic/claude-opus-4-8:high     | Claude-only 고추론 버스트 |
 | vision   | anthropic/claude-opus-4-8:medium   | 이미지 입력 QA |
@@ -186,7 +186,7 @@ gpt가 절반 수준 → execution은 gpt-5.5 [S15].
 Codex/GPT는 slow/plan/vision/designer처럼 실패 비용이 큰 버스트 역할에 투입한다.
 
 ```yaml
-default: anthropic/claude-opus-4-8:low
+default: anthropic/claude-opus-4-8:medium
 smol: anthropic/claude-haiku-4-5:minimal
 slow: openai-codex/gpt-5.5:high
 vision: openai-codex/gpt-5.5:high
