@@ -165,8 +165,8 @@ ompgpt() {
 ompclaude() {
   omp \
     --config "$(_omp_profile_path claude)" \
-    --model anthropic/claude-opus-4-8:low \
-    --thinking low \
+    --model anthropic/claude-opus-4-8:medium \
+    --thinking medium \
     --smol anthropic/claude-haiku-4-5:minimal \
     --slow anthropic/claude-opus-4-8:high \
     --plan anthropic/claude-opus-4-8:high \
@@ -188,8 +188,8 @@ ompfable_codex() {
 ompcombo_claude() {
   omp \
     --config "$(_omp_profile_path combo-claude)" \
-    --model anthropic/claude-opus-4-8:low \
-    --thinking low \
+    --model anthropic/claude-opus-4-8:medium \
+    --thinking medium \
     --smol anthropic/claude-haiku-4-5:minimal \
     --slow openai-codex/gpt-5.5:high \
     --plan openai-codex/gpt-5.5:xhigh \
