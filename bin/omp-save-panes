@@ -1,0 +1,70 @@
+#!/usr/bin/env zsh
+# Record the live tmux-pane -> OMP-session mapping for tmux-resurrect.
+#
+# Sourced from the @resurrect-hook-post-save-all hook (co-timed with every
+# continuum/resurrect save) inside a login-interactive zsh, so the OMP helpers
+# defined in ~/.zshrc (_omp_session_from_tmux_pane, _omp_descendant_pids) are in
+# scope. Writes an atomic sidecar that bin/omp-restore-panes consumes on restore
+# to bring every OMP pane back to the exact session it was running.
+#
+# Source-safe: no top-level `exit`, all logic in functions; the hook sources it.
+
+# Best-effort: recover the provider profile from the live omp process args. The
+# zsh wrappers launch `omp --config .../omp/profiles/<profile>.yml ...`, so the
+# profile stays visible in process args even when resuming a session. Falls back
+# to the @omp-restore-profile tmux option, then gpt.
+_omp_pane_profile() {
+  local pane_pid="$1" pid cmd p
+  local -a pids
+  pids=("$pane_pid" "${(@f)$(_omp_descendant_pids "$pane_pid" 2>/dev/null)}")
+  for pid in "${pids[@]}"; do
+    [[ -n "$pid" ]] || continue
+    cmd="$(ps -p "$pid" -o command= 2>/dev/null)" || continue
+    if [[ "$cmd" == *omp/profiles/* ]]; then
+      p="${cmd##*omp/profiles/}"
+      p="${p%%.yml*}"
+      case "$p" in
+        gpt|claude|fable-codex|combo-claude|combo-gpt) print -r -- "$p"; return 0 ;;
+      esac
+    fi
+  done
+  local fb
+  fb="$(tmux show-options -gqv @omp-restore-profile 2>/dev/null)"
+  print -r -- "${fb:-gpt}"
+}
+
+_omp_save_panes() {
+  emulate -L zsh
+  command -v tmux >/dev/null 2>&1 || return 0
+
+  local dir="$HOME/.local/share/tmux/resurrect"
+  local out="$dir/omp_panes" tmp fmt
+  local sname widx pidx pane_id pane_pid cmd cwd sid profile
+
+  mkdir -p "$dir" || return 1
+  tmp="$(mktemp "$dir/.omp_panes.XXXXXX")" || return 1
+
+  # One tab-separated row per pane in the server.
+  fmt=$'#{session_name}\t#{window_index}\t#{pane_index}\t#{pane_id}\t#{pane_pid}\t#{pane_current_command}\t#{pane_current_path}'
+
+  tmux list-panes -a -F "$fmt" 2>/dev/null | \
+  while IFS=$'\t' read -r sname widx pidx pane_id pane_pid cmd cwd; do
+    # Only panes actually running omp are recorded, so restore never touches
+    # plain shells or other programs.
+    [[ "$cmd" == omp ]] || continue
+    [[ -n "$sname" && -n "$widx" && -n "$pidx" && -n "$pane_pid" && -n "$cwd" ]] || continue
+    # A tab/newline in a key field would corrupt the delimited sidecar; skip it.
+    case "$sname$cwd" in *$'\t'*|*$'\n'*) continue ;; esac
+
+    sid="$(_omp_session_from_tmux_pane "$pane_pid" 2>/dev/null)" || sid=""
+    [[ -n "$sid" ]] || continue
+
+    profile="$(_omp_pane_profile "$pane_pid")"
+    print -r -- "${sname}"$'\t'"${widx}"$'\t'"${pidx}"$'\t'"${cwd}"$'\t'"${profile}"$'\t'"${sid}" >> "$tmp"
+  done
+
+  # Atomic publish; regenerated every save even when zero OMP panes exist.
+  mv -f "$tmp" "$out"
+}
+
+_omp_save_panes "$@"

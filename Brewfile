@@ -23,6 +23,7 @@ brew "duf"                 # modern `df` disk usage viewer
 brew "dust"                # modern `du` disk usage viewer
 brew "eza"                 # modern `ls` (maintained fork of exa)
 brew "fd"                  # modern `find` file search
+brew "fzf"                 # fuzzy finder (omppick session picker)
 brew "gh"                  # GitHub CLI
 brew "googleworkspace-cli" # Google Workspace CLI
 brew "jq"                  # JSON processor

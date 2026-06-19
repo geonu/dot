@@ -284,6 +284,20 @@ ompr_tmux_respawn() {
   tmux respawn-pane -k -t "$pane" -c "$pane_path" "$launch"
 }
 
+# Respawn EVERY pane in a window into the latest OMP session, each resolving its
+# OWN session (live process -> @omp_session pane option -> newest session in the
+# pane cwd). This is NOT synchronize-panes: that mirrors keystrokes and would
+# make every pane race to resolve against the active pane's cwd. Here we drive
+# one server-side respawn per pane id, so each pane recalls its own conversation.
+ompr_tmux_respawn_all() {
+  local profile="${1:-gpt}"
+  local window="${2:-$(tmux display-message -p '#{window_id}')}"
+  local pane
+  for pane in $(tmux list-panes -t "$window" -F '#{pane_id}'); do
+    ompr_tmux_respawn "$profile" "$pane"
+  done
+}
+
 ompr() {
   local profile="${1:-gpt}"
   [[ $# -gt 0 ]] && shift
@@ -323,6 +337,65 @@ ompr_fresh() {
       ;;
   esac
 }
+
+# Cross-directory OMP session picker. After a crash you no longer hunt
+# pane-by-pane with `C-a R`: from any pane run `omppick [profile]`, pick from
+# every recent session (age / directory / auto-title), and it cd's into the
+# session's own directory and resumes it under the chosen provider profile.
+# Sessions are directory-scoped, so the cd is what lets `--resume` find them.
+# Uses fzf when present, falls back to a numbered menu otherwise.
+omppick() {
+  emulate -L zsh
+  local profile="${1:-gpt}"
+  local base="${PI_CODING_AGENT_DIR:-$HOME/.omp/agent}/sessions"
+  local -a files lines
+  local f hdr id cwd title now mt age tag
+
+  # Depth-2 glob = real top-level sessions, newest-first by mtime, capped at 40.
+  # Subagent transcripts live one level deeper (<ts>_<uuid>/<Agent>.jsonl) and
+  # are excluded. (N) nullglob yields empty instead of erroring on no match.
+  files=( "$base"/*/*.jsonl(Nom[1,40]) )
+  (( ${#files} )) || { print -u2 "omppick: no OMP sessions under $base"; return 1; }
+
+  now="$(date +%s)"
+  for f in "${files[@]}"; do
+    hdr="$(head -1 -- "$f")"
+    # The header line of a resumable session carries id/cwd/title; jq emits
+    # nothing for any other first line, so non-session files self-skip.
+    IFS=$'\t' read -r id cwd title <<< "$(
+      print -r -- "$hdr" | jq -r 'select(.type=="session") | [.id, .cwd, (.title // "(untitled)")] | @tsv' 2>/dev/null
+    )"
+    [[ -n "$id" ]] || continue
+    mt="$(stat -f %m "$f" 2>/dev/null)" || mt="$now"
+    age=$(( now - mt ))
+    if   (( age < 3600 ));  then tag="$(( age / 60 ))m"
+    elif (( age < 86400 )); then tag="$(( age / 3600 ))h"
+    else                        tag="$(( age / 86400 ))d"
+    fi
+    # id<TAB>cwd<TAB>display — first two columns drive the resume, third is UI.
+    lines+=( "${id}"$'\t'"${cwd}"$'\t'"$(printf '%4s  %-30s %s' "$tag" "${cwd/#$HOME/~}" "$title")" )
+  done
+  (( ${#lines} )) || { print -u2 "omppick: no resumable sessions found"; return 1; }
+
+  local sel
+  if command -v fzf >/dev/null 2>&1; then
+    sel="$(printf '%s\n' "${lines[@]}" | fzf --delimiter=$'\t' --with-nth=3.. \
+            --prompt="resume [$profile] > " --height=50% --reverse --no-sort)"
+  else
+    local i=1 l n
+    for l in "${lines[@]}"; do printf '%2d) %s\n' "$i" "${l##*$'\t'}"; (( i++ )); done
+    read "n?select # (empty cancels): "
+    [[ -n "$n" ]] || return 1
+    sel="${lines[$n]}"
+  fi
+  [[ -n "$sel" ]] || return 1
+
+  local pick_id="${sel%%$'\t'*}" rest="${sel#*$'\t'}"
+  local pick_cwd="${rest%%$'\t'*}"
+  [[ -d "$pick_cwd" ]] && cd "$pick_cwd"
+  ompr "$profile" "$pick_id"
+}
+
 # --- environment ------------------------------------------------------------
 export EDITOR=nvim
 export CLICOLOR=1

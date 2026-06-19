@@ -1,0 +1,57 @@
+#!/usr/bin/env zsh
+# Respawn restored tmux panes back into their OMP sessions after a tmux-resurrect
+# restore, using the sidecar written by bin/omp-save-panes.
+#
+# Sourced from @resurrect-hook-post-restore-all (and the C-a A manual binding)
+# inside a login-interactive zsh, so ~/.zshrc helpers/wrappers (ompr,
+# _omp_session_valid, _omp_session_from_tmux_pane) are in scope. Runs only when
+# OMP_TMUX_RESTORE_CONTEXT is set, so it can never fire during normal use.
+#
+# Source-safe: no top-level `exit`, all logic in a function; the hook sources it.
+
+_omp_restore_panes() {
+  emulate -L zsh
+
+  # Hard gate: only a real restore (or the explicit manual binding) may respawn
+  # panes. Accidental sourcing/execution elsewhere is a no-op.
+  case "$OMP_TMUX_RESTORE_CONTEXT" in
+    resurrect|manual) ;;
+    *) return 0 ;;
+  esac
+
+  command -v tmux >/dev/null 2>&1 || return 0
+  local sidecar="$HOME/.local/share/tmux/resurrect/omp_panes"
+  [[ -r "$sidecar" && -s "$sidecar" ]] || return 0
+
+  local sname widx pidx cwd profile sid target tpid cur_cwd cur_sid launch fb
+  while IFS=$'\t' read -r sname widx pidx cwd profile sid; do
+    [[ -n "$sname" && -n "$widx" && -n "$pidx" && -n "$cwd" && -n "$sid" ]] || continue
+    case "$profile" in
+      gpt|claude|fable-codex|combo-claude|combo-gpt) ;;
+      *) fb="$(tmux show-options -gqv @omp-restore-profile 2>/dev/null)"; profile="${fb:-gpt}" ;;
+    esac
+
+    target="${sname}:${widx}.${pidx}"
+    # Target pane must exist after restore.
+    tpid="$(tmux display-message -p -t "$target" '#{pane_pid}' 2>/dev/null)" || continue
+    [[ -n "$tpid" ]] || continue
+    # cwd must still match the saved one: guards against pane-index reuse landing
+    # on an unrelated pane in a differently-shaped layout.
+    cur_cwd="$(tmux display-message -p -t "$target" '#{pane_current_path}' 2>/dev/null)"
+    [[ "$cur_cwd" == "$cwd" ]] || continue
+    # Session must still exist for that cwd (OMP resume is directory-scoped).
+    ( cd "$cwd" 2>/dev/null && _omp_session_valid "$sid" ) || continue
+    # Idempotent: if the pane already runs this exact session, leave it alone so
+    # repeated post-restore/manual runs don't kill live work.
+    cur_sid="$(_omp_session_from_tmux_pane "$tpid" 2>/dev/null)" || cur_sid=""
+    [[ "$cur_sid" == "$sid" ]] && continue
+
+    # Record the mapping on the pane too (mirrors ompr_tmux_respawn) and resume.
+    tmux set-option -p -t "$target" @omp_session "$sid"
+    tmux set-option -p -t "$target" @omp_profile "$profile"
+    launch="env OMP_RESUME_SESSION_ID=$sid zsh -lic 'ompr $profile $sid; exec zsh -i'"
+    tmux respawn-pane -k -t "$target" -c "$cwd" "$launch"
+  done < "$sidecar"
+}
+
+_omp_restore_panes "$@"
