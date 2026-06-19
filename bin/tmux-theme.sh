@@ -12,7 +12,7 @@ tm_separator_right_bold="▶"
 tm_separator_right_thin="❯"
 
 set -g status-left-length 32
-set -g status-right-length 150
+set -g status-right-length 200
 set -g status-interval 5
 
 
@@ -44,9 +44,20 @@ set-window-option -g clock-mode-colour $tm_color_active
 # battery
 tm_battery="#(~/.dotfiles/bin/battery-indicator.sh)"
 
-tm_date="#[fg=$tm_color_inactive] %R %b %d"
+# cpu + memory
+tm_cpumem="#(~/.dotfiles/bin/cpu-mem-indicator.sh)"
+
+# now playing (spotify / music)
+tm_nowplaying="#(~/.dotfiles/bin/nowplaying-indicator.sh)"
+
+# group separator: dim vertical bar with 1-space padding on each side
+tm_sep="#[fg=$tm_color_inactive,nobold] │ "
+tm_date="#[fg=$tm_color_inactive,nobold]%R %b %d"
 tm_host="#[fg=$tm_color_feature,bold]#h"
 tm_session_name="#[fg=$tm_color_feature,bold]#S"
 
-set -g status-left $tm_session_name' '
-set -g status-right $tm_date' '$tm_battery' '$tm_host
+set -g status-left ' '$tm_session_name' '
+# order: ♫ music │ cpu/mem │ battery │ host │ clock  (clock anchored at the
+# right edge; music emits its own trailing separator, so it cleanly vanishes
+# when nothing is playing).
+set -g status-right "$tm_nowplaying$tm_cpumem$tm_sep$tm_battery$tm_sep$tm_host$tm_sep$tm_date "
