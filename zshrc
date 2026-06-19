@@ -51,7 +51,7 @@ alias du="dust"
 alias df="duf"
 alias cls="clear"
 alias vi="nvim"
-alias img="chafa -f kitty"  # inline image viewer (Kitty graphics; works in tmux+Ghostty)
+alias img="qlmanage -p 2>/dev/null"  # Quick Look preview (Alacritty has no inline images)
 
 
 # OMP session helpers. Resume can restore the session's active model, so these
