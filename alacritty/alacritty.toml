@@ -49,6 +49,17 @@ multiplier = 3
 [selection]
 save_to_clipboard = true
 
+[terminal]
+# Allow OSC 52 clipboard *paste* (read), not just copy. Alacritty's default is
+# "OnlyCopy", which lets programs write the clipboard but blocks reading it -- so
+# a TUI inside tmux (omp) that pastes by querying the clipboard via OSC 52 gets
+# nothing, and text copied in another app (Chrome, etc.) never appears. tmux has
+# set-clipboard on + allow-passthrough, so the query reaches Alacritty; this lets
+# it answer. "CopyPaste" keeps copy working too. (Security: any program, incl.
+# over SSH, can now read the clipboard via escape sequence -- fine on a local
+# dev box; drop to "OnlyCopy" to revert.)
+osc52 = "CopyPaste"
+
 # --- Gruvbox Dark (matches the former Ghostty theme) -----------------------
 [colors.primary]
 background = "#282828"
