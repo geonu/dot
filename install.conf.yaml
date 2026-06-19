@@ -31,6 +31,7 @@
     ~/.zsh_plugins.txt: zsh_plugins.txt
     ~/.config/nvim: nvim
     ~/.config/ghostty/config: ghostty/config
+    ~/.config/alacritty/alacritty.toml: alacritty/alacritty.toml
     ~/.config/mise/config.toml: mise/config.toml
     ~/.tmux.conf: tmux.conf
     ~/.psqlrc: psqlrc

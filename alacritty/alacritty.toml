@@ -1,0 +1,75 @@
+# Alacritty configuration - managed in ~/.dotfiles
+# https://alacritty.org/config-alacritty.html
+#
+# Chosen over Ghostty for long, varied agent sessions: GPU-rendered, lowest RAM
+# of any emulator, and a hard-bounded scrollback that cannot balloon into OOM.
+# Inline images are gone -- use `img <file>` (qlmanage Quick Look) for the rare
+# case. tmux provides tabs/splits, so Alacritty's lack of them costs nothing.
+
+[env]
+# Robust over TERM = "alacritty": that requires the alacritty terminfo to be
+# present everywhere (breaks on bare SSH targets). xterm-256color is universal,
+# and COLORTERM advertises 24-bit so nvim/delta render truecolor outside tmux;
+# inside tmux, `terminal-features "*:RGB"` forces RGB regardless.
+TERM = "xterm-256color"
+COLORTERM = "truecolor"
+
+[terminal.shell]
+program = "/bin/zsh"
+args = ["-l"]
+
+[window]
+option_as_alt = "Both"      # left+right Option send Meta (Alt keybinds work)
+dynamic_padding = true
+decorations = "buttonless"  # macOS: keep traffic-light-free minimal titlebar
+
+[window.padding]
+x = 6
+y = 6
+
+[font]
+size = 13.0
+
+[font.normal]
+family = "Hack Nerd Font Mono"
+style = "Regular"
+
+[font.bold]
+family = "Hack Nerd Font Mono"
+style = "Bold"
+
+[font.italic]
+family = "Hack Nerd Font Mono"
+style = "Italic"
+
+[scrolling]
+history = 10000    # hard cap; Alacritty never grows past this (no leak path)
+multiplier = 3
+
+[selection]
+save_to_clipboard = true
+
+# --- Gruvbox Dark (matches the former Ghostty theme) -----------------------
+[colors.primary]
+background = "#282828"
+foreground = "#ebdbb2"
+
+[colors.normal]
+black   = "#282828"
+red     = "#cc241d"
+green   = "#98971a"
+yellow  = "#d79921"
+blue    = "#458588"
+magenta = "#b16286"
+cyan    = "#689d6a"
+white   = "#a89984"
+
+[colors.bright]
+black   = "#928374"
+red     = "#fb4934"
+green   = "#b8bb26"
+yellow  = "#fabd2f"
+blue    = "#83a598"
+magenta = "#d3869b"
+cyan    = "#8ec07c"
+white   = "#ebdbb2"

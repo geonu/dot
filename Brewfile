@@ -45,7 +45,12 @@ brew "zoxide"              # modern `cd` with directory jumping
 cask "codex"
 cask "steipete/tap/codexbar"
 cask "gcloud-cli"
-cask "font-hack-nerd-font" # terminal font (used by Ghostty config)
+cask "font-hack-nerd-font" # terminal font (Alacritty + Ghostty configs)
+# DEPRECATED cask, disabled 2026-09-01 (fails macOS Gatekeeper / not notarized).
+# BEFORE 2026-09-01: remove this line and build from source instead, e.g.
+#   mise use -g rust@latest && cargo install alacritty   (binary -> ~/.cargo/bin)
+# or `git clone … && make app` for a /Applications bundle. Config is unaffected.
+cask "alacritty"           # terminal emulator (GPU, low-RAM, primary)
 cask "ghostty"             # terminal emulator
 cask "google-chrome"
 cask "rectangle"           # window manager
