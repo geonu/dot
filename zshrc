@@ -34,7 +34,13 @@ export ZSH_CACHE_DIR="${XDG_CACHE_HOME:-$HOME/.cache}/zsh"
 [[ -d "$ZSH_CACHE_DIR/completions" ]] || mkdir -p "$ZSH_CACHE_DIR/completions"
 
 # compinit must run before plugins that call compdef (e.g. the omz git plugin).
-autoload -Uz compinit && compinit
+# Rebuild the dump (full compinit + security audit) when it's missing or older
+# than a day; otherwise take the fast path (-C) that skips the audit + staleness
+# scan to shave interactive startup latency.
+autoload -Uz compinit
+_zcompdump=(${ZDOTDIR:-$HOME}/.zcompdump(Nmh-24))
+if (( $#_zcompdump )); then compinit -C; else compinit; fi
+unset _zcompdump
 
 antidote_zsh="$HOMEBREW_PREFIX/opt/antidote/share/antidote/antidote.zsh"
 if [[ -e "$antidote_zsh" ]]; then
@@ -422,6 +428,11 @@ export PATH="$BUN_INSTALL/bin:$PATH"
 # --- directory jumping ------------------------------------------------------
 # zoxide learns visited dirs; `--cmd cd` makes `cd` the smart jumper.
 command -v zoxide &>/dev/null && eval "$(zoxide init zsh --cmd cd)"
+
+# --- fuzzy finder -----------------------------------------------------------
+# fzf key bindings + completion: Ctrl-R fuzzy history, Ctrl-T file widget,
+# Alt-C cd into a subdir. (fzf also backs the omppick session picker.)
+command -v fzf &>/dev/null && source <(fzf --zsh)
 
 # --- prompt -----------------------------------------------------------------
 command -v starship &>/dev/null && eval "$(starship init zsh)"

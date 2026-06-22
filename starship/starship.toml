@@ -1,4 +1,8 @@
 # Starship prompt — https://starship.rs/config/
-# Currently stock defaults; customize here so changes are tracked.
+# Customize here so changes are tracked.
 
 add_newline = true
+
+# Default command_timeout is 500ms; raise it so module commands (e.g. `git
+# status` in a large repo) don't time out and silently drop branch info.
+command_timeout = 1000
