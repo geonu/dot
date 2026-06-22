@@ -7,7 +7,7 @@ Personal macOS development environment, managed with
 
 | Area     | Tool                                                                                              |
 | -------- | ------------------------------------------------------------------------------------------------- |
-| Terminal | [Ghostty](https://ghostty.org)                                                                    |
+| Terminal | [Alacritty](https://alacritty.org)                                                                |
 | Shell    | zsh + [antidote](https://antidote.sh) plugins + [starship](https://starship.rs) prompt            |
 | Editor   | [Neovim](https://neovim.io) (Lua config, lazy.nvim)                                               |
 | Runtimes | [mise](https://mise.jdx.dev) — Node, Python, Java, …                                              |

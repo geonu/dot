@@ -14,11 +14,13 @@ fi
 
 export PATH="$HOME/.local/bin:$PATH"
 
-# --- tmux auto-attach (Ghostty) --------------------------------------------
-# In an interactive Ghostty shell not already inside tmux: attach to the running
-# server, or cold-start tmux so continuum restores the last saved session.
-# `exec` replaces this shell, so detaching/quitting tmux closes the window.
-if [[ -o interactive && -z "$TMUX" && "$TERM_PROGRAM" == "ghostty" ]] && command -v tmux >/dev/null; then
+# --- tmux auto-attach (Alacritty) ------------------------------------------
+# In an interactive Alacritty shell not already inside tmux: attach to the
+# running server, or cold-start tmux so continuum restores the last saved
+# session. Alacritty has no native TERM_PROGRAM, so its [env] block sets
+# TERM_PROGRAM=alacritty for this guard. `exec` replaces this shell, so
+# detaching/quitting tmux closes the window.
+if [[ -o interactive && -z "$TMUX" && "$TERM_PROGRAM" == "alacritty" ]] && command -v tmux >/dev/null; then
   if tmux has-session 2>/dev/null; then
     exec tmux attach
   else

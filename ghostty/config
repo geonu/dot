@@ -1,7 +1,0 @@
-# Ghostty configuration - https://ghostty.org/docs/config
-# Managed in ~/.dotfiles
-
-font-family = "Hack Nerd Font Mono"
-font-size = 13
-
-theme = "Gruvbox Dark"

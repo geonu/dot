@@ -13,6 +13,10 @@
 # inside tmux, `terminal-features "*:RGB"` forces RGB regardless.
 TERM = "xterm-256color"
 COLORTERM = "truecolor"
+# Alacritty sets no TERM_PROGRAM of its own; mark it so ~/.zshrc's tmux
+# auto-attach fires. tmux overrides this to "tmux" once attached, which is fine
+# — the auto-attach guard only runs before $TMUX is set.
+TERM_PROGRAM = "alacritty"
 
 [terminal.shell]
 program = "/bin/zsh"
