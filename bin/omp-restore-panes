@@ -24,6 +24,27 @@ _omp_restore_panes() {
   [[ -r "$sidecar" && -s "$sidecar" ]] || return 0
 
   local sname widx pidx cwd profile sid target tpid cur_cwd cur_sid launch fb
+
+  # Cache `omp __complete sessions` per directory: it costs ~0.5s per call and
+  # returns the same list for every pane sharing a cwd, so fetch once per unique
+  # cwd instead of once per pane (e.g. 14 panes across 3 dirs -> 3 calls).
+  typeset -A _omp_sess_cache
+  # True when $1 is a prefix of a real session id for directory $2 (dir-scoped).
+  # The cache is populated in THIS shell (the `$(...)` only wraps the omp call;
+  # the array write itself is not in a subshell), so it persists across panes --
+  # the `<<<` here-string must read the array, never re-invoke the populator
+  # inside a command substitution, or the cached value would be lost each call.
+  _omp_sid_valid() {
+    local sid="$1" d="$2" line
+    [[ -n "$sid" ]] || return 1
+    if [[ -z "${_omp_sess_cache[$d]+set}" ]]; then
+      _omp_sess_cache[$d]="$(cd "$d" 2>/dev/null && omp __complete sessions -- "" 2>/dev/null | awk '{print $1}')"
+    fi
+    while IFS= read -r line; do
+      [[ -n "$line" && "$line" == "$sid"* ]] && return 0
+    done <<< "${_omp_sess_cache[$d]}"
+    return 1
+  }
   while IFS=$'\t' read -r sname widx pidx cwd profile sid; do
     [[ -n "$sname" && -n "$widx" && -n "$pidx" && -n "$cwd" && -n "$sid" ]] || continue
     case "$profile" in
@@ -39,12 +60,17 @@ _omp_restore_panes() {
     # on an unrelated pane in a differently-shaped layout.
     cur_cwd="$(tmux display-message -p -t "$target" '#{pane_current_path}' 2>/dev/null)"
     [[ "$cur_cwd" == "$cwd" ]] || continue
-    # Session must still exist for that cwd (OMP resume is directory-scoped).
-    ( cd "$cwd" 2>/dev/null && _omp_session_valid "$sid" ) || continue
-    # Idempotent: if the pane already runs this exact session, leave it alone so
-    # repeated post-restore/manual runs don't kill live work.
-    cur_sid="$(_omp_session_from_tmux_pane "$tpid" 2>/dev/null)" || cur_sid=""
-    [[ "$cur_sid" == "$sid" ]] && continue
+    # Session must still exist for that cwd (OMP resume is directory-scoped),
+    # validated against the per-cwd cache built above.
+    _omp_sid_valid "$sid" "$cwd" || continue
+    # Idempotent: on a manual re-run a pane may already host this exact session,
+    # so skip to avoid killing live work. Skipped on the resurrect path -- the
+    # pane was just restored as a bare shell, so this lsof/ps scan would always
+    # miss; run it only in the context where it can actually fire.
+    if [[ "$OMP_TMUX_RESTORE_CONTEXT" == manual ]]; then
+      cur_sid="$(_omp_session_from_tmux_pane "$tpid" 2>/dev/null)" || cur_sid=""
+      [[ "$cur_sid" == "$sid" ]] && continue
+    fi
 
     # Record the mapping on the pane too (mirrors ompr_tmux_respawn) and resume.
     tmux set-option -p -t "$target" @omp_session "$sid"
