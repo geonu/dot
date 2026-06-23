@@ -1,0 +1,21 @@
+#!/bin/sh
+# Guarded clipboard copy for tmux + tmux-yank.
+#
+# Reads the selection on stdin and writes it to the macOS pasteboard with
+# pbcopy -- but SKIPS empty / whitespace-only input. A stray or zero-width copy
+# gesture (an empty drag, a click on blank space, copying a blank line) would
+# otherwise run `pbcopy ""` and wipe a real copy, making the next paste silently
+# do nothing. Every tmux copy binding and tmux-yank route through this.
+#
+# Optional tracing: `touch /tmp/tmux-clip.debug` to log every call to
+# /tmp/tmux-clip.log (COPY vs SKIP + byte count); remove the flag to stop.
+tmp=$(mktemp -t tmuxclip) || exit 1
+cat >"$tmp"
+if grep -q '[^[:space:]]' "$tmp" 2>/dev/null; then
+	pbcopy <"$tmp"
+	verdict=COPY
+else
+	verdict=SKIP-empty
+fi
+[ -f /tmp/tmux-clip.debug ] && printf '%s %s %sB\n' "$(date '+%H:%M:%S')" "$verdict" "$(wc -c <"$tmp" | tr -d ' ')" >>/tmp/tmux-clip.log
+rm -f "$tmp"
