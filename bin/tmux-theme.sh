@@ -47,8 +47,12 @@ tm_battery="#(~/.dotfiles/bin/battery-indicator.sh)"
 # cpu + memory
 tm_cpumem="#(~/.dotfiles/bin/cpu-mem-indicator.sh)"
 
-# now playing (spotify / music)
-tm_nowplaying="#(~/.dotfiles/bin/nowplaying-indicator.sh)"
+# now playing (spotify / music): a background ticker scrolls long titles and
+# publishes the styled segment into @nowplaying (see bin/nowplaying-indicator.sh).
+# Launched once per server; it self-guards against duplicates on config reload.
+set -gq @nowplaying ''
+run-shell -b '~/.dotfiles/bin/nowplaying-indicator.sh'
+tm_nowplaying="#{@nowplaying}"
 
 # group separator: dim vertical bar with 1-space padding on each side
 tm_sep="#[fg=$tm_color_inactive,nobold] │ "
