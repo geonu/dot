@@ -25,7 +25,7 @@ brew "eza"                 # modern `ls` (maintained fork of exa)
 brew "fd"                  # modern `find` file search
 brew "fzf"                 # fuzzy finder (omppick session picker)
 brew "gh"                  # GitHub CLI
-brew "googleworkspace-cli" # Google Workspace CLI
+brew "gogcli"              # Google Workspace CLI (gog) — replaces unmaintained googleworkspace-cli/gws
 brew "jq"                  # JSON processor
 brew "libpq"               # PostgreSQL client libraries (psql)
 brew "mise"                # polyglot runtime manager (replaces nvm/pyenv/jenv)
