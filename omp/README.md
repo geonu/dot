@@ -7,17 +7,17 @@
 
 ## 모드 구분
 
-- **GPT only**: Claude 구독 쿼터를 이미 소진했거나 Anthropic 호출을 의도적으로 막을 때. 현재 `config.yml`.
+- **GPT only**: Claude 구독 쿼터를 이미 소진했거나 Anthropic 호출을 의도적으로 막을 때.
 - **Claude only**: Claude 구독 쿼터가 충분하고 OpenAI/Codex 쿼터를 아낄 때.
 - **fable-codex**: 06-22까지 임시. Fable이 계획/리뷰 품질을 맡고 Codex GPT-5.5가 실행 fan-out을 맡는다.
-- **combo-claude**: Claude가 장기 컨텍스트의 주 모델, Codex/GPT는 고추론·비전 버스트.
+- **combo-claude**: Claude가 장기 컨텍스트의 주 모델, Codex/GPT는 고추론·비전 버스트. 현재 `config.yml`.
 - **combo-gpt**: Codex/GPT가 장기 컨텍스트의 주 모델, Claude는 smol/commit 보조.
 
 
 ## 프로필 파일과 tmux 재시작
 
 모델 조합은 `omp/profiles/*.yml`에 같은 이름으로 보관한다. `config.yml`은 현재 기본값
-(`GPT only`)이고, 프로필은 실행 시 `--config ~/.dotfiles/omp/profiles/<profile>.yml`로
+(`combo-claude`)이고, 프로필은 실행 시 `--config ~/.dotfiles/omp/profiles/<profile>.yml`로
 overlay한다.
 
 | profile | 파일 | 용도 |
@@ -149,9 +149,9 @@ fallback 조건 [S12]. OMP의 `:low/:medium/:high` suffix는 모델별 effortMap
 | 4 | fable-5:low | medium | 80.3 | — | — | 10/50/1/12.5 | — | 무료 윈도우 default 특례 [S3] |
 | 5 | fable-5:minimal | low | 80.3 | — | — | 10/50/1/12.5 | — | |
 | 6 | opus-4.8:xhigh | max | 69.2 | 61.4§ | — | 5/25/0.5/6.25 | — | AA 모델단위 [S11], SWE [S1] |
-| 7 | opus-4.8:high | xhigh | 69.2 | — | — | 5/25/0.5/6.25 | — | claude-only slow/plan |
+| 7 | opus-4.8:high | xhigh | 69.2 | — | — | 5/25/0.5/6.25 | — | claude-only slow/plan; combo-claude default |
 | 8 | opus-4.8:medium | high | 69.2 | — | — | 5/25/0.5/6.25 | — | vision |
-| 9 | opus-4.8:low | medium | 69.2 | — | — | 5/25/0.5/6.25 | — | combo-claude default |
+| 9 | opus-4.8:low | medium | 69.2 | — | — | 5/25/0.5/6.25 | — | |
 | 10 | opus-4.8:minimal | low | 69.2 | — | — | 5/25/0.5/6.25 | — | |
 | 11 | gpt-5.5:xhigh | xhigh | 58.6 | 60 | 70.0% / $5.76 | 5/30/0.5/0 | 3.4x | plan 전용; DeepSWE xhigh 실측 [S14] |
 | 12 | gpt-5.5:high | high | 58.6 | 59 | — | 5/30/0.5/0 | 2.0x | slow/vision/designer |
@@ -186,7 +186,7 @@ gpt가 절반 수준 → execution은 gpt-5.5 [S15].
 Codex/GPT는 slow/plan/vision/designer처럼 실패 비용이 큰 버스트 역할에 투입한다.
 
 ```yaml
-default: anthropic/claude-opus-4-8:medium
+default: anthropic/claude-opus-4-8:high
 smol: anthropic/claude-haiku-4-5:minimal
 slow: openai-codex/gpt-5.5:high
 vision: openai-codex/gpt-5.5:high
