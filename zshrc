@@ -234,17 +234,19 @@ _omp_canonical_profile() {
 }
 
 _omp_profile_arg() {
-  local command="$1" requested="${2:-}" suffix="$3"
+  local command="$1" requested="${2:-}" suffix="$3" source="argument" profile
 
   if [[ -z "$requested" || "$requested" == -* ]]; then
-    _omp_default_profile
+    requested="$(_omp_default_profile)"
+    source="default"
+  fi
+
+  if profile="$(_omp_canonical_profile "$requested")"; then
+    print -- "$profile"
     return 0
   fi
 
-  if _omp_canonical_profile "$requested"; then
-    return 0
-  fi
-
+  print -u2 "error: invalid OMP profile from $source: '$requested'"
   print -u2 "usage: $command [$(_omp_profile_usage)]$suffix"
   return 2
 }
@@ -289,9 +291,13 @@ ompcombo_gptr() { _omp_resume_profile combo-gpt "$@"; }
 
 
 ompr_tmux_respawn() {
-  local profile="${1:-$(_omp_default_profile)}"
-  local pane="${2:-$(tmux display-message -p '#{pane_id}')}"
+  local requested="${1:-}" profile pane="${2:-$(tmux display-message -p '#{pane_id}')}"
   local pane_pid pane_path session_id session_status launch
+
+  if ! profile="$(_omp_profile_arg ompr_tmux_respawn "$requested" "")"; then
+    tmux display-message "OMP: invalid profile '${requested:-$(_omp_default_profile)}'; pane not respawned"
+    return 2
+  fi
 
   pane_pid="$(tmux display-message -t "$pane" -p '#{pane_pid}')"
   pane_path="$(tmux display-message -t "$pane" -p '#{pane_current_path}')"
@@ -333,9 +339,11 @@ ompr_tmux_respawn() {
   # keeps the pane alive after omp exits (remain-on-exit is off).
   if [[ -n "$session_id" ]]; then
     tmux set-option -p -t "$pane" @omp_session "$session_id"
+    tmux set-option -p -t "$pane" @omp_profile "$profile"
     launch="env OMP_RESUME_SESSION_ID=$session_id zsh -lic 'ompr $profile; exec zsh -i'"
   else
     tmux set-option -pu -t "$pane" @omp_session
+    tmux set-option -p -t "$pane" @omp_profile "$profile"
     launch="zsh -lic 'ompr_fresh $profile; exec zsh -i'"
   fi
 
@@ -348,9 +356,14 @@ ompr_tmux_respawn() {
 # make every pane race to resolve against the active pane's cwd. Here we drive
 # one server-side respawn per pane id, so each pane recalls its own conversation.
 ompr_tmux_respawn_all() {
-  local profile="${1:-$(_omp_default_profile)}"
-  local window="${2:-$(tmux display-message -p '#{window_id}')}"
+  local requested="${1:-}" profile window="${2:-$(tmux display-message -p '#{window_id}')}"
   local pane
+
+  if ! profile="$(_omp_profile_arg ompr_tmux_respawn_all "$requested" "")"; then
+    tmux display-message "OMP: invalid profile '${requested:-$(_omp_default_profile)}'; no panes respawned"
+    return 2
+  fi
+
   for pane in $(tmux list-panes -t "$window" -F '#{pane_id}'); do
     ompr_tmux_respawn "$profile" "$pane"
   done

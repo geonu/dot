@@ -58,4 +58,15 @@ assert_no_role_overrides "glm alias"
 ompr_fresh config --probe
 assert_args "config fresh profile" --probe
 
+bad_default_stderr="$test_zdotdir/bad-default.err"
+OMP_DEFAULT_PROFILE=not-a-profile
+if ompr_fresh 2>"$bad_default_stderr"; then
+  fail "invalid OMP_DEFAULT_PROFILE must fail"
+fi
+unset OMP_DEFAULT_PROFILE
+bad_default_output="$(<"$bad_default_stderr")"
+if [[ "$bad_default_output" != *"invalid OMP profile"* ]]; then
+  fail "invalid OMP_DEFAULT_PROFILE must print a profile error, got: $bad_default_output"
+fi
+
 print -- "ok: profile dispatch uses profile yaml without role overrides"

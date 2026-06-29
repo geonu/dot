@@ -23,7 +23,7 @@ _omp_restore_panes() {
   local sidecar="$HOME/.local/share/tmux/resurrect/omp_panes"
   [[ -r "$sidecar" && -s "$sidecar" ]] || return 0
 
-  local sname widx pidx cwd profile sid target tpid cur_cwd cur_sid launch fb
+  local sname widx pidx cwd profile sid target tpid cur_cwd cur_sid launch
 
   # Cache `omp __complete sessions` per directory: it costs ~0.5s per call and
   # returns the same list for every pane sharing a cwd, so fetch once per unique
@@ -35,10 +35,20 @@ _omp_restore_panes() {
   # the `<<<` here-string must read the array, never re-invoke the populator
   # inside a command substitution, or the cached value would be lost each call.
   _omp_sid_valid() {
-    local sid="$1" d="$2" line
+    local sid="$1" d="$2" raw cmd_status line
     [[ -n "$sid" ]] || return 1
     if [[ -z "${_omp_sess_cache[$d]+set}" ]]; then
-      _omp_sess_cache[$d]="$(cd "$d" 2>/dev/null && omp __complete sessions -- "" 2>/dev/null | awk '{print $1}')"
+      if [[ ! -d "$d" ]]; then
+        print -u2 "omp-restore-panes: cannot list OMP sessions in '$d': directory missing"
+        return 2
+      fi
+      raw="$(cd "$d" && omp __complete sessions -- "" 2>&1)"
+      cmd_status=$?
+      if (( cmd_status != 0 )); then
+        print -u2 "omp-restore-panes: cannot list OMP sessions in '$d' (status $cmd_status): $raw"
+        return 2
+      fi
+      _omp_sess_cache[$d]="$(print -r -- "$raw" | awk '{print $1}')"
     fi
     while IFS= read -r line; do
       [[ -n "$line" && "$line" == "$sid"* ]] && return 0
@@ -47,12 +57,16 @@ _omp_restore_panes() {
   }
   while IFS=$'\t' read -r sname widx pidx cwd profile sid; do
     [[ -n "$sname" && -n "$widx" && -n "$pidx" && -n "$cwd" && -n "$sid" ]] || continue
+    target="${sname}:${widx}.${pidx}"
     case "$profile" in
-      gpt|gpt-glm|claude|fable-codex|combo-claude|combo-gpt) ;;
-      *) fb="$(tmux show-options -gqv @omp-default-profile 2>/dev/null)"; profile="${fb:-gpt-glm}" ;;
+      gpt|gpt-glm|claude|fable-codex|combo-claude|combo-gpt|config) ;;
+      *)
+        print -u2 "omp-restore-panes: unknown saved profile '$profile' for $target ($sid); pane not respawned"
+        tmux display-message "OMP restore skipped $target: unknown profile '$profile'"
+        continue
+        ;;
     esac
 
-    target="${sname}:${widx}.${pidx}"
     # Target pane must exist after restore.
     tpid="$(tmux display-message -p -t "$target" '#{pane_pid}' 2>/dev/null)" || continue
     [[ -n "$tpid" ]] || continue
@@ -62,7 +76,18 @@ _omp_restore_panes() {
     [[ "$cur_cwd" == "$cwd" ]] || continue
     # Session must still exist for that cwd (OMP resume is directory-scoped),
     # validated against the per-cwd cache built above.
-    _omp_sid_valid "$sid" "$cwd" || continue
+    _omp_sid_valid "$sid" "$cwd"
+    case $? in
+      0) ;;
+      1)
+        print -u2 "omp-restore-panes: saved session '$sid' no longer exists in '$cwd'"
+        continue
+        ;;
+      *)
+        tmux display-message "OMP restore skipped $target: cannot validate sessions in $cwd"
+        continue
+        ;;
+    esac
     # Idempotent: on a manual re-run a pane may already host this exact session,
     # so skip to avoid killing live work. Skipped on the resurrect path -- the
     # pane was just restored as a bare shell, so this lsof/ps scan would always

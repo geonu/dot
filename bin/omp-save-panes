@@ -9,13 +9,27 @@
 #
 # Source-safe: no top-level `exit`, all logic in functions; the hook sources it.
 
-# Best-effort: recover the provider profile from the live omp process args. The
-# zsh wrappers launch `omp --config .../omp/profiles/<profile>.yml ...`, so the
-# profile stays visible in process args even when resuming a session. Falls back
-# to the @omp-default-profile tmux option, then gpt-glm.
+# Best-effort: recover the canonical provider profile from pane metadata first,
+# then from the live omp process args. Do not invent a default profile when
+# recovery fails; a guessed profile would silently restore panes on the wrong
+# provider mix.
+_omp_known_profile() {
+  case "$1" in
+    gpt|gpt-glm|claude|fable-codex|combo-claude|combo-gpt|config) return 0 ;;
+    *) return 1 ;;
+  esac
+}
+
 _omp_pane_profile() {
-  local pane_pid="$1" pid cmd p
+  local pane_id="$1" pane_pid="$2" saved pid cmd p
   local -a pids
+
+  saved="$(tmux show-options -pqv -t "$pane_id" @omp_profile 2>/dev/null)" || saved=""
+  if _omp_known_profile "$saved"; then
+    print -r -- "$saved"
+    return 0
+  fi
+
   pids=("$pane_pid" "${(@f)$(_omp_descendant_pids "$pane_pid" 2>/dev/null)}")
   for pid in "${pids[@]}"; do
     [[ -n "$pid" ]] || continue
@@ -23,14 +37,15 @@ _omp_pane_profile() {
     if [[ "$cmd" == *omp/profiles/* ]]; then
       p="${cmd##*omp/profiles/}"
       p="${p%%.yml*}"
-      case "$p" in
-        gpt|gpt-glm|claude|fable-codex|combo-claude|combo-gpt) print -r -- "$p"; return 0 ;;
-      esac
+      if _omp_known_profile "$p"; then
+        print -r -- "$p"
+        return 0
+      fi
     fi
   done
-  local fb
-  fb="$(tmux show-options -gqv @omp-default-profile 2>/dev/null)"
-  print -r -- "${fb:-gpt-glm}"
+
+  print -u2 "omp-save-panes: unable to determine OMP profile for pane $pane_id; skipping"
+  return 1
 }
 
 _omp_save_panes() {
@@ -59,7 +74,7 @@ _omp_save_panes() {
     sid="$(_omp_session_from_tmux_pane "$pane_pid" 2>/dev/null)" || sid=""
     [[ -n "$sid" ]] || continue
 
-    profile="$(_omp_pane_profile "$pane_pid")"
+    profile="$(_omp_pane_profile "$pane_id" "$pane_pid")" || continue
     print -r -- "${sname}"$'\t'"${widx}"$'\t'"${pidx}"$'\t'"${cwd}"$'\t'"${profile}"$'\t'"${sid}" >> "$tmp"
   done
 

@@ -44,8 +44,8 @@ tmux 옵션(omp가 종료돼도 남아 다음 전환에서 같은 대화로 복�
 
 정합성 체크는 `bin/omp-profile-check.sh`로 한다. 이 스크립트는 `omp/config.yml`,
 `omp/profiles/*.yml`, 이 README의 프로필 목록, `zshrc` profile dispatcher,
-`tmux.conf`의 `@omp-default-profile`/`@omp-profile-choices`, restore helper fallback,
-그리고 로컬 `~/.omp/agent/models.db`의 모델/effort 메타데이터를 함께 검증한다.
+`tmux.conf`의 `@omp-default-profile`/`@omp-profile-choices`, save/restore helper의
+profile 보존 규칙, 그리고 로컬 `~/.omp/agent/models.db`의 모델/effort 메타데이터를 함께 검증한다.
 모델 가이드나 profile 기본값을 바꾸거나 OMP 업데이트 후에는 이 체크를 먼저 돌린다.
 
 ## GPT only (Claude 쿼터 소진 대응)

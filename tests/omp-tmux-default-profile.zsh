@@ -37,9 +37,11 @@ assert_file_contains "$tmux_conf" 'OMP profile (#{@omp-profile-choices})' "singl
 assert_file_contains "$tmux_conf" 'OMP profile ALL panes (#{@omp-profile-choices})' "all-pane prompt choices"
 assert_file_not_contains "$tmux_conf" "@omp-restore-profile" "old restore-only option"
 
-assert_file_contains "$save_script" "@omp-default-profile" "save fallback option"
-assert_file_contains "$restore_script" "@omp-default-profile" "restore fallback option"
+assert_file_contains "$save_script" "@omp_profile" "save pane profile option"
+assert_file_contains "$restore_script" "gpt|gpt-glm|claude|fable-codex|combo-claude|combo-gpt|config)" "restore profile whitelist"
 assert_file_not_contains "$save_script" "@omp-restore-profile" "old save fallback option"
 assert_file_not_contains "$restore_script" "@omp-restore-profile" "old restore fallback option"
+assert_file_not_contains "$save_script" "\${fb:-gpt-glm}" "unvalidated save fallback"
+assert_file_not_contains "$restore_script" "\${fb:-gpt-glm}" "unvalidated restore fallback"
 
 print -- "ok: tmux default profile option is centralized"

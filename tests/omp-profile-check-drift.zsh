@@ -23,6 +23,41 @@ cp "$repo_root/bin/omp-profile-check.sh" "$work/bin/omp-profile-check.sh"
 cp "$repo_root/bin/omp-save-panes" "$work/bin/omp-save-panes"
 cp "$repo_root/bin/omp-restore-panes" "$work/bin/omp-restore-panes"
 
+models_dir="$work/models"
+mkdir -p "$models_dir"
+export PI_CODING_AGENT_DIR="$models_dir"
+python3 - "$models_dir/models.db" <<'PY'
+import json
+import sqlite3
+import sys
+
+db = sys.argv[1]
+providers = {
+    "openai-codex": [
+        {"id": "gpt-5.5", "thinking": {"efforts": ["medium", "high", "xhigh"]}},
+        {"id": "gpt-5.4-nano", "thinking": {"efforts": ["low"]}},
+    ],
+    "anthropic": [
+        {"id": "claude-haiku-4-5", "thinking": {"efforts": ["minimal"]}},
+        {"id": "claude-opus-4-8", "thinking": {"efforts": ["medium", "high"]}},
+        {"id": "claude-sonnet-4-6", "thinking": {"efforts": ["medium", "high"]}},
+        {"id": "claude-fable-5", "thinking": {"efforts": ["low", "high"]}},
+    ],
+    "zai": [
+        {"id": "glm-5.2", "thinking": {"efforts": ["minimal", "high", "xhigh"]}},
+    ],
+}
+
+conn = sqlite3.connect(db)
+conn.execute("create table model_cache (provider_id text, models text)")
+for provider_id, models in providers.items():
+    conn.execute(
+        "insert into model_cache (provider_id, models) values (?, ?)",
+        (provider_id, json.dumps(models)),
+    )
+conn.commit()
+PY
+
 content="$(<"$work/tmux.conf")"
 print -r -- "${content/gpt-glm/not-a-profile}" > "$work/tmux.conf"
 

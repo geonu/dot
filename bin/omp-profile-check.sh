@@ -66,10 +66,16 @@ missing = [str(path) for path in paths.values() if not path.exists()]
 if missing:
     raise SystemExit(f"missing profile files: {', '.join(missing)}")
 
-conn = sqlite3.connect(models_db)
+if not models_db.exists():
+    raise SystemExit(f"models db missing: {models_db}; run OMP once or set PI_CODING_AGENT_DIR")
+
 providers = {}
-for provider_id, models_json in conn.execute("select provider_id, models from model_cache"):
-    providers[provider_id] = {m["id"]: m for m in json.loads(models_json)}
+try:
+    conn = sqlite3.connect(f"file:{models_db}?mode=ro", uri=True)
+    for provider_id, models_json in conn.execute("select provider_id, models from model_cache"):
+        providers[provider_id] = {m["id"]: m for m in json.loads(models_json)}
+except (sqlite3.Error, json.JSONDecodeError) as exc:
+    raise SystemExit(f"cannot read models db {models_db}: {exc}") from exc
 
 errors = []
 for name, path in {"config": config, **{name: profiles_dir / f"{name}.yml" for name in profile_names}}.items():
@@ -124,13 +130,23 @@ if tmux_choices is None:
 elif tmux_choices.split("/") != profile_choices:
     errors.append(f"tmux.conf @omp-profile-choices mismatch: {tmux_choices}")
 
-if "@omp-restore-profile" in tmux_text:
-    errors.append("tmux.conf still references old @omp-restore-profile")
-for path, text in [(save_script, save_text), (restore_script, restore_text)]:
-    if "@omp-default-profile" not in text:
-        errors.append(f"{path} must read @omp-default-profile")
+for path, text in [(tmux_conf, tmux_text), (save_script, save_text), (restore_script, restore_text)]:
     if "@omp-restore-profile" in text:
         errors.append(f"{path} still references old @omp-restore-profile")
+
+if "@omp_profile" not in save_text:
+    errors.append(f"{save_script} must recover @omp_profile before guessing from process args")
+
+restore_case = re.search(r'case "\$profile" in(?P<body>.*?)esac', restore_text, re.S)
+restore_body = restore_case.group("body") if restore_case else ""
+accepted_restore = set(re.findall(r'\b(gpt-glm|gpt|claude|fable-codex|combo-claude|combo-gpt|config)\b', restore_body))
+missing_restore = set(profile_choices) - accepted_restore
+if missing_restore:
+    errors.append(f"{restore_script} profile whitelist missing: {sorted(missing_restore)}")
+
+for path, text in [(save_script, save_text), (restore_script, restore_text)]:
+    if "${fb:-gpt-glm}" in text:
+        errors.append(f"{path} uses an unvalidated default-profile fallback")
 
 if f'print -- "${{OMP_DEFAULT_PROFILE:-{default_profile}}}"' not in zsh_text:
     errors.append(f"zshrc _omp_default_profile must default to {default_profile}")
