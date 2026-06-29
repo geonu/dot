@@ -74,7 +74,7 @@ Models: **O4.8**=Opus 4.8 · **F5**=Fable 5 · **G5.5**=GPT-5.5 · **GLM5.2**=GL
 
 | Role | config (active) | claude | combo-claude | combo-gpt | gpt | gpt-glm | fable-codex |
 |---|---|---|---|---|---|---|---|
-| `default` | O4.8:medium | O4.8:medium | O4.8:medium | G5.5:medium | G5.5:medium | G5.5:medium | F5:low |
+| `default` | G5.5:xhigh | O4.8:medium | O4.8:medium | G5.5:medium | G5.5:medium | G5.5:medium | F5:low |
 | `plan` | G5.5:xhigh | O4.8:high | G5.5:xhigh | G5.5:xhigh | G5.5:xhigh | G5.5:xhigh | F5:high |
 | `slow` | G5.5:high | O4.8:high | G5.5:high | G5.5:high | G5.5:high | GLM5.2:high | F5:high |
 | `task` | G5.5:high | S4.6:medium | G5.5:high | G5.5:medium | G5.5:medium | GLM5.2:high | G5.5:xhigh |
@@ -114,7 +114,7 @@ Scored on the `default`-role mandate, not raw coding throughput.
 
 | Profile | `default` (orchestrator) | Fitness | Notes |
 |---|---|---|---|
-| `config.yml` (active) | Opus 4.8 `:medium` | **9.0** | Production default. Opus orchestrates, escalates `plan`/`slow`/`task` to GPT-5.5. |
+| `config.yml` (active) | GPT-5.5 `:xhigh` | **8.5** | Claude-free active config. GPT orchestrates at max budget; profile overlays remain available via `Ctrl-a R`. |
 | `claude.yml` | Opus 4.8 `:medium` | **9.0** | All-Anthropic; protects OpenAI quota. `task` drops to Sonnet 4.6. |
 | `combo-claude.yml` | Opus 4.8 `:medium` | **9.0** | Claude owns context; GPT-5.5 reserved for burst reasoning / design. |
 | `combo-gpt.yml` | GPT-5.5 `:medium` | **8.5** | GPT owns long-running context; Haiku for cheap utility. |

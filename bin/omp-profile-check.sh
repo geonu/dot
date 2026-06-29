@@ -2,7 +2,7 @@
 set -euo pipefail
 
 repo_root="${1:-$(pwd)}"
-active_profile="${OMP_ACTIVE_PROFILE:-combo-claude}"
+active_profile="${OMP_ACTIVE_PROFILE:-config}"
 config="$repo_root/omp/config.yml"
 profiles_dir="$repo_root/omp/profiles"
 readme="$repo_root/omp/README.md"
@@ -68,11 +68,12 @@ for name, path in paths.items():
                 errors.append(f"{path}: {role}: unsupported effort {effort} for {provider}/{model}; available={efforts}")
 
 config_roles = parse_roles(config)
-active_path = profiles_dir / f"{active_profile}.yml"
-if not active_path.exists():
-    errors.append(f"unknown active profile: {active_profile} ({active_path} missing)")
-elif config_roles != parse_roles(active_path):
-    errors.append(f"omp/config.yml must match omp/profiles/{active_profile}.yml (active default profile)")
+if active_profile not in {"config", "default"}:
+    active_path = profiles_dir / f"{active_profile}.yml"
+    if not active_path.exists():
+        errors.append(f"unknown active profile: {active_profile} ({active_path} missing)")
+    elif config_roles != parse_roles(active_path):
+        errors.append(f"omp/config.yml must match omp/profiles/{active_profile}.yml (active default profile)")
 
 readme_text = readme.read_text()
 for name in profile_names:

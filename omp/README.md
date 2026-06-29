@@ -11,14 +11,14 @@
 - **GPT+GLM**: Claude 쿼터 소진 시 GPT가 오케스트레이션을 맡고 GLM-5.2가 `slow`/`task` worker를 맡는 백업.
 - **Claude only**: Claude 구독 쿼터가 충분하고 OpenAI/Codex 쿼터를 아낄 때.
 - **fable-codex**: 06-22까지 임시. Fable이 계획/리뷰 품질을 맡고 Codex GPT-5.5가 실행 fan-out을 맡는다.
-- **combo-claude**: Claude가 장기 컨텍스트의 주 모델, Codex/GPT는 고추론·비전 버스트. 현재 `config.yml`.
+- **combo-claude**: Claude가 장기 컨텍스트의 주 모델, Codex/GPT는 고추론·비전 버스트.
 - **combo-gpt**: Codex/GPT가 장기 컨텍스트의 주 모델, Claude는 smol/commit 보조.
 
 
 ## 프로필 파일과 tmux 재시작
 
 모델 조합은 `omp/profiles/*.yml`에 같은 이름으로 보관한다. `config.yml`은 현재 기본값
-(`combo-claude`)이고, 프로필은 실행 시 `--config ~/.dotfiles/omp/profiles/<profile>.yml`로
+(GPT-5.5 xhigh active config)이고, 프로필은 실행 시 `--config ~/.dotfiles/omp/profiles/<profile>.yml`로
 overlay한다.
 
 | profile | 파일 | 용도 |
@@ -199,6 +199,22 @@ gpt가 절반 수준 → execution은 gpt-5.5 [S15].
 06-23부터 fable-5는 구독 미포함(크레딧 추가 과금 [S7]). Claude 쿼터가 회복되고
 구독제만 유지할 때는 fable을 전 역할에서 제거한다. 이때 주 모델을 누구로 둘지에 따라
 프로필을 둘로 나눈다.
+
+### 현재 세팅 · `config`: GPT-5.5 xhigh active config
+
+`omp/config.yml`. Claude 쿼터 소진 대응으로 default를 GPT-5.5 xhigh에 둔 active config다.
+`Ctrl-a R`에서 `config`를 고르면 profile overlay 없이 이 설정 그대로 resume한다.
+
+```yaml
+default: openai-codex/gpt-5.5:xhigh
+smol: anthropic/claude-haiku-4-5:minimal
+slow: openai-codex/gpt-5.5:high
+vision: openai-codex/gpt-5.5:high
+plan: openai-codex/gpt-5.5:xhigh
+designer: openai-codex/gpt-5.5:high
+commit: anthropic/claude-haiku-4-5:off
+task: openai-codex/gpt-5.5:high
+```
 
 ### 현재 세팅 · `combo-claude`: Claude 메인 + Codex 버스트
 
