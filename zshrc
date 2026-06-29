@@ -198,112 +198,98 @@ _omp_profile_path() {
   print -- "$HOME/.dotfiles/omp/profiles/$1.yml"
 }
 
-ompgpt() {
-  omp \
-    --config "$(_omp_profile_path gpt)" \
-    --model openai-codex/gpt-5.5:medium \
-    --thinking medium \
-    --smol openai-codex/gpt-5.4-nano:low \
-    --slow openai-codex/gpt-5.5:high \
-    --plan openai-codex/gpt-5.5:xhigh \
-    "$@"
+_omp_default_profile() {
+  print -- "${OMP_DEFAULT_PROFILE:-gpt-glm}"
 }
 
-
-ompgpt_glm() {
-  omp \
-    --config "$(_omp_profile_path gpt-glm)" \
-    --model openai-codex/gpt-5.5:medium \
-    --thinking medium \
-    --smol openai-codex/gpt-5.4-nano:low \
-    --slow zai/glm-5.2:high \
-    --plan openai-codex/gpt-5.5:xhigh \
-    "$@"
-}
-ompclaude() {
-  omp \
-    --config "$(_omp_profile_path claude)" \
-    --model anthropic/claude-opus-4-8:medium \
-    --thinking medium \
-    --smol anthropic/claude-haiku-4-5:minimal \
-    --slow anthropic/claude-opus-4-8:high \
-    --plan anthropic/claude-opus-4-8:high \
-    "$@"
+_omp_profile_choices() {
+  print -- "gpt-glm/gpt/claude/fable-codex/combo-claude/combo-gpt/config"
 }
 
-
-ompfable_codex() {
-  omp \
-    --config "$(_omp_profile_path fable-codex)" \
-    --model anthropic/claude-fable-5:low \
-    --thinking low \
-    --smol anthropic/claude-haiku-4-5:minimal \
-    --slow anthropic/claude-fable-5:high \
-    --plan anthropic/claude-fable-5:high \
-    "$@"
+_omp_profile_usage() {
+  print -- "gpt-glm|gpt|claude|fable-codex|combo-claude|combo-gpt|config"
 }
 
-ompcombo_claude() {
-  omp \
-    --config "$(_omp_profile_path combo-claude)" \
-    --model anthropic/claude-opus-4-8:medium \
-    --thinking medium \
-    --smol anthropic/claude-haiku-4-5:minimal \
-    --slow openai-codex/gpt-5.5:high \
-    --plan openai-codex/gpt-5.5:xhigh \
-    "$@"
+_omp_canonical_profile() {
+  case "${1:-}" in
+    gpt|gpt-glm|claude|fable-codex|combo-claude|combo-gpt|config)
+      print -- "$1"
+      ;;
+    glm)
+      print -- "gpt-glm"
+      ;;
+    fable|fable5)
+      print -- "fable-codex"
+      ;;
+    combo|combination|mixed)
+      print -- "combo-claude"
+      ;;
+    default)
+      print -- "config"
+      ;;
+    *)
+      return 1
+      ;;
+  esac
 }
 
-ompcombo_gpt() {
-  omp \
-    --config "$(_omp_profile_path combo-gpt)" \
-    --model openai-codex/gpt-5.5:medium \
-    --thinking medium \
-    --smol anthropic/claude-haiku-4-5:minimal \
-    --slow openai-codex/gpt-5.5:high \
-    --plan openai-codex/gpt-5.5:xhigh \
-    "$@"
+_omp_profile_arg() {
+  local command="$1" requested="${2:-}" suffix="$3"
+
+  if [[ -z "$requested" || "$requested" == -* ]]; then
+    _omp_default_profile
+    return 0
+  fi
+
+  if _omp_canonical_profile "$requested"; then
+    return 0
+  fi
+
+  print -u2 "usage: $command [$(_omp_profile_usage)]$suffix"
+  return 2
 }
 
-ompgptr() {
+_omp_run_profile() {
+  local profile="$1"
+  shift
+
+  profile="$(_omp_canonical_profile "$profile")" || return 2
+  case "$profile" in
+    config)
+      omp "$@"
+      ;;
+    *)
+      omp --config "$(_omp_profile_path "$profile")" "$@"
+      ;;
+  esac
+}
+
+_omp_resume_profile() {
+  local profile="$1"
+  shift
   local -a args
+
   args=("${(@f)$(_omp_resume_args "$@")}") || return 1
-  ompgpt "${args[@]}"
+  _omp_run_profile "$profile" "${args[@]}"
 }
 
-ompgpt_glmr() {
-  local -a args
-  args=("${(@f)$(_omp_resume_args "$@")}") || return 1
-  ompgpt_glm "${args[@]}"
-}
+ompgpt() { _omp_run_profile gpt "$@"; }
+ompgpt_glm() { _omp_run_profile gpt-glm "$@"; }
+ompclaude() { _omp_run_profile claude "$@"; }
+ompfable_codex() { _omp_run_profile fable-codex "$@"; }
+ompcombo_claude() { _omp_run_profile combo-claude "$@"; }
+ompcombo_gpt() { _omp_run_profile combo-gpt "$@"; }
 
-ompclauder() {
-  local -a args
-  args=("${(@f)$(_omp_resume_args "$@")}") || return 1
-  ompclaude "${args[@]}"
-}
-
-ompfable_codexr() {
-  local -a args
-  args=("${(@f)$(_omp_resume_args "$@")}") || return 1
-  ompfable_codex "${args[@]}"
-}
-
-ompcombo_clauder() {
-  local -a args
-  args=("${(@f)$(_omp_resume_args "$@")}") || return 1
-  ompcombo_claude "${args[@]}"
-}
-
-ompcombo_gptr() {
-  local -a args
-  args=("${(@f)$(_omp_resume_args "$@")}") || return 1
-  ompcombo_gpt "${args[@]}"
-}
+ompgptr() { _omp_resume_profile gpt "$@"; }
+ompgpt_glmr() { _omp_resume_profile gpt-glm "$@"; }
+ompclauder() { _omp_resume_profile claude "$@"; }
+ompfable_codexr() { _omp_resume_profile fable-codex "$@"; }
+ompcombo_clauder() { _omp_resume_profile combo-claude "$@"; }
+ompcombo_gptr() { _omp_resume_profile combo-gpt "$@"; }
 
 
 ompr_tmux_respawn() {
-  local profile="${1:-gpt-glm}"
+  local profile="${1:-$(_omp_default_profile)}"
   local pane="${2:-$(tmux display-message -p '#{pane_id}')}"
   local pane_pid pane_path session_id session_status launch
 
@@ -362,7 +348,7 @@ ompr_tmux_respawn() {
 # make every pane race to resolve against the active pane's cwd. Here we drive
 # one server-side respawn per pane id, so each pane recalls its own conversation.
 ompr_tmux_respawn_all() {
-  local profile="${1:-gpt-glm}"
+  local profile="${1:-$(_omp_default_profile)}"
   local window="${2:-$(tmux display-message -p '#{window_id}')}"
   local pane
   for pane in $(tmux list-panes -t "$window" -F '#{pane_id}'); do
@@ -371,45 +357,19 @@ ompr_tmux_respawn_all() {
 }
 
 ompr() {
-  local profile="${1:-gpt-glm}"
-  [[ $# -gt 0 ]] && shift
+  local profile
 
-  case "$profile" in
-    gpt) ompgptr "$@" ;;
-    gpt-glm|glm) ompgpt_glmr "$@" ;;
-    claude) ompclauder "$@" ;;
-    fable-codex|fable|fable5) ompfable_codexr "$@" ;;
-    combo-claude|combo|combination|mixed) ompcombo_clauder "$@" ;;
-    combo-gpt) ompcombo_gptr "$@" ;;
-    config|default)
-      local -a args
-      args=("${(@f)$(_omp_resume_args "$@")}") || return 1
-      omp "${args[@]}"
-      ;;
-    *)
-      print -u2 "usage: ompr [gpt-glm|gpt|claude|fable-codex|combo-claude|combo-gpt|config] [session-id-prefix] [omp flags...]"
-      return 2
-      ;;
-  esac
+  profile="$(_omp_profile_arg ompr "${1:-}" " [session-id-prefix] [omp flags...]")" || return $?
+  [[ $# -gt 0 && "$1" != -* ]] && shift
+  _omp_resume_profile "$profile" "$@"
 }
 
 ompr_fresh() {
-  local profile="${1:-gpt-glm}"
-  [[ $# -gt 0 ]] && shift
+  local profile
 
-  case "$profile" in
-    gpt) ompgpt "$@" ;;
-    gpt-glm|glm) ompgpt_glm "$@" ;;
-    claude) ompclaude "$@" ;;
-    fable-codex|fable|fable5) ompfable_codex "$@" ;;
-    combo-claude|combo|combination|mixed) ompcombo_claude "$@" ;;
-    combo-gpt) ompcombo_gpt "$@" ;;
-    config|default) omp "$@" ;;
-    *)
-      print -u2 "usage: ompr_fresh [gpt-glm|gpt|claude|fable-codex|combo-claude|combo-gpt|config] [omp flags...]"
-      return 2
-      ;;
-  esac
+  profile="$(_omp_profile_arg ompr_fresh "${1:-}" " [omp flags...]")" || return $?
+  [[ $# -gt 0 && "$1" != -* ]] && shift
+  _omp_run_profile "$profile" "$@"
 }
 
 # Cross-directory OMP session picker. After a crash you no longer hunt
@@ -420,7 +380,8 @@ ompr_fresh() {
 # Uses fzf when present, falls back to a numbered menu otherwise.
 omppick() {
   emulate -L zsh
-  local profile="${1:-gpt-glm}"
+  local profile
+  profile="$(_omp_profile_arg omppick "${1:-}" "")" || return $?
   local base="${PI_CODING_AGENT_DIR:-$HOME/.omp/agent}/sessions"
   local -a files lines
   local f hdr id cwd title now mt age tag
