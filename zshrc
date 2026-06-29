@@ -251,8 +251,59 @@ _omp_profile_arg() {
   return 2
 }
 
+_omp_profile_role() {
+  local profile="$1" role="$2" path line in_roles=0
+
+  path="$(_omp_profile_path "$profile")"
+  [[ -r "$path" ]] || return 1
+
+  while IFS= read -r line; do
+    if [[ "$line" == "modelRoles:" ]]; then
+      in_roles=1
+      continue
+    fi
+
+    if (( in_roles )); then
+      [[ -z "$line" ]] && continue
+      [[ "$line" == [[:space:]]* ]] || break
+      case "$line" in
+        ("  $role: "*) print -- "${line#*: }"; return 0 ;;
+      esac
+    fi
+  done < "$path"
+
+  return 1
+}
+
+_omp_profile_flags() {
+  local profile="$1" default_role model thinking role flag value i
+  local -a pairs
+
+  default_role="$(_omp_profile_role "$profile" default)" || return 1
+  model="${default_role%:*}"
+  thinking="${default_role##*:}"
+
+  print -- "--model"
+  print -- "$model"
+  if [[ "$thinking" != "$default_role" ]]; then
+    print -- "--thinking"
+    print -- "$thinking"
+  fi
+
+  pairs=(smol --smol slow --slow plan --plan)
+  for (( i = 1; i <= ${#pairs}; i += 2 )); do
+    role="${pairs[i]}"
+    flag="${pairs[i + 1]}"
+    if value="$(_omp_profile_role "$profile" "$role")"; then
+      print -- "$flag"
+      print -- "$value"
+    fi
+  done
+}
+
 _omp_run_profile() {
   local profile="$1"
+  local -a profile_flags
   shift
 
   profile="$(_omp_canonical_profile "$profile")" || return 2
@@ -261,7 +312,8 @@ _omp_run_profile() {
       omp "$@"
       ;;
     *)
-      omp --config "$(_omp_profile_path "$profile")" "$@"
+      profile_flags=("${(@f)$(_omp_profile_flags "$profile")}") || return 1
+      omp --config "$(_omp_profile_path "$profile")" "${profile_flags[@]}" "$@"
       ;;
   esac
 }

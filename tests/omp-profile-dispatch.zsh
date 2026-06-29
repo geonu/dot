@@ -36,28 +36,29 @@ assert_args() {
   fi
 }
 
-assert_no_role_overrides() {
-  local label="$1" flag
-  for flag in --model --thinking --smol --slow --plan; do
-    if (( ${omp_args[(I)$flag]} )); then
-      fail "$label: profile wrapper must not pass role override flag $flag"
-    fi
-  done
+expected_gpt_glm_flags() {
+  print -l -- \
+    --config "$expected_gpt_glm_config" \
+    --model openai-codex/gpt-5.5 \
+    --thinking medium \
+    --smol zai/glm-5.2:minimal \
+    --slow openai-codex/gpt-5.5:xhigh \
+    --plan openai-codex/gpt-5.5:xhigh
 }
 
 expected_gpt_glm_config="$HOME/.dotfiles/omp/profiles/gpt-glm.yml"
 
 ompr_fresh
-assert_args "default fresh profile" --config "$expected_gpt_glm_config"
-assert_no_role_overrides "default fresh profile"
+assert_args "default fresh profile" "${(@f)$(expected_gpt_glm_flags)}"
 
 ompr_fresh glm --probe
-assert_args "glm alias" --config "$expected_gpt_glm_config" --probe
-assert_no_role_overrides "glm alias"
+assert_args "glm alias" "${(@f)$(expected_gpt_glm_flags)}" --probe
 
 ompr_fresh config --probe
 assert_args "config fresh profile" --probe
 
+ompr gpt-glm 12345678 --probe
+assert_args "resume profile switch" "${(@f)$(expected_gpt_glm_flags)}" --resume 12345678 --probe
 bad_default_stderr="$test_zdotdir/bad-default.err"
 OMP_DEFAULT_PROFILE=not-a-profile
 if ompr_fresh 2>"$bad_default_stderr"; then
@@ -69,4 +70,4 @@ if [[ "$bad_default_output" != *"invalid OMP profile"* ]]; then
   fail "invalid OMP_DEFAULT_PROFILE must print a profile error, got: $bad_default_output"
 fi
 
-print -- "ok: profile dispatch uses profile yaml without role overrides"
+print -- "ok: profile dispatch forces selected profile on fresh and resumed sessions"
