@@ -1,11 +1,11 @@
 # Claude-free OMP backup profile.
-# GPT-5.5 owns orchestration, review-heavy task fan-out, planning, and UI/vision; GLM-5.2 is a deep alternate slow path.
+# GPT-5.5 owns orchestration, slow escalation, planning, and UI/vision; GLM-5.2 handles high-volume utility/task work on a separate quota pool.
 modelRoles:
   default: openai-codex/gpt-5.5:medium
-  smol: openai-codex/gpt-5.4-nano:low
-  slow: zai/glm-5.2:xhigh
+  smol: zai/glm-5.2:minimal
+  slow: openai-codex/gpt-5.5:xhigh
   vision: openai-codex/gpt-5.5:high
   plan: openai-codex/gpt-5.5:xhigh
   designer: openai-codex/gpt-5.5:high
-  commit: openai-codex/gpt-5.4-nano:off
-  task: openai-codex/gpt-5.5:medium
+  commit: zai/glm-5.2:off
+  task: zai/glm-5.2:xhigh

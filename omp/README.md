@@ -62,22 +62,22 @@ tmux 안에서는 `Ctrl-a R`을 누르면 현재 pane에서 실행 중인 OMP �
 
 ## GPT+GLM (Claude 쿼터 소진 + GLM worker 백업)
 
-`omp/profiles/gpt-glm.yml`. GPT-5.5가 장기 컨텍스트, 계획, 리뷰 가능성이 높은 `task`
-fan-out, UI/vision을 맡고, GLM-5.2는 별도 Z.ai 쿼터를 쓰는 `slow` 대체 추론 경로로만
-둔다. GLM-5.2는 1M context와 long-horizon coding 벤치 신호가 강하지만 DeepSWE/tool
-orchestration에서는 GPT-5.5 쪽이 더 안정적이라 리뷰/일반 task는 GPT에 남긴다.
-Z.ai GLM Coding Plan/API 키가 실제로 동작해야 호출된다.
+`omp/profiles/gpt-glm.yml`. GPT-5.5가 장기 컨텍스트, 실패 비용이 큰 `slow` escalation,
+계획, UI/vision을 맡고, GLM-5.2는 별도 Z.ai 쿼터를 쓰는 `smol`/`commit`/`task`
+역할을 맡는다. 이렇게 하면 Claude 없이도 OpenAI/GPT 쿼터와 Z.ai/GLM 쿼터를 병행
+사용한다. GLM-5.2는 코딩 task에서 Max effort 권장이므로 `task`는 `xhigh`, 사소한
+lookup/commit은 `minimal`/`off`로 둔다.
 
 | role     | model                         | 비고 |
 |----------|-------------------------------|------|
 | default  | openai-codex/gpt-5.5:medium   | Claude-free 오케스트레이터. 순수 `gpt`와 동일 |
-| smol     | openai-codex/gpt-5.4-nano:low | utility는 GPT nano 유지 |
-| slow     | zai/glm-5.2:xhigh             | GLM-5.2 long-context / alternate deep reasoning |
+| smol     | zai/glm-5.2:minimal           | trivial lookup도 GLM 쿼터로 분산 |
+| slow     | openai-codex/gpt-5.5:xhigh    | 실패 비용 큰 escalation은 GPT max |
 | vision   | openai-codex/gpt-5.5:high     | GLM-5.2는 text-only |
 | plan     | openai-codex/gpt-5.5:xhigh    | 설계 실패 비용이 커서 GPT 유지 |
 | designer | openai-codex/gpt-5.5:high     | UI/디자인 구현은 GPT 유지 |
-| commit   | openai-codex/gpt-5.4-nano:off | thinking 비활성 |
-| task     | openai-codex/gpt-5.5:medium   | 리뷰·서브에이전트 가능성이 있어 GPT 유지 |
+| commit   | zai/glm-5.2:off               | 커밋 메시지도 GLM 쿼터로 분산 |
+| task     | zai/glm-5.2:xhigh             | 병렬 코딩 worker는 GLM Max |
 
 ## Claude only (Fable 과금 회피)
 
