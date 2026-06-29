@@ -62,21 +62,22 @@ tmux 안에서는 `Ctrl-a R`을 누르면 현재 pane에서 실행 중인 OMP �
 
 ## GPT+GLM (Claude 쿼터 소진 + GLM worker 백업)
 
-`omp/profiles/gpt-glm.yml`. GPT-5.5가 장기 컨텍스트와 계획을 맡고, GLM-5.2는 별도 Z.ai
-쿼터를 쓰는 `slow`/`task` worker로만 둔다. GLM-5.2는 1M context와 강한 long-horizon
-coding 벤치 신호가 있지만 DeepSWE/tool orchestration에서는 GPT-5.5 쪽이 더 안정적이라
-`default`/`plan`은 GPT에 남긴다. Z.ai GLM Coding Plan/API 키가 실제로 동작해야 호출된다.
+`omp/profiles/gpt-glm.yml`. GPT-5.5가 장기 컨텍스트, 계획, 리뷰 가능성이 높은 `task`
+fan-out, UI/vision을 맡고, GLM-5.2는 별도 Z.ai 쿼터를 쓰는 `slow` 대체 추론 경로로만
+둔다. GLM-5.2는 1M context와 long-horizon coding 벤치 신호가 강하지만 DeepSWE/tool
+orchestration에서는 GPT-5.5 쪽이 더 안정적이라 리뷰/일반 task는 GPT에 남긴다.
+Z.ai GLM Coding Plan/API 키가 실제로 동작해야 호출된다.
 
 | role     | model                         | 비고 |
 |----------|-------------------------------|------|
 | default  | openai-codex/gpt-5.5:medium   | Claude-free 오케스트레이터. 순수 `gpt`와 동일 |
 | smol     | openai-codex/gpt-5.4-nano:low | utility는 GPT nano 유지 |
-| slow     | zai/glm-5.2:high              | GLM-5.2 long-context worker |
+| slow     | zai/glm-5.2:xhigh             | GLM-5.2 long-context / alternate deep reasoning |
 | vision   | openai-codex/gpt-5.5:high     | GLM-5.2는 text-only |
 | plan     | openai-codex/gpt-5.5:xhigh    | 설계 실패 비용이 커서 GPT 유지 |
 | designer | openai-codex/gpt-5.5:high     | UI/디자인 구현은 GPT 유지 |
 | commit   | openai-codex/gpt-5.4-nano:off | thinking 비활성 |
-| task     | zai/glm-5.2:high              | 고볼륨 코딩 fan-out을 GLM으로 분산 |
+| task     | openai-codex/gpt-5.5:medium   | 리뷰·서브에이전트 가능성이 있어 GPT 유지 |
 
 ## Claude only (Fable 과금 회피)
 
@@ -279,8 +280,8 @@ Index)의 **독립 수치가 아직 없다**.
 아니다), ② 사용자가 GLM Coding Plan/Kimi 멤버십 등 별도 구독 의사를 보일 때. 그 시점에
 후보가 되는 건 GLM-5.2 쪽이다 — OMP 카탈로그에 ID가 이미 있고(`zai/glm-5.2`), effort가
 High/Max 2단이라 OMP effortMap으로 `:high`/상한 suffix에 매핑 가능하며, Claude Code 하네스
-호환에 GLM-5.1 대비 추가 과금이 없다 [S17]. 들어온다면 `task`/`smol` 같은 고볼륨·저단가
-coding fan-out 역할 후보다. Kimi K2.7-Code는 카탈로그 부재(현 catalog는 K2 thinking뿐) +
+호환에 GLM-5.1 대비 추가 과금이 없다 [S17]. 들어온다면 `slow` 같은 단발 고난도·대체 관점
+역할 후보가 우선이다. Kimi K2.7-Code는 카탈로그 부재(현 catalog는 K2 thinking뿐) +
 표준 벤치 공백 + KernelBench 회귀 신호로 우선순위가 더 낮다. *카탈로그 존재 ≠ 호출 가능*은
 mythos-5와 동일하게 적용된다.
 

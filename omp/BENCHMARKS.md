@@ -76,8 +76,8 @@ Models: **O4.8**=Opus 4.8 · **F5**=Fable 5 · **G5.5**=GPT-5.5 · **GLM5.2**=GL
 |---|---|---|---|---|---|---|---|
 | `default` | G5.5:xhigh | O4.8:medium | O4.8:medium | G5.5:medium | G5.5:medium | G5.5:medium | F5:low |
 | `plan` | G5.5:xhigh | O4.8:high | G5.5:xhigh | G5.5:xhigh | G5.5:xhigh | G5.5:xhigh | F5:high |
-| `slow` | G5.5:high | O4.8:high | G5.5:high | G5.5:high | G5.5:high | GLM5.2:high | F5:high |
-| `task` | G5.5:high | S4.6:medium | G5.5:high | G5.5:medium | G5.5:medium | GLM5.2:high | G5.5:xhigh |
+| `slow` | G5.5:high | O4.8:high | G5.5:high | G5.5:high | G5.5:high | GLM5.2:xhigh | F5:high |
+| `task` | G5.5:high | S4.6:medium | G5.5:high | G5.5:medium | G5.5:medium | G5.5:medium | G5.5:xhigh |
 | `designer` | G5.5:high | S4.6:high | G5.5:high | G5.5:high | G5.5:high | G5.5:high | G5.5:high |
 | `vision` | G5.5:high | O4.8:medium | G5.5:high | G5.5:high | G5.5:high | G5.5:high | F5:medium |
 | `smol` | H4.5:minimal | H4.5:minimal | H4.5:minimal | H4.5:minimal | N:low | N:low | H4.5:minimal |
@@ -119,7 +119,7 @@ Scored on the `default`-role mandate, not raw coding throughput.
 | `combo-claude.yml` | Opus 4.8 `:medium` | **9.0** | Claude owns context; GPT-5.5 reserved for burst reasoning / design. |
 | `combo-gpt.yml` | GPT-5.5 `:medium` | **8.5** | GPT owns long-running context; Haiku for cheap utility. |
 | `gpt.yml` | GPT-5.5 `:medium` | **8.5** | All-OpenAI; used when Anthropic quota is gone. |
-| `gpt-glm.yml` | GPT-5.5 `:medium` | **8.5** | Claude-free backup; GPT orchestrates while GLM-5.2 handles `slow`/`task` worker load. |
+| `gpt-glm.yml` | GPT-5.5 `:medium` | **8.5** | Claude-free backup; GPT owns review-heavy `task` fan-out while GLM-5.2 supplies the `slow` alternate deep-reasoning path. |
 | `fable-codex.yml` | Fable 5 `:low` | **9.5*** | Highest ceiling but **suspended** — see warning above; prefer `combo-claude` meanwhile. |
 
 **Takeaways**
@@ -134,8 +134,8 @@ Scored on the `default`-role mandate, not raw coding throughput.
 - **GLM-5.2 (2026-06-16) is a new open-weights, frontier-adjacent contender** —
   vendor 62.1% SWE-bench Pro (> GPT-5.5's 58.6) and MCP-Atlas 77.0 at $1.40/$4.40
   per M (~1/6 GPT-5.5, ~14 Pro-pts/output-$, beating Haiku's 7.9 on cost-efficiency).
-  Not yet in any profile; strongest candidate to add as a cheap `task`/`slow`
-  fan-out worker (or budget `default`) once a hosted `zai/` route is wired.
+  Wired into `gpt-glm` as an alternate `slow` path; keep review-heavy `task` on
+  GPT-5.5 because DeepSWE/tool orchestration still favors GPT.
   Keep it off `default` on closed-frontier profiles for now: scores are vendor-only
   (no SEAL) and the Z.ai API carries China data-residency considerations —
   self-host or a non-Z.ai provider (FriendliAI/Novita) sidesteps that.
