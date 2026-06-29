@@ -48,7 +48,7 @@ _omp_restore_panes() {
   while IFS=$'\t' read -r sname widx pidx cwd profile sid; do
     [[ -n "$sname" && -n "$widx" && -n "$pidx" && -n "$cwd" && -n "$sid" ]] || continue
     case "$profile" in
-      gpt|claude|fable-codex|combo-claude|combo-gpt) ;;
+      gpt|gpt-glm|claude|fable-codex|combo-claude|combo-gpt) ;;
       *) fb="$(tmux show-options -gqv @omp-restore-profile 2>/dev/null)"; profile="${fb:-gpt}" ;;
     esac
 

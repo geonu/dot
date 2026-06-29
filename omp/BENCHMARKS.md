@@ -70,18 +70,18 @@ role's budget rather than pinning it.
 
 ### Role × profile matrix (`model:effort`)
 
-Models: **O4.8**=Opus 4.8 · **F5**=Fable 5 · **G5.5**=GPT-5.5 · **S4.6**=Sonnet 4.6 · **H4.5**=Haiku 4.5 · **N**=GPT-5.4 nano
+Models: **O4.8**=Opus 4.8 · **F5**=Fable 5 · **G5.5**=GPT-5.5 · **GLM5.2**=GLM-5.2 · **S4.6**=Sonnet 4.6 · **H4.5**=Haiku 4.5 · **N**=GPT-5.4 nano
 
-| Role | config (active) | claude | combo-claude | combo-gpt | gpt | fable-codex |
-|---|---|---|---|---|---|---|
-| `default` | O4.8:medium | O4.8:medium | O4.8:medium | G5.5:medium | G5.5:medium | F5:low |
-| `plan` | G5.5:xhigh | O4.8:high | G5.5:xhigh | G5.5:xhigh | G5.5:xhigh | F5:high |
-| `slow` | G5.5:high | O4.8:high | G5.5:high | G5.5:high | G5.5:high | F5:high |
-| `task` | G5.5:high | S4.6:medium | G5.5:high | G5.5:medium | G5.5:medium | G5.5:xhigh |
-| `designer` | G5.5:high | S4.6:high | G5.5:high | G5.5:high | G5.5:high | G5.5:high |
-| `vision` | G5.5:high | O4.8:medium | G5.5:high | G5.5:high | G5.5:high | F5:medium |
-| `smol` | H4.5:minimal | H4.5:minimal | H4.5:minimal | H4.5:minimal | N:low | H4.5:minimal |
-| `commit` | H4.5:off | H4.5:off | H4.5:off | H4.5:off | N:off | H4.5:off |
+| Role | config (active) | claude | combo-claude | combo-gpt | gpt | gpt-glm | fable-codex |
+|---|---|---|---|---|---|---|---|
+| `default` | O4.8:medium | O4.8:medium | O4.8:medium | G5.5:medium | G5.5:medium | G5.5:medium | F5:low |
+| `plan` | G5.5:xhigh | O4.8:high | G5.5:xhigh | G5.5:xhigh | G5.5:xhigh | G5.5:xhigh | F5:high |
+| `slow` | G5.5:high | O4.8:high | G5.5:high | G5.5:high | G5.5:high | GLM5.2:high | F5:high |
+| `task` | G5.5:high | S4.6:medium | G5.5:high | G5.5:medium | G5.5:medium | GLM5.2:high | G5.5:xhigh |
+| `designer` | G5.5:high | S4.6:high | G5.5:high | G5.5:high | G5.5:high | G5.5:high | G5.5:high |
+| `vision` | G5.5:high | O4.8:medium | G5.5:high | G5.5:high | G5.5:high | G5.5:high | F5:medium |
+| `smol` | H4.5:minimal | H4.5:minimal | H4.5:minimal | H4.5:minimal | N:low | N:low | H4.5:minimal |
+| `commit` | H4.5:off | H4.5:off | H4.5:off | H4.5:off | N:off | N:off | H4.5:off |
 
 **Effort-design notes**
 - Orchestrator runs at `low`/`medium`, not `high`: the policy spends Opus/GPT
@@ -103,7 +103,7 @@ Scored on the `default`-role mandate, not raw coding throughput.
 | Claude Opus 4.8 | 9 | 9 | 9 (native parallel-subagent) | 9 | **9.0** | Best all-round orchestrator. Highest standardized judgment + purpose-built fan-out. The default for a reason. |
 | Claude Fable 5 | 10 | 10 | 9 | 9 | **9.5*** | Highest ceiling, but `*` = suspended + $50/Mtok. Use only when available and the task justifies the spend. |
 | GPT-5.5 | 8 | 8 | 9 (SOTA Terminal-Bench, token-efficient) | 8 | **8.5** | Strongest tool/terminal coordinator; best when GPT should own long-running context. Slightly behind Opus on deep multi-file judgment. |
-| GLM-5.2 (open) | 7 | 8 (1M ctx, long-horizon-trained) | 8 (MCP-Atlas 77.0, near Opus) | 7 | **7.5** | Strongest open-weights model; viable budget orchestrator at ~1/6 the cost. Vendor-only scores, open-weight hosting, and slightly softer hard-decomposition judgment keep it below Opus/GPT-5.5 for `default`. Ideal cheap `task`/`slow` worker. Not wired into any profile. |
+| GLM-5.2 (open) | 7 | 8 (1M ctx, long-horizon-trained) | 8 (MCP-Atlas 77.0, near Opus) | 7 | **7.5** | Strongest open-weights model; viable budget orchestrator at ~1/6 the cost. Vendor-heavy scores, open-weight hosting, and slightly softer hard-decomposition judgment keep it below Opus/GPT-5.5 for `default`. Ideal cheap `task`/`slow` worker; wired into `gpt-glm`. |
 | Claude Sonnet 4.6 | 7 | 7 | 7 | 7 | **7.0** | Capable worker, not an orchestrator. Fine as `task` fan-out; under-powers `default` on hard decomposition. |
 | GPT-5.4 nano | 3 | 3 | 4 | 3 | **3.0** | Utility only (`smol`). Never orchestrate. |
 | Claude Haiku 4.5 | 3 | 2 | 3 | 3 | **2.5** | Cheap utility (`smol`/`commit`). Never orchestrate. |
@@ -119,11 +119,12 @@ Scored on the `default`-role mandate, not raw coding throughput.
 | `combo-claude.yml` | Opus 4.8 `:medium` | **9.0** | Claude owns context; GPT-5.5 reserved for burst reasoning / design. |
 | `combo-gpt.yml` | GPT-5.5 `:medium` | **8.5** | GPT owns long-running context; Haiku for cheap utility. |
 | `gpt.yml` | GPT-5.5 `:medium` | **8.5** | All-OpenAI; used when Anthropic quota is gone. |
+| `gpt-glm.yml` | GPT-5.5 `:medium` | **8.5** | Claude-free backup; GPT orchestrates while GLM-5.2 handles `slow`/`task` worker load. |
 | `fable-codex.yml` | Fable 5 `:low` | **9.5*** | Highest ceiling but **suspended** — see warning above; prefer `combo-claude` meanwhile. |
 
 **Takeaways**
 - Every profile orchestrates with a top-tier model (Opus 4.8 / GPT-5.5 / Fable 5),
-  fitness ≥ 8.5 — the orchestration policy is well served across all of them.
+  fitness ≥ 8.5 — including `gpt-glm`, which keeps GPT-5.5 in `default`.
 - Opus 4.8's native parallel-subagent support is the differentiator for the
   `default`-as-orchestrator design: it fans out without paying a context tax.
 - GPT-5.5 leads agentic *terminal* execution (82.7% TB 2.0); that strength is

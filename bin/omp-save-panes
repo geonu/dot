@@ -24,7 +24,7 @@ _omp_pane_profile() {
       p="${cmd##*omp/profiles/}"
       p="${p%%.yml*}"
       case "$p" in
-        gpt|claude|fable-codex|combo-claude|combo-gpt) print -r -- "$p"; return 0 ;;
+        gpt|gpt-glm|claude|fable-codex|combo-claude|combo-gpt) print -r -- "$p"; return 0 ;;
       esac
     fi
   done

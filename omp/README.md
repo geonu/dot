@@ -8,6 +8,7 @@
 ## 모드 구분
 
 - **GPT only**: Claude 구독 쿼터를 이미 소진했거나 Anthropic 호출을 의도적으로 막을 때.
+- **GPT+GLM**: Claude 쿼터 소진 시 GPT가 오케스트레이션을 맡고 GLM-5.2가 `slow`/`task` worker를 맡는 백업.
 - **Claude only**: Claude 구독 쿼터가 충분하고 OpenAI/Codex 쿼터를 아낄 때.
 - **fable-codex**: 06-22까지 임시. Fable이 계획/리뷰 품질을 맡고 Codex GPT-5.5가 실행 fan-out을 맡는다.
 - **combo-claude**: Claude가 장기 컨텍스트의 주 모델, Codex/GPT는 고추론·비전 버스트. 현재 `config.yml`.
@@ -23,6 +24,7 @@ overlay한다.
 | profile | 파일 | 용도 |
 |---------|------|------|
 | `gpt` | `omp/profiles/gpt.yml` | Claude 쿼터 소진/Anthropic 차단 시 |
+| `gpt-glm` | `omp/profiles/gpt-glm.yml` | Claude 쿼터 소진 시 GPT default + GLM worker |
 | `claude` | `omp/profiles/claude.yml` | Claude 쿼터 여유, Codex 쿼터 보호 시 |
 | `fable-codex` | `omp/profiles/fable-codex.yml` | 06-22 Fable 무료 윈도우: Fable plan + Codex execution |
 | `combo-claude` | `omp/profiles/combo-claude.yml` | Claude default + Codex burst |
@@ -30,8 +32,8 @@ overlay한다.
 | `config` | 없음 | override 없이 현재 `config.yml` 그대로 resume |
 
 tmux 안에서는 `Ctrl-a R`을 누르면 현재 pane에서 실행 중인 OMP 프로세스의 session id를
-먼저 읽고, 같은 cwd에서 pane을 respawn한다. 프롬프트에 `gpt`, `claude`, `fable-codex`,
-`combo-claude`, `combo-gpt`, `config` 중 하나를 입력하면 **현재 pane의 세션**을 해당
+먼저 읽고, 같은 cwd에서 pane을 respawn한다. 프롬프트에 `gpt`, `gpt-glm`, `claude`,
+`fable-codex`, `combo-claude`, `combo-gpt`, `config` 중 하나를 입력하면 **현재 pane의 세션**을 해당
 프로필로 이어간다. OMP TUI의 config hot reload가 없고 resume이 세션의 active model을
 복원할 수 있어, wrapper가 현재 pane의 `--resume <session-id>`와 provider override를 함께
 전달한다. 세션 id 결정 우선순위는 ① pane의 라이브 omp 프로세스(`ps --resume` / 열린
@@ -57,6 +59,24 @@ tmux 안에서는 `Ctrl-a R`을 누르면 현재 pane에서 실행 중인 OMP �
 | designer | openai-codex/gpt-5.5:high     | UI/디자인 구현 전용 |
 | commit   | openai-codex/gpt-5.4-nano:off | thinking 비활성 |
 | task     | openai-codex/gpt-5.5:medium   | 병렬 서브태스크 품질 하한 보강. high는 토큰 2x라 미사용 [S10] |
+
+## GPT+GLM (Claude 쿼터 소진 + GLM worker 백업)
+
+`omp/profiles/gpt-glm.yml`. GPT-5.5가 장기 컨텍스트와 계획을 맡고, GLM-5.2는 별도 Z.ai
+쿼터를 쓰는 `slow`/`task` worker로만 둔다. GLM-5.2는 1M context와 강한 long-horizon
+coding 벤치 신호가 있지만 DeepSWE/tool orchestration에서는 GPT-5.5 쪽이 더 안정적이라
+`default`/`plan`은 GPT에 남긴다. Z.ai GLM Coding Plan/API 키가 실제로 동작해야 호출된다.
+
+| role     | model                         | 비고 |
+|----------|-------------------------------|------|
+| default  | openai-codex/gpt-5.5:medium   | Claude-free 오케스트레이터. 순수 `gpt`와 동일 |
+| smol     | openai-codex/gpt-5.4-nano:low | utility는 GPT nano 유지 |
+| slow     | zai/glm-5.2:high              | GLM-5.2 long-context worker |
+| vision   | openai-codex/gpt-5.5:high     | GLM-5.2는 text-only |
+| plan     | openai-codex/gpt-5.5:xhigh    | 설계 실패 비용이 커서 GPT 유지 |
+| designer | openai-codex/gpt-5.5:high     | UI/디자인 구현은 GPT 유지 |
+| commit   | openai-codex/gpt-5.4-nano:off | thinking 비활성 |
+| task     | zai/glm-5.2:high              | 고볼륨 코딩 fan-out을 GLM으로 분산 |
 
 ## Claude only (Fable 과금 회피)
 
@@ -250,14 +270,15 @@ mythos-5와 동일하게 적용된다.
 
 ## 운용 원칙 (구독 내 기준)
 
-1. **모드 선택**: Claude 쿼터 소진 시 GPT only, OpenAI/Codex 쿼터 압박 시 Claude only,
+1. **모드 선택**: Claude 쿼터 소진 시 먼저 GPT only, GLM Coding Plan/API가 준비됐고
+   고볼륨 worker 분산이 필요하면 `gpt-glm`, OpenAI/Codex 쿼터 압박 시 Claude only,
    06-22까지 Fable 무료 윈도우와 Codex 쿼터가 모두 남아 있으면 `fable-codex`, 이후에는
    `combo-claude` 또는 `combo-gpt`.
 2. **장기·복합(default)**: 선택한 모드 안에서 가장 안정적인 상위 모델을 낮은~중간 effort로 둔다.
    adaptive thinking은 필요한 곳에만 컴퓨트 배분 [S5]. (fable-5:low는 무료 윈도우 한정 특례 [S3])
 3. **고볼륨(task/smol/commit)**: 반복 서브태스크와 커밋 메시지는 경량 모델이 기본. 다만 coding
-   execution 품질이 중요한 프로필은 task를 GPT-5.5로 올린다. `fable-codex`만 xhigh, 일반
-   GPT/Combo는 medium~high.
+   execution 품질이 중요한 프로필은 task를 GPT-5.5나 GLM-5.2로 올린다. `fable-codex`만 xhigh,
+   일반 GPT/Combo/GLM worker는 medium~high.
 4. **고추론 버스트(slow/plan)**: 단발 고난도 작업, 설계 결정, 실패 재시도 비용이 큰 작업에만 high.
    GPT-5.5의 xhigh는 기본적으로 plan 전용. execution one-shot이 중요할 때만 task xhigh [S14][S15].
 5. **vision**: 이미지 QA는 기본 medium. 실패 비용이 큰 시각 검증만 high.
@@ -280,7 +301,7 @@ mythos-5와 동일하게 적용된다.
 
 글로벌 정책은 default를 "작업자"가 아닌 "오케스트레이터"로 규정하고, plan/slow/task
 escalation 임계값과 default가 직접 처리해도 되는 범위를 못박는다. 모델 프로필과 독립이라
-`gpt`/`claude`/`fable-codex`/`combo-*` 어디서나 동일하게 적용된다.
+`gpt`/`gpt-glm`/`claude`/`fable-codex`/`combo-*` 어디서나 동일하게 적용된다.
 
 로드 확인: 새 세션에서
 `omp -p --no-tools "output verbatim the bullet lines under 'Anti-patterns'"`로

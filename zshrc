@@ -170,6 +170,17 @@ ompgpt() {
     "$@"
 }
 
+
+ompgpt_glm() {
+  omp \
+    --config "$(_omp_profile_path gpt-glm)" \
+    --model openai-codex/gpt-5.5:medium \
+    --thinking medium \
+    --smol openai-codex/gpt-5.4-nano:low \
+    --slow zai/glm-5.2:high \
+    --plan openai-codex/gpt-5.5:xhigh \
+    "$@"
+}
 ompclaude() {
   omp \
     --config "$(_omp_profile_path claude)" \
@@ -219,6 +230,12 @@ ompgptr() {
   local -a args
   args=("${(@f)$(_omp_resume_args "$@")}") || return 1
   ompgpt "${args[@]}"
+}
+
+ompgpt_glmr() {
+  local -a args
+  args=("${(@f)$(_omp_resume_args "$@")}") || return 1
+  ompgpt_glm "${args[@]}"
 }
 
 ompclauder() {
@@ -312,6 +329,7 @@ ompr() {
 
   case "$profile" in
     gpt) ompgptr "$@" ;;
+    gpt-glm|glm) ompgpt_glmr "$@" ;;
     claude) ompclauder "$@" ;;
     fable-codex|fable|fable5) ompfable_codexr "$@" ;;
     combo-claude|combo|combination|mixed) ompcombo_clauder "$@" ;;
@@ -322,7 +340,7 @@ ompr() {
       omp "${args[@]}"
       ;;
     *)
-      print -u2 "usage: ompr [gpt|claude|fable-codex|combo-claude|combo-gpt|config] [session-id-prefix] [omp flags...]"
+      print -u2 "usage: ompr [gpt|gpt-glm|claude|fable-codex|combo-claude|combo-gpt|config] [session-id-prefix] [omp flags...]"
       return 2
       ;;
   esac
@@ -334,13 +352,14 @@ ompr_fresh() {
 
   case "$profile" in
     gpt) ompgpt "$@" ;;
+    gpt-glm|glm) ompgpt_glm "$@" ;;
     claude) ompclaude "$@" ;;
     fable-codex|fable|fable5) ompfable_codex "$@" ;;
     combo-claude|combo|combination|mixed) ompcombo_claude "$@" ;;
     combo-gpt) ompcombo_gpt "$@" ;;
     config|default) omp "$@" ;;
     *)
-      print -u2 "usage: ompr_fresh [gpt|claude|fable-codex|combo-claude|combo-gpt|config] [omp flags...]"
+      print -u2 "usage: ompr_fresh [gpt|gpt-glm|claude|fable-codex|combo-claude|combo-gpt|config] [omp flags...]"
       return 2
       ;;
   esac

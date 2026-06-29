@@ -1,0 +1,11 @@
+# Claude-free OMP backup profile.
+# GPT-5.5 owns orchestration and planning; GLM-5.2 handles high-volume coding workers.
+modelRoles:
+  default: openai-codex/gpt-5.5:medium
+  smol: openai-codex/gpt-5.4-nano:low
+  slow: zai/glm-5.2:high
+  vision: openai-codex/gpt-5.5:high
+  plan: openai-codex/gpt-5.5:xhigh
+  designer: openai-codex/gpt-5.5:high
+  commit: openai-codex/gpt-5.4-nano:off
+  task: zai/glm-5.2:high
