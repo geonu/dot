@@ -40,6 +40,11 @@ brew "vercel-cli"          # Vercel CLI (replaces vercel MCP)
 brew "yq"                  # YAML processor
 brew "zoxide"              # modern `cd` with directory jumping
 
+# --- language servers (OMP LSP auto-detection) -----------------------------
+brew "bash-language-server" # bash/zsh LSP (bin/, zshrc, tests/*.zsh)
+brew "yaml-language-server" # YAML LSP (omp/ configs, .github/workflows)
+brew "typescript-language-server" # TS/JS LSP (auto-attaches in TS projects: package.json/tsconfig.json)
+
 # Node, Python, Java, ... are managed by mise (see mise/config.toml).
 
 # --- GUI apps (casks) -------------------------------------------------------
