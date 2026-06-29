@@ -42,11 +42,11 @@ tmux 옵션(omp가 종료돼도 남아 다음 전환에서 같은 대화로 복�
 세션(`run-shell`은 pane cwd를 상속하지 않으므로 pane 디렉토리 기준으로 조회)이다. 그래도
 세션이 없으면 stale pane 옵션을 비우고 해당 프로필로 새 세션을 띄운다. respawn은 항상 수행되어 pane이 죽지 않는다.
 
-정합성 체크는 `bin/omp-profile-check.sh`로 한다. 이 스크립트는 `omp/config.yml`,
-`omp/profiles/*.yml`, 이 README의 프로필 목록, `zshrc` profile dispatcher,
-`tmux.conf`의 `@omp-default-profile`/`@omp-profile-choices`, save/restore helper의
-profile 보존 규칙, 그리고 로컬 `~/.omp/agent/models.db`의 모델/effort 메타데이터를 함께 검증한다.
-모델 가이드나 profile 기본값을 바꾸거나 OMP 업데이트 후에는 이 체크를 먼저 돌린다.
+정합성 체크는 `bin/omp-profile-check.sh`로 한다. 이 스크립트는 `omp/config.yml`이
+기본 active profile인 `gpt-glm`과 같은 role map인지, `omp/profiles/*.yml`, 이 README의
+프로필 목록, `zshrc` profile dispatcher, `tmux.conf`의 `@omp-default-profile`/`@omp-profile-choices`,
+save/restore helper의 profile 보존 규칙, 그리고 로컬 `~/.omp/agent/models.db`의 모델/effort
+메타데이터를 함께 검증한다. 모델 가이드나 profile 기본값을 바꾸거나 OMP 업데이트 후에는 이 체크를 먼저 돌린다.
 
 ## GPT only (Claude 쿼터 소진 대응)
 
@@ -202,20 +202,21 @@ gpt가 절반 수준 → execution은 gpt-5.5 [S15].
 구독제만 유지할 때는 fable을 전 역할에서 제거한다. 이때 주 모델을 누구로 둘지에 따라
 프로필을 둘로 나눈다.
 
-### 현재 세팅 · `config`: GPT-5.5 xhigh active config
+### 현재 세팅 · `config`: `gpt-glm` active config
 
-`omp/config.yml`. Claude 쿼터 소진 대응으로 default를 GPT-5.5 xhigh에 둔 active config다.
-`Ctrl-a R`에서 `config`를 고르면 profile overlay 없이 이 설정 그대로 resume한다.
+`omp/config.yml`. 새 OMP 세션이 profile wrapper 없이 떠도 기본 active profile인
+`gpt-glm`과 같은 role map을 쓴다. `Ctrl-a R`에서 `config`를 고르면 profile overlay 없이도
+GPT-5.5 default + GLM worker 구성으로 resume한다.
 
 ```yaml
-default: openai-codex/gpt-5.5:xhigh
-smol: anthropic/claude-haiku-4-5:minimal
-slow: openai-codex/gpt-5.5:high
+default: openai-codex/gpt-5.5:medium
+smol: zai/glm-5.2:minimal
+slow: openai-codex/gpt-5.5:xhigh
 vision: openai-codex/gpt-5.5:high
 plan: openai-codex/gpt-5.5:xhigh
 designer: openai-codex/gpt-5.5:high
-commit: anthropic/claude-haiku-4-5:off
-task: openai-codex/gpt-5.5:high
+commit: zai/glm-5.2:off
+task: zai/glm-5.2:xhigh
 ```
 
 ### 현재 세팅 · `combo-claude`: Claude 메인 + Codex 버스트

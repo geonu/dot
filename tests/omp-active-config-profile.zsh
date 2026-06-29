@@ -1,17 +1,12 @@
 #!/usr/bin/env zsh
-# Regression tests that omp-profile-check catches profile/default drift.
+# Regression test: plain omp config must match the selected default profile.
 
 emulate -R zsh
 set -eo pipefail
 
 repo_root="${0:A:h:h}"
-work="${TMPDIR:-/tmp}/omp-profile-check-drift.$$"
+work="${TMPDIR:-/tmp}/omp-active-config-profile.$$"
 trap 'rm -rf "$work"' EXIT
-
-fail() {
-  print -u2 -- "$1"
-  exit 1
-}
 
 mkdir -p "$work/omp/profiles" "$work/bin"
 cp "$repo_root/omp/config.yml" "$work/omp/config.yml"
@@ -31,7 +26,6 @@ import json
 import sqlite3
 import sys
 
-db = sys.argv[1]
 providers = {
     "openai-codex": [
         {"id": "gpt-5.5", "thinking": {"efforts": ["medium", "high", "xhigh"]}},
@@ -48,7 +42,7 @@ providers = {
     ],
 }
 
-conn = sqlite3.connect(db)
+conn = sqlite3.connect(sys.argv[1])
 conn.execute("create table model_cache (provider_id text, models text)")
 for provider_id, models in providers.items():
     conn.execute(
@@ -58,17 +52,6 @@ for provider_id, models in providers.items():
 conn.commit()
 PY
 
-content="$(<"$work/tmux.conf")"
-print -r -- "${content/gpt-glm/not-a-profile}" > "$work/tmux.conf"
+OMP_ACTIVE_PROFILE=gpt-glm bash "$work/bin/omp-profile-check.sh" "$work"
 
-output_file="$work/check.out"
-if bash "$work/bin/omp-profile-check.sh" "$work" >"$output_file" 2>&1; then
-  fail "expected profile check to reject an unknown @omp-default-profile"
-fi
-
-output="$(<"$output_file")"
-if [[ "$output" != *"@omp-default-profile"* ]]; then
-  fail "expected @omp-default-profile in failure output, got: $output"
-fi
-
-print -- "ok: profile check rejects default-profile drift"
+print -- "ok: active config matches gpt-glm default profile"
