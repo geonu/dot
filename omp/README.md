@@ -18,7 +18,7 @@
 ## 프로필 파일과 tmux 재시작
 
 모델 조합은 `omp/profiles/*.yml`에 같은 이름으로 보관한다. `config.yml`은 현재 기본값
-(GPT-5.5 xhigh active config)이고, 프로필은 실행 시 `--config ~/.dotfiles/omp/profiles/<profile>.yml`로
+(combo-claude active config)이고, 프로필은 실행 시 `--config ~/.dotfiles/omp/profiles/<profile>.yml`로
 overlay한다.
 
 | profile | 파일 | 용도 |
@@ -32,7 +32,7 @@ overlay한다.
 | `config` | 없음 | override 없이 현재 `config.yml` 그대로 resume |
 
 tmux 안에서는 `Ctrl-a R`을 누르면 현재 pane에서 실행 중인 OMP 프로세스의 session id를
-먼저 읽고, 같은 cwd에서 pane을 respawn한다. 프롬프트 기본값은 `gpt-glm`이며,
+먼저 읽고, 같은 cwd에서 pane을 respawn한다. 프롬프트 기본값은 `combo-claude`이며,
 `gpt-glm`, `gpt`, `claude`, `fable-codex`, `combo-claude`, `combo-gpt`, `config` 중 하나를 입력하면 **현재 pane의 세션**을 해당
 프로필로 이어간다. OMP TUI의 config hot reload가 없고 resume이 세션의 active model을
 복원할 수 있어, wrapper가 현재 pane의 `--resume <session-id>`와 provider override를 함께
@@ -43,7 +43,7 @@ tmux 옵션(omp가 종료돼도 남아 다음 전환에서 같은 대화로 복�
 세션이 없으면 stale pane 옵션을 비우고 해당 프로필로 새 세션을 띄운다. respawn은 항상 수행되어 pane이 죽지 않는다.
 
 정합성 체크는 `bin/omp-profile-check.sh`로 한다. 이 스크립트는 `omp/config.yml`이
-기본 active profile인 `gpt-glm`과 같은 role map인지, `omp/profiles/*.yml`, 이 README의
+기본 active profile인 `combo-claude`와 같은 role map인지, `omp/profiles/*.yml`, 이 README의
 프로필 목록, `zshrc` profile dispatcher, `tmux.conf`의 `@omp-default-profile`/`@omp-profile-choices`,
 save/restore helper의 profile 보존 규칙, 그리고 로컬 `~/.omp/agent/models.db`의 모델/effort
 메타데이터를 함께 검증한다. 모델 가이드나 profile 기본값을 바꾸거나 OMP 업데이트 후에는 이 체크를 먼저 돌린다.
@@ -202,21 +202,21 @@ gpt가 절반 수준 → execution은 gpt-5.5 [S15].
 구독제만 유지할 때는 fable을 전 역할에서 제거한다. 이때 주 모델을 누구로 둘지에 따라
 프로필을 둘로 나눈다.
 
-### 현재 세팅 · `config`: `gpt-glm` active config
+### 현재 세팅 · `config`: `combo-claude` active config
 
 `omp/config.yml`. 새 OMP 세션이 profile wrapper 없이 떠도 기본 active profile인
-`gpt-glm`과 같은 role map을 쓴다. `Ctrl-a R`에서 `config`를 고르면 profile overlay 없이도
-GPT-5.5 default + GLM worker 구성으로 resume한다.
+`combo-claude`와 같은 role map을 쓴다. `Ctrl-a R`에서 `config`를 고르면 profile overlay 없이도
+Claude default + Codex burst 구성으로 resume한다.
 
 ```yaml
-default: openai-codex/gpt-5.5:medium
-smol: zai/glm-5.2:minimal
-slow: openai-codex/gpt-5.5:xhigh
+default: anthropic/claude-opus-4-8:high
+smol: anthropic/claude-haiku-4-5:minimal
+slow: openai-codex/gpt-5.5:high
 vision: openai-codex/gpt-5.5:high
 plan: openai-codex/gpt-5.5:xhigh
 designer: openai-codex/gpt-5.5:high
-commit: zai/glm-5.2:off
-task: zai/glm-5.2:xhigh
+commit: anthropic/claude-haiku-4-5:off
+task: openai-codex/gpt-5.5:high
 ```
 
 ### 현재 세팅 · `combo-claude`: Claude 메인 + Codex 버스트

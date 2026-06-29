@@ -59,7 +59,7 @@ conn.commit()
 PY
 
 content="$(<"$work/tmux.conf")"
-print -r -- "${content/gpt-glm/not-a-profile}" > "$work/tmux.conf"
+print -r -- "${content/combo-claude/not-a-profile}" > "$work/tmux.conf"
 
 output_file="$work/check.out"
 if bash "$work/bin/omp-profile-check.sh" "$work" >"$output_file" 2>&1; then

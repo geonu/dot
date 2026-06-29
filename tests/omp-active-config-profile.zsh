@@ -52,6 +52,6 @@ for provider_id, models in providers.items():
 conn.commit()
 PY
 
-OMP_ACTIVE_PROFILE=gpt-glm bash "$work/bin/omp-profile-check.sh" "$work"
+OMP_ACTIVE_PROFILE=combo-claude bash "$work/bin/omp-profile-check.sh" "$work"
 
-print -- "ok: active config matches gpt-glm default profile"
+print -- "ok: active config matches combo-claude default profile"

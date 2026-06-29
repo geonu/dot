@@ -2,7 +2,7 @@
 set -euo pipefail
 
 repo_root="${1:-$(pwd)}"
-active_profile="${OMP_ACTIVE_PROFILE:-gpt-glm}"
+active_profile="${OMP_ACTIVE_PROFILE:-combo-claude}"
 config="$repo_root/omp/config.yml"
 profiles_dir="$repo_root/omp/profiles"
 readme="$repo_root/omp/README.md"
@@ -31,7 +31,7 @@ role_keys = ["default", "smol", "slow", "vision", "plan", "designer", "commit", 
 profile_names = ["gpt", "gpt-glm", "claude", "fable-codex", "combo-claude", "combo-gpt"]
 profile_choices = ["gpt-glm", "gpt", "claude", "fable-codex", "combo-claude", "combo-gpt", "config"]
 known_choices = set(profile_choices)
-default_profile = "gpt-glm"
+default_profile = "combo-claude"
 
 
 def parse_roles(path: Path) -> dict[str, str]:
@@ -145,7 +145,7 @@ if missing_restore:
     errors.append(f"{restore_script} profile whitelist missing: {sorted(missing_restore)}")
 
 for path, text in [(save_script, save_text), (restore_script, restore_text)]:
-    if "${fb:-gpt-glm}" in text:
+    if "${fb:-combo-claude}" in text:
         errors.append(f"{path} uses an unvalidated default-profile fallback")
 
 if f'print -- "${{OMP_DEFAULT_PROFILE:-{default_profile}}}"' not in zsh_text:

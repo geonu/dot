@@ -30,7 +30,7 @@ assert_file_not_contains() {
   fi
 }
 
-assert_file_contains "$tmux_conf" "set -g @omp-default-profile 'gpt-glm'" "tmux default option"
+assert_file_contains "$tmux_conf" "set -g @omp-default-profile 'combo-claude'" "tmux default option"
 assert_file_contains "$tmux_conf" "set -g @omp-profile-choices 'gpt-glm/gpt/claude/fable-codex/combo-claude/combo-gpt/config'" "tmux choices option"
 assert_file_contains "$tmux_conf" '-I "#{@omp-default-profile}"' "single-pane prompt default"
 assert_file_contains "$tmux_conf" 'OMP profile (#{@omp-profile-choices})' "single-pane prompt choices"
@@ -41,7 +41,7 @@ assert_file_contains "$save_script" "@omp_profile" "save pane profile option"
 assert_file_contains "$restore_script" "gpt|gpt-glm|claude|fable-codex|combo-claude|combo-gpt|config)" "restore profile whitelist"
 assert_file_not_contains "$save_script" "@omp-restore-profile" "old save fallback option"
 assert_file_not_contains "$restore_script" "@omp-restore-profile" "old restore fallback option"
-assert_file_not_contains "$save_script" "\${fb:-gpt-glm}" "unvalidated save fallback"
-assert_file_not_contains "$restore_script" "\${fb:-gpt-glm}" "unvalidated restore fallback"
+assert_file_not_contains "$save_script" "\${fb:-combo-claude}" "unvalidated save fallback"
+assert_file_not_contains "$restore_script" "\${fb:-combo-claude}" "unvalidated restore fallback"
 
 print -- "ok: tmux default profile option is centralized"

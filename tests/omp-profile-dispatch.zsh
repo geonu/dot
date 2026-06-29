@@ -46,10 +46,21 @@ expected_gpt_glm_flags() {
     --plan openai-codex/gpt-5.5:xhigh
 }
 
+expected_combo_claude_flags() {
+  print -l -- \
+    --config "$expected_combo_claude_config" \
+    --model anthropic/claude-opus-4-8 \
+    --thinking high \
+    --smol anthropic/claude-haiku-4-5:minimal \
+    --slow openai-codex/gpt-5.5:high \
+    --plan openai-codex/gpt-5.5:xhigh
+}
+
 expected_gpt_glm_config="$HOME/.dotfiles/omp/profiles/gpt-glm.yml"
+expected_combo_claude_config="$HOME/.dotfiles/omp/profiles/combo-claude.yml"
 
 ompr_fresh
-assert_args "default fresh profile" "${(@f)$(expected_gpt_glm_flags)}"
+assert_args "default fresh profile" "${(@f)$(expected_combo_claude_flags)}"
 
 ompr_fresh glm --probe
 assert_args "glm alias" "${(@f)$(expected_gpt_glm_flags)}" --probe

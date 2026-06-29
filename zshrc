@@ -199,7 +199,7 @@ _omp_profile_path() {
 }
 
 _omp_default_profile() {
-  print -- "${OMP_DEFAULT_PROFILE:-gpt-glm}"
+  print -- "${OMP_DEFAULT_PROFILE:-combo-claude}"
 }
 
 _omp_profile_choices() {
