@@ -12,7 +12,7 @@
 # Best-effort: recover the provider profile from the live omp process args. The
 # zsh wrappers launch `omp --config .../omp/profiles/<profile>.yml ...`, so the
 # profile stays visible in process args even when resuming a session. Falls back
-# to the @omp-restore-profile tmux option, then gpt.
+# to the @omp-restore-profile tmux option, then gpt-glm.
 _omp_pane_profile() {
   local pane_pid="$1" pid cmd p
   local -a pids
@@ -30,7 +30,7 @@ _omp_pane_profile() {
   done
   local fb
   fb="$(tmux show-options -gqv @omp-restore-profile 2>/dev/null)"
-  print -r -- "${fb:-gpt}"
+  print -r -- "${fb:-gpt-glm}"
 }
 
 _omp_save_panes() {

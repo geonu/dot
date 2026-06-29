@@ -133,6 +133,45 @@ _omp_session_from_tmux_pane() {
   _omp_session_from_process "${pids[@]}"
 }
 
+_omp_pane_has_live_omp() {
+  local pane_pid="${1:-$(tmux display-message -p '#{pane_pid}' 2>/dev/null)}"
+  local pid command
+  local -a pids
+
+  [[ -n "$pane_pid" ]] || return 1
+  pids=("$pane_pid" "${(@f)$(_omp_descendant_pids "$pane_pid")}")
+  for pid in "${pids[@]}"; do
+    command="$(ps -p "$pid" -o command= 2>/dev/null || true)"
+    case "$command" in
+      omp|omp' '*|*'/omp'|*'/omp '*|*' ompr '*|*' ompr_fresh '*) return 0 ;;
+    esac
+  done
+
+  return 1
+}
+
+_omp_session_from_tmux_pane_wait() {
+  local pane_pid="$1" attempts session_id
+
+  session_id="$(_omp_session_from_tmux_pane "$pane_pid" || true)"
+  if [[ -n "$session_id" ]]; then
+    print -- "$session_id"
+    return 0
+  fi
+
+  _omp_pane_has_live_omp "$pane_pid" || return 1
+  for attempts in {1..10}; do
+    sleep 0.2
+    session_id="$(_omp_session_from_tmux_pane "$pane_pid" || true)"
+    if [[ -n "$session_id" ]]; then
+      print -- "$session_id"
+      return 0
+    fi
+  done
+
+  return 2
+}
+
 _omp_resume_args() {
   local session_id
 
@@ -264,25 +303,32 @@ ompcombo_gptr() {
 
 
 ompr_tmux_respawn() {
-  local profile="${1:-gpt}"
+  local profile="${1:-gpt-glm}"
   local pane="${2:-$(tmux display-message -p '#{pane_id}')}"
-  local pane_pid pane_path session_id launch
+  local pane_pid pane_path session_id session_status launch
 
   pane_pid="$(tmux display-message -t "$pane" -p '#{pane_pid}')"
   pane_path="$(tmux display-message -t "$pane" -p '#{pane_current_path}')"
   # 1. Exact: read the session straight from the live omp process in this pane.
-  session_id="$(_omp_session_from_tmux_pane "$pane_pid" || true)"
+  #    A newly-created OMP session can need a short moment before its jsonl is
+  #    visible to lsof; wait for it instead of falling through to stale fallbacks.
+  if session_id="$(_omp_session_from_tmux_pane_wait "$pane_pid")"; then
+    session_status=0
+  else
+    session_status=$?
+    session_id=""
+  fi
 
   # 2. Exact-ish: the session we last recorded for THIS pane. A pane option
   #    survives omp exiting, so a re-press after omp quit still hits the right
   #    conversation instead of guessing.
-  if [[ -z "$session_id" ]]; then
+  if [[ -z "$session_id" && "$session_status" -ne 2 ]]; then
     session_id="$(tmux show-options -pqv -t "$pane" @omp_session)"
   fi
 
   # 3. Heuristic last resort: newest session in the pane's own directory.
   #    run-shell does not inherit the pane cwd, so resolve it there explicitly.
-  if [[ -z "$session_id" && -n "$pane_path" ]]; then
+  if [[ -z "$session_id" && "$session_status" -ne 2 && -n "$pane_path" ]]; then
     session_id="$(cd "$pane_path" 2>/dev/null && _omp_latest_session)"
   fi
 
@@ -303,6 +349,7 @@ ompr_tmux_respawn() {
     tmux set-option -p -t "$pane" @omp_session "$session_id"
     launch="env OMP_RESUME_SESSION_ID=$session_id zsh -lic 'ompr $profile; exec zsh -i'"
   else
+    tmux set-option -pu -t "$pane" @omp_session
     launch="zsh -lic 'ompr_fresh $profile; exec zsh -i'"
   fi
 
@@ -315,7 +362,7 @@ ompr_tmux_respawn() {
 # make every pane race to resolve against the active pane's cwd. Here we drive
 # one server-side respawn per pane id, so each pane recalls its own conversation.
 ompr_tmux_respawn_all() {
-  local profile="${1:-gpt}"
+  local profile="${1:-gpt-glm}"
   local window="${2:-$(tmux display-message -p '#{window_id}')}"
   local pane
   for pane in $(tmux list-panes -t "$window" -F '#{pane_id}'); do
@@ -324,7 +371,7 @@ ompr_tmux_respawn_all() {
 }
 
 ompr() {
-  local profile="${1:-gpt}"
+  local profile="${1:-gpt-glm}"
   [[ $# -gt 0 ]] && shift
 
   case "$profile" in
@@ -340,14 +387,14 @@ ompr() {
       omp "${args[@]}"
       ;;
     *)
-      print -u2 "usage: ompr [gpt|gpt-glm|claude|fable-codex|combo-claude|combo-gpt|config] [session-id-prefix] [omp flags...]"
+      print -u2 "usage: ompr [gpt-glm|gpt|claude|fable-codex|combo-claude|combo-gpt|config] [session-id-prefix] [omp flags...]"
       return 2
       ;;
   esac
 }
 
 ompr_fresh() {
-  local profile="${1:-gpt}"
+  local profile="${1:-gpt-glm}"
   [[ $# -gt 0 ]] && shift
 
   case "$profile" in
@@ -359,7 +406,7 @@ ompr_fresh() {
     combo-gpt) ompcombo_gpt "$@" ;;
     config|default) omp "$@" ;;
     *)
-      print -u2 "usage: ompr_fresh [gpt|gpt-glm|claude|fable-codex|combo-claude|combo-gpt|config] [omp flags...]"
+      print -u2 "usage: ompr_fresh [gpt-glm|gpt|claude|fable-codex|combo-claude|combo-gpt|config] [omp flags...]"
       return 2
       ;;
   esac
@@ -373,7 +420,7 @@ ompr_fresh() {
 # Uses fzf when present, falls back to a numbered menu otherwise.
 omppick() {
   emulate -L zsh
-  local profile="${1:-gpt}"
+  local profile="${1:-gpt-glm}"
   local base="${PI_CODING_AGENT_DIR:-$HOME/.omp/agent}/sessions"
   local -a files lines
   local f hdr id cwd title now mt age tag
