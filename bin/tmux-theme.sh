@@ -19,13 +19,30 @@ set -g status-interval 5
 # default statusbar colors
 set-option -g status-style fg=$tm_color_active,bg=default
 
+# "agent needs you" indicators, raised by the omp tmux-attention extension
+# (omp/extensions/tmux-attention.ts) on turn_end:
+#   @omp_attn_win (window option) -> a dot here in the window-status list, the
+#     cross-window "which window needs me" glance.
+#   @omp_attn_pane (pane option) -> a dot on the pane border (see tmux.conf),
+#     pinpointing which agent in a multi-pane window is waiting.
+# Both clear via the select hooks below the moment you engage. Style attributes
+# are SPACE-separated on purpose: a comma inside #[...] would be read as the
+# #{?...} branch separator and split the conditional.
+tm_attn="#{?@omp_attn_win,#[fg=$tm_active_border_color bold]●#[fg=$tm_color_inactive nobold] ,}"
+
 # default window title colors
 set-window-option -g window-status-style fg=$tm_color_inactive,bg=default
-set -g window-status-format "#I #W"
+set -g window-status-format "$tm_attn#I #W"
 
 # active window title colors
 set-window-option -g window-status-current-style fg=$tm_color_active,bg=default
-set-window-option -g window-status-current-format "#[bold]#I #W"
+set-window-option -g window-status-current-format "$tm_attn#[fg=$tm_color_active bold]#I #W"
+
+# Clear the flags the instant you engage, so a dot only ever marks an unseen,
+# waiting agent: drop the window flag when you enter the window, the pane flag
+# when you focus the pane. -g (not -ga) keeps this idempotent across reloads.
+set-hook -g after-select-window "set-option -uw @omp_attn_win"
+set-hook -g after-select-pane   "set-option -up @omp_attn_pane"
 
 # pane border
 set-option -g pane-border-style fg=$tm_color_inactive
