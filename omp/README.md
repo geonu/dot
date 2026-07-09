@@ -92,9 +92,9 @@ lookup/commit은 `minimal`/`off`로 둔다.
 | slow     | anthropic/claude-opus-4-8:high     | Claude-only 고추론 버스트 |
 | vision   | anthropic/claude-opus-4-8:medium   | 이미지 입력 QA |
 | plan     | anthropic/claude-opus-4-8:high     | Claude-only 복합 계획 |
-| designer | anthropic/claude-sonnet-4-6:high   | UI/디자인 구현 전용 |
+| designer | anthropic/claude-sonnet-5:high   | UI/디자인 구현 전용. sonnet-5는 4.6 대비 $2/$10 + 128K 출력 |
 | commit   | anthropic/claude-haiku-4-5:off     | thinking 비활성 |
-| task     | anthropic/claude-sonnet-4-6:medium | 고볼륨 task용. Opus task는 쿼터 소진 가속 |
+| task     | anthropic/claude-sonnet-5:medium | 고볼륨 task용. Opus task는 쿼터 소진 가속 |
 
 ### `fable-codex`: Fable 계획 + Codex 실행 (06-22까지 임시)
 
@@ -181,7 +181,7 @@ fallback 조건 [S12]. OMP의 `:low/:medium/:high` suffix는 모델별 effortMap
 | 14 | gpt-5.5:low | low | 58.6 | — | — | 5/30/0.5/0 | — | AA low 미게재 [S10] |
 | 15 | gpt-5.4-nano:xhigh..:low | 항등 | — | — | — | 0.2/1.25/0.02/0 | — | gpt smol/commit; 벤치 비대상 |
 | 16 | haiku-4.5:xhigh..:minimal | budget(매핑 없음) | — | — | — | 1/5/0.1/1.25 | — | smol/commit; 벤치 비대상 |
-| 17 | sonnet-4.6:high..:minimal | (minimal→low) | — | — | — | 3/15/0.3/3.75 | — | claude task/designer; effort별 점수 없음 |
+| 17 | sonnet-5:high..:minimal | (minimal→low) | — | — | — | 2/10/0.2/2.5 | — | claude task/designer; effort별 점수 없음 |
 
 읽기 결론: SWE-Pro 순위는 `fable-5(80.3) > opus-4.8(69.2) > gpt-5.5(58.6)`. 단 출력 토큰
 단가는 그 반대로 `opus 25 < gpt-5.5 30 < fable 50`이고, gpt-5.5는 cacheWrite=0(캐시 쓰기
@@ -251,7 +251,7 @@ commit: anthropic/claude-haiku-4-5:off
 task: openai-codex/gpt-5.5:medium
 ```
 
-default 다운시프트 순서(쿼터 압박 정도에 따라): ① opus-4-8:low ② sonnet-4-6:medium
+default 다운시프트 순서(쿼터 압박 정도에 따라): ① opus-4-8:low ② sonnet-5:medium
 (effortMap 다름 — :low 시프트 없음, medium부터). fable-5는 추가 과금 의사가 생길 때만 복귀.
 Anthropic이 "capacity 확보 시 일부 표준 플랜 접근 복원 계획"을 언급했으므로 [S7] 추후 재확인.
 
@@ -405,7 +405,7 @@ MCP 자체를 꺼서 무효한 검증이다.) 새 서버를 더 끄려면 bare +
   06-22까지 포함, 06-23부터 credits 필요, 용량 확보 시 subscription access 복원 계획이라고
   정리 ([AA Fable 5](https://artificialanalysis.ai/articles/claude-fable-5-mythos-intelligence-index/)).
   Anthropic 공식 launch도 가격 $10/$50과 일반 공개를 확인 [S1].
-- **[S8] ◎ 가격** — fable $10/$50, opus $5/$25, sonnet $3/$15 (M토큰당, 출처 전반 일치;
+- **[S8] ◎ 가격** — fable $10/$50, opus $5/$25, sonnet-5 $2/$10, sonnet-4.6 $3/$15 (M토큰당, `models.db` 실측;
   fable 배치 $5/$25 [agentpedia](https://agentpedia.codes/blog/claude-fable-5-benchmark-prompting-guide)).
 - **[S9] ◎ effort 매핑** — `~/.omp/agent/models.db`의 `thinking.effortMap`/`mode` 필드 + omp://models.md.
   로컬에서 직접 검증 가능.

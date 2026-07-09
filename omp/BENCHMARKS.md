@@ -24,7 +24,8 @@ Last grounded: 2026-06-22 (GLM-5.2 added). Re-verify before trusting; model lead
 | Claude Opus 4.8 | `anthropic/claude-opus-4-8` | 88.6% | 69.2% (vendor) / ~51.9% SEAL¹ | 74.6% (TB 2.1) | GDPval-AA 1890 Elo; native parallel-subagent, ~2.5× faster |
 | GPT-5.5 | `openai-codex/gpt-5.5` | — | 58.6% | **82.7%** (TB 2.0, SOTA) | GDPval 84.9% — "strongest agentic coding model" (OpenAI) |
 | GLM-5.2 (open) | `zai/glm-5.2` (unwired) | — | **62.1%** (vendor)² | 81.0% (TB 2.1)² | FrontierSWE 74.4%; MCP-Atlas 77.0; PostTrainBench 34.3; MIT/753B, 1M ctx, $1.40/$4.40 — ~14 Pro-pts/output-$ |
-| Claude Sonnet 4.6 | `anthropic/claude-sonnet-4-6` | 79.6% | — | 65.4% (TB 2.0) | OSWorld-Verified 72.5% |
+| Claude Sonnet 5 | `anthropic/claude-sonnet-5` | — | — | — | 1M ctx, 128K out, $2/$10 — 표준 벤치 미등재(런칭 직후); claude 프로필 task/designer 신규 배선 |
+| Claude Sonnet 4.6 (superseded) | `anthropic/claude-sonnet-4-6` | 79.6% | — | 65.4% (TB 2.0) | OSWorld-Verified 72.5%; sonnet-5로 대체(프로필 미배선), 벤치 참조용 유지 |
 | GPT-5.4 (ref) | — | — | 57.7% / 59.1% SEAL-lead | — | Agentic tool use #8/115, avg 87.6 |
 | GPT-5.4 nano | `openai-codex/gpt-5.4-nano` | — | 52.4% | — | edge/efficiency variant (vs GPT-5 mini 45.7%) |
 | Claude Haiku 4.5 | `anthropic/claude-haiku-4-5` | — | budget tier | — | best cost-efficiency: 7.9 SWE-Pro pts / output-$ |
@@ -70,15 +71,15 @@ role's budget rather than pinning it.
 
 ### Role × profile matrix (`model:effort`)
 
-Models: **O4.8**=Opus 4.8 · **F5**=Fable 5 · **G5.5**=GPT-5.5 · **GLM5.2**=GLM-5.2 · **S4.6**=Sonnet 4.6 · **H4.5**=Haiku 4.5 · **N**=GPT-5.4 nano
+Models: **O4.8**=Opus 4.8 · **F5**=Fable 5 · **G5.5**=GPT-5.5 · **GLM5.2**=GLM-5.2 · **S5**=Sonnet 5 · **H4.5**=Haiku 4.5 · **N**=GPT-5.4 nano
 
 | Role | config (active) | claude | combo-claude | combo-gpt | gpt | gpt-glm | fable-codex |
 |---|---|---|---|---|---|---|---|
 | `default` | G5.5:xhigh | O4.8:medium | O4.8:medium | G5.5:medium | G5.5:medium | G5.5:medium | F5:low |
 | `plan` | G5.5:xhigh | O4.8:high | G5.5:xhigh | G5.5:xhigh | G5.5:xhigh | G5.5:xhigh | F5:high |
 | `slow` | G5.5:high | O4.8:high | G5.5:high | G5.5:high | G5.5:high | G5.5:xhigh | F5:high |
-| `task` | G5.5:high | S4.6:medium | G5.5:high | G5.5:medium | G5.5:medium | GLM5.2:xhigh | G5.5:xhigh |
-| `designer` | G5.5:high | S4.6:high | G5.5:high | G5.5:high | G5.5:high | G5.5:high | G5.5:high |
+| `task` | G5.5:high | S5:medium | G5.5:high | G5.5:medium | G5.5:medium | GLM5.2:xhigh | G5.5:xhigh |
+| `designer` | G5.5:high | S5:high | G5.5:high | G5.5:high | G5.5:high | G5.5:high | G5.5:high |
 | `vision` | G5.5:high | O4.8:medium | G5.5:high | G5.5:high | G5.5:high | G5.5:high | F5:medium |
 | `smol` | H4.5:minimal | H4.5:minimal | H4.5:minimal | H4.5:minimal | N:low | GLM5.2:minimal | H4.5:minimal |
 | `commit` | H4.5:off | H4.5:off | H4.5:off | H4.5:off | N:off | GLM5.2:off | H4.5:off |
@@ -104,7 +105,7 @@ Scored on the `default`-role mandate, not raw coding throughput.
 | Claude Fable 5 | 10 | 10 | 9 | 9 | **9.5*** | Highest ceiling, but `*` = suspended + $50/Mtok. Use only when available and the task justifies the spend. |
 | GPT-5.5 | 8 | 8 | 9 (SOTA Terminal-Bench, token-efficient) | 8 | **8.5** | Strongest tool/terminal coordinator; best when GPT should own long-running context. Slightly behind Opus on deep multi-file judgment. |
 | GLM-5.2 (open) | 7 | 8 (1M ctx, long-horizon-trained) | 8 (MCP-Atlas 77.0, near Opus) | 7 | **7.5** | Strongest open-weights model; viable budget orchestrator at ~1/6 the cost. Vendor-heavy scores, open-weight hosting, and slightly softer hard-decomposition judgment keep it below Opus/GPT-5.5 for `default`. Ideal cheap `task`/`slow` worker; wired into `gpt-glm`. |
-| Claude Sonnet 4.6 | 7 | 7 | 7 | 7 | **7.0** | Capable worker, not an orchestrator. Fine as `task` fan-out; under-powers `default` on hard decomposition. |
+| Claude Sonnet 5 | 7 | 7 | 7 | 7 | **7.0**† | Capable worker, not an orchestrator. Fine as `task`/`designer` fan-out; under-powers `default` on hard decomposition. †Sonnet 4.6 대비 저가($2/$10)·128K 출력 업그레이드지만 표준 벤치 미등재라 fitness는 4.6값 승계(재검증 필요). |
 | GPT-5.4 nano | 3 | 3 | 4 | 3 | **3.0** | Utility only (`smol`). Never orchestrate. |
 | Claude Haiku 4.5 | 3 | 2 | 3 | 3 | **2.5** | Cheap utility (`smol`/`commit`). Never orchestrate. |
 
@@ -115,7 +116,7 @@ Scored on the `default`-role mandate, not raw coding throughput.
 | Profile | `default` (orchestrator) | Fitness | Notes |
 |---|---|---|---|
 | `config.yml` (active) | GPT-5.5 `:xhigh` | **8.5** | Claude-free active config. GPT orchestrates at max budget; profile overlays remain available via `Ctrl-a R`. |
-| `claude.yml` | Opus 4.8 `:medium` | **9.0** | All-Anthropic; protects OpenAI quota. `task` drops to Sonnet 4.6. |
+| `claude.yml` | Opus 4.8 `:medium` | **9.0** | All-Anthropic; protects OpenAI quota. `task`/`designer` drop to Sonnet 5. |
 | `combo-claude.yml` | Opus 4.8 `:medium` | **9.0** | Claude owns context; GPT-5.5 reserved for burst reasoning / design. |
 | `combo-gpt.yml` | GPT-5.5 `:medium` | **8.5** | GPT owns long-running context; Haiku for cheap utility. |
 | `gpt.yml` | GPT-5.5 `:medium` | **8.5** | All-OpenAI; used when Anthropic quota is gone. |
@@ -143,7 +144,7 @@ Scored on the `default`-role mandate, not raw coding throughput.
 ## Sources
 - Claude Opus 4.8: vellum.ai/blog/claude-opus-4-8-benchmarks-explained · llm-stats.com/blog/research/claude-opus-4-8-launch
 - Fable 5 + tiers/suspension: morphllm.com/claude-benchmarks
-- Sonnet 4.6: cosmicjs.com/blog/claude-sonnet-46-vs-sonnet-45-a-real-world-comparison
+- Sonnet 5 / 4.6: `~/.omp/agent/models.db` (로컬 레지스트리, 가격/컨텍스트/출력) · cosmicjs.com/blog/claude-sonnet-46-vs-sonnet-45-a-real-world-comparison (4.6 벤치)
 - GPT-5.5: openai.com/index/introducing-gpt-5-5 · interestingengineering.com/ai-robotics/opanai-gpt-5-5-agentic-coding-gains
 - GPT-5.4 / nano: datacamp.com/blog/gpt-5-4-mini-nano · morphllm.com/swe-bench-pro
 - SWE-bench Pro standardized vs vendor: morphllm.com/swe-bench-pro · labs.scale.com/leaderboard/swe_bench_pro_public

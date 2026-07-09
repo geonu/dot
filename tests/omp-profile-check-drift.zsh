@@ -40,7 +40,7 @@ providers = {
     "anthropic": [
         {"id": "claude-haiku-4-5", "thinking": {"efforts": ["minimal"]}},
         {"id": "claude-opus-4-8", "thinking": {"efforts": ["medium", "high"]}},
-        {"id": "claude-sonnet-4-6", "thinking": {"efforts": ["medium", "high"]}},
+        {"id": "claude-sonnet-5", "thinking": {"efforts": ["medium", "high"]}},
         {"id": "claude-fable-5", "thinking": {"efforts": ["low", "medium", "high"]}},
     ],
     "zai": [
