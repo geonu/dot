@@ -27,7 +27,9 @@
     ~/.bash_profile:
         force: true
         path: bash_profile
-    ~/.zshrc: zshrc
+    ~/.zshrc:
+        force: true
+        path: zshrc
     ~/.zsh_plugins.txt: zsh_plugins.txt
     ~/.config/nvim: nvim
     ~/.config/alacritty/alacritty.toml: alacritty/alacritty.toml
