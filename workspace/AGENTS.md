@@ -57,7 +57,7 @@ Rules:
 ~/workspace/
   AGENTS.md                 ← this file (symlink → dot)
   tandum/                   ← company claw (typeclaw)
-  personal/                 ← personal claw (create when needed)
+  personal/                 ← personal claw (typeclaw; identity=personal)
   geonu/                    ← personal code (dot lives at geonu/dot)
   overflowing/              ← product / runners (not a claw)
   claw/                     ← legacy empty repo; do not use as an agent
@@ -66,11 +66,12 @@ Rules:
   company/ …
   personal/ …
   shared/ …
-  active                    ← optional symlink: company | personal (host CLI only)
+  active                    ← symlink: company | personal (host CLI only)
 ```
 
 `typeclaw compose` from `~/workspace` picks immediate children that contain
-`typeclaw.json` (skips `_`-prefixed and non-agent dirs).
+`typeclaw.json` (skips `_`-prefixed and non-agent dirs). Prefer distinct
+`port` values per claw if you pin ports (see each `typeclaw.json`).
 
 ### 3.2 Target (Phase B — optional later)
 
