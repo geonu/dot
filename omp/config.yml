@@ -16,9 +16,9 @@ memory:
 defaultThinkingLevel: auto
 display: 
   showTokenUsage: true
+  shimmer: disabled
 showHardwareCursor: true
 task: 
   showResolvedModelBadge: true
 dev: 
-  autoqa: 
-    consent: granted
+  autoqaConsent: granted

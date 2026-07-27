@@ -22,7 +22,7 @@
     "pr-review-toolkit@claude-plugins-official": true,
     "supabase@claude-plugins-official": false,
     "pyright-lsp@claude-plugins-official": true,
-    "slack@claude-plugins-official": false,
+    "slack@claude-plugins-official": true,
     "remember@claude-plugins-official": true,
     "superpowers@claude-plugins-official": false
   },
