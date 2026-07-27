@@ -1,12 +1,12 @@
 # Mixed OMP model profile, GPT-primary.
 # Use when both subscriptions have quota and Codex/GPT should own long-running context.
-# Claude is reserved for cheap/small utility work; coding task fan-out stays on GPT-5.5.
+# Claude is reserved for cheap/small utility work; coding task fan-out stays on GPT-5.6-Terra.
 modelRoles:
-  default: openai-codex/gpt-5.5:medium
+  default: openai-codex/gpt-5.6-terra:medium
   smol: anthropic/claude-haiku-4-5:minimal
-  slow: openai-codex/gpt-5.5:high
-  vision: openai-codex/gpt-5.5:high
-  plan: openai-codex/gpt-5.5:xhigh
-  designer: openai-codex/gpt-5.5:high
+  slow: openai-codex/gpt-5.6-terra:high
+  vision: openai-codex/gpt-5.6-terra:high
+  plan: openai-codex/gpt-5.6-terra:xhigh
+  designer: openai-codex/gpt-5.6-terra:high
   commit: anthropic/claude-haiku-4-5:off
-  task: openai-codex/gpt-5.5:medium
+  task: openai-codex/gpt-5.6-terra:medium

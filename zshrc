@@ -199,30 +199,27 @@ _omp_profile_path() {
 }
 
 _omp_default_profile() {
-  print -- "${OMP_DEFAULT_PROFILE:-combo-claude}"
+  print -- "${OMP_DEFAULT_PROFILE:-combo-gpt}"
 }
 
 _omp_profile_choices() {
-  print -- "gpt-glm/gpt/claude/fable-codex/combo-claude/combo-gpt/config"
+  print -- "gpt-glm/gpt/claude/combo-claude/combo-gpt/config"
 }
 
 _omp_profile_usage() {
-  print -- "gpt-glm|gpt|claude|fable-codex|combo-claude|combo-gpt|config"
+  print -- "gpt-glm|gpt|claude|combo-claude|combo-gpt|config"
 }
 
 _omp_canonical_profile() {
   case "${1:-}" in
-    gpt|gpt-glm|claude|fable-codex|combo-claude|combo-gpt|config)
+    gpt|gpt-glm|claude|combo-claude|combo-gpt|config)
       print -- "$1"
       ;;
     glm)
       print -- "gpt-glm"
       ;;
-    fable|fable5)
-      print -- "fable-codex"
-      ;;
     combo|combination|mixed)
-      print -- "combo-claude"
+      print -- "combo-gpt"
       ;;
     default)
       print -- "config"
@@ -330,14 +327,12 @@ _omp_resume_profile() {
 ompgpt() { _omp_run_profile gpt "$@"; }
 ompgpt_glm() { _omp_run_profile gpt-glm "$@"; }
 ompclaude() { _omp_run_profile claude "$@"; }
-ompfable_codex() { _omp_run_profile fable-codex "$@"; }
 ompcombo_claude() { _omp_run_profile combo-claude "$@"; }
 ompcombo_gpt() { _omp_run_profile combo-gpt "$@"; }
 
 ompgptr() { _omp_resume_profile gpt "$@"; }
 ompgpt_glmr() { _omp_resume_profile gpt-glm "$@"; }
 ompclauder() { _omp_resume_profile claude "$@"; }
-ompfable_codexr() { _omp_resume_profile fable-codex "$@"; }
 ompcombo_clauder() { _omp_resume_profile combo-claude "$@"; }
 ompcombo_gptr() { _omp_resume_profile combo-gpt "$@"; }
 

@@ -15,7 +15,7 @@
 # provider mix.
 _omp_known_profile() {
   case "$1" in
-    gpt|gpt-glm|claude|fable-codex|combo-claude|combo-gpt|config) return 0 ;;
+    gpt|gpt-glm|claude|combo-claude|combo-gpt|config) return 0 ;;
     *) return 1 ;;
   esac
 }

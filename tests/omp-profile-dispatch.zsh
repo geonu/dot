@@ -39,34 +39,37 @@ assert_args() {
 expected_gpt_glm_flags() {
   print -l -- \
     --config "$expected_gpt_glm_config" \
-    --model openai-codex/gpt-5.5 \
+    --model openai-codex/gpt-5.6-terra \
     --thinking medium \
-    --smol zai/glm-5.2:minimal \
-    --slow openai-codex/gpt-5.5:xhigh \
-    --plan openai-codex/gpt-5.5:xhigh
+    --smol openai-codex/gpt-5.4-mini:low \
+    --slow openai-codex/gpt-5.6-terra:xhigh \
+    --plan openai-codex/gpt-5.6-terra:xhigh
 }
 
-expected_combo_claude_flags() {
+expected_combo_gpt_flags() {
   print -l -- \
-    --config "$expected_combo_claude_config" \
-    --model anthropic/claude-opus-4-8 \
-    --thinking high \
+    --config "$expected_combo_gpt_config" \
+    --model openai-codex/gpt-5.6-terra \
+    --thinking medium \
     --smol anthropic/claude-haiku-4-5:minimal \
-    --slow openai-codex/gpt-5.5:high \
-    --plan openai-codex/gpt-5.5:xhigh
+    --slow openai-codex/gpt-5.6-terra:high \
+    --plan openai-codex/gpt-5.6-terra:xhigh
 }
 
 expected_gpt_glm_config="$HOME/.dotfiles/omp/profiles/gpt-glm.yml"
-expected_combo_claude_config="$HOME/.dotfiles/omp/profiles/combo-claude.yml"
+expected_combo_gpt_config="$HOME/.dotfiles/omp/profiles/combo-gpt.yml"
 
 ompr_fresh
-assert_args "default fresh profile" "${(@f)$(expected_combo_claude_flags)}"
+assert_args "default fresh profile" "${(@f)$(expected_combo_gpt_flags)}"
 
 ompr_fresh glm --probe
 assert_args "glm alias" "${(@f)$(expected_gpt_glm_flags)}" --probe
 
 ompr_fresh config --probe
 assert_args "config fresh profile" --probe
+if ompr_fresh fable-codex --probe 2>/dev/null; then
+  fail "removed Fable profile must be rejected"
+fi
 
 ompr gpt-glm 12345678 --probe
 assert_args "resume profile switch" "${(@f)$(expected_gpt_glm_flags)}" --resume 12345678 --probe

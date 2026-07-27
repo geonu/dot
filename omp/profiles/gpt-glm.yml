@@ -1,11 +1,11 @@
 # Claude-free OMP backup profile.
-# GPT-5.5 owns orchestration, slow escalation, planning, and UI/vision; GLM-5.2 handles high-volume utility/task work on a separate quota pool.
+# GPT-5.6-Terra owns orchestration, slow escalation, planning, and UI/vision; GLM-5.2 handles high-volume utility/task work on a separate quota pool.
 modelRoles:
-  default: openai-codex/gpt-5.5:medium
-  smol: zai/glm-5.2:minimal
-  slow: openai-codex/gpt-5.5:xhigh
-  vision: openai-codex/gpt-5.5:high
-  plan: openai-codex/gpt-5.5:xhigh
-  designer: openai-codex/gpt-5.5:high
+  default: openai-codex/gpt-5.6-terra:medium
+  smol: openai-codex/gpt-5.4-mini:low
+  slow: openai-codex/gpt-5.6-terra:xhigh
+  vision: openai-codex/gpt-5.6-terra:high
+  plan: openai-codex/gpt-5.6-terra:xhigh
+  designer: openai-codex/gpt-5.6-terra:high
   commit: zai/glm-5.2:off
-  task: zai/glm-5.2:xhigh
+  task: zai/glm-5.2:max

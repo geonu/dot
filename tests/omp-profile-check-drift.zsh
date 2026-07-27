@@ -34,17 +34,16 @@ import sys
 db = sys.argv[1]
 providers = {
     "openai-codex": [
-        {"id": "gpt-5.5", "thinking": {"efforts": ["medium", "high", "xhigh"]}},
-        {"id": "gpt-5.4-nano", "thinking": {"efforts": ["low"]}},
+        {"id": "gpt-5.6-terra", "thinking": {"efforts": ["medium", "high", "xhigh"]}},
+        {"id": "gpt-5.4-mini", "thinking": {"efforts": ["low", "medium", "high", "xhigh"]}},
     ],
     "anthropic": [
         {"id": "claude-haiku-4-5", "thinking": {"efforts": ["minimal"]}},
         {"id": "claude-opus-4-8", "thinking": {"efforts": ["medium", "high"]}},
         {"id": "claude-sonnet-5", "thinking": {"efforts": ["medium", "high"]}},
-        {"id": "claude-fable-5", "thinking": {"efforts": ["low", "medium", "high"]}},
     ],
     "zai": [
-        {"id": "glm-5.2", "thinking": {"efforts": ["minimal", "high", "xhigh"]}},
+        {"id": "glm-5.2", "thinking": {"efforts": ["high", "max"]}},
     ],
 }
 
@@ -59,7 +58,7 @@ conn.commit()
 PY
 
 content="$(<"$work/tmux.conf")"
-print -r -- "${content/combo-claude/not-a-profile}" > "$work/tmux.conf"
+print -r -- "${content/combo-gpt/not-a-profile}" > "$work/tmux.conf"
 
 output_file="$work/check.out"
 if bash "$work/bin/omp-profile-check.sh" "$work" >"$output_file" 2>&1; then
