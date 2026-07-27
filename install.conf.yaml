@@ -16,6 +16,11 @@
       recursive: false
     '~/.omp/agent':
       recursive: false
+    '~/.local/bin':
+      recursive: false
+    '~/workspace':
+      recursive: false
+
 
 - shell:
   - [git submodule update --init --recursive, Installing submodules]
@@ -44,9 +49,12 @@
     ~/.omp/agent/RULES.md: omp/RULES.md
     ~/.omp/agent/extensions: omp/extensions
     ~/.claude/CLAUDE.md: claude/CLAUDE.md
-    ~/.config/starship.toml: starship/starship.toml
     ~/.claude/skills: claude/skills
     ~/Library/LaunchAgents/com.geonu.alacritty-login.plist: launchd/com.geonu.alacritty-login.plist
+    # Fleet multi-claw policy + host helpers (see workspace/AGENTS.md)
+    ~/workspace/AGENTS.md: workspace/AGENTS.md
+    ~/.local/bin/claw-id: bin/claw-id
+    ~/.local/bin/credentials-init: bin/credentials-init
 
 # Converge Homebrew to the Brewfile (mirrors the `clean` directive for symlinks):
 # trust the taps the Brewfile declares, install anything missing, and uninstall

@@ -12,6 +12,23 @@ Personal macOS development environment, managed with
 | Editor   | [Neovim](https://neovim.io) (Lua config, lazy.nvim)                                               |
 | Runtimes | [mise](https://mise.jdx.dev) — Node, Python, Java, …                                              |
 | Packages | [Homebrew](https://brew.sh) (`Brewfile`)                                                          |
+| Fleet    | Multi-claw host policy + helpers (`workspace/AGENTS.md`, `claw-id`, `credentials-init`)         |
+
+## Repo boundaries
+
+| Tree | Role |
+| ---- | ---- |
+| **This repo (`dot`)** | Machine config: shell, editor, brew, **fleet policy**, small PATH helpers. No API keys, no OAuth stores, no company KB. |
+| **`~/workspace/*`** | Work checkouts and claw agent folders (e.g. `tandum`, product repos). |
+| **`~/credentials/`** | Host-local tool sessions/OAuth by identity (`company` / `personal`). **Never git.** Created by `credentials-init`. |
+
+Linked onto the machine by `./install`:
+
+- `~/workspace/AGENTS.md` ← `workspace/AGENTS.md` (fleet rules)
+- `~/.local/bin/claw-id`, `credentials-init`
+
+After bootstrap on a new Mac: `credentials-init && claw-id company`, then restore
+or re-auth tool credentials into `~/credentials/<identity>/` (see fleet AGENTS).
 
 ## Install
 
