@@ -1,12 +1,12 @@
 # Mixed OMP model profile, Claude-primary.
 # Use when both subscriptions have quota and Claude should own long-running context.
-# Codex/GPT is reserved for burst reasoning and visual/design-heavy work.
+# Opus owns long-running context; Sol handles burst reasoning and visual/design-heavy work; Terra executes coding tasks.
 modelRoles:
-  default: anthropic/claude-opus-4-8:high
+  default: anthropic/claude-opus-5:high
   smol: anthropic/claude-haiku-4-5:minimal
-  slow: openai-codex/gpt-5.6-terra:high
-  vision: openai-codex/gpt-5.6-terra:high
-  plan: openai-codex/gpt-5.6-terra:xhigh
-  designer: openai-codex/gpt-5.6-terra:high
+  slow: openai-codex/gpt-5.6-sol:high
+  vision: openai-codex/gpt-5.6-sol:high
+  plan: openai-codex/gpt-5.6-sol:xhigh
+  designer: openai-codex/gpt-5.6-sol:high
   commit: anthropic/claude-haiku-4-5:off
-  task: openai-codex/gpt-5.6-terra:high
+  task: openai-codex/gpt-5.6-terra:medium

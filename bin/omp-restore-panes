@@ -59,7 +59,7 @@ _omp_restore_panes() {
     [[ -n "$sname" && -n "$widx" && -n "$pidx" && -n "$cwd" && -n "$sid" ]] || continue
     target="${sname}:${widx}.${pidx}"
     case "$profile" in
-      gpt|gpt-glm|claude|combo-claude|combo-gpt|combo-grok|config) ;;
+      gpt|gpt-glm|kimi|claude|combo-claude|combo-gpt|combo-grok|config) ;;
       *)
         print -u2 "omp-restore-panes: unknown saved profile '$profile' for $target ($sid); pane not respawned"
         tmux display-message "OMP restore skipped $target: unknown profile '$profile'"

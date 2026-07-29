@@ -1,0 +1,11 @@
+# Kimi-only OMP model profile.
+# Use when the Kimi Coding subscription is available and its 1M-context K3 model should own the session.
+modelRoles:
+  default: kimi-code/k3:medium
+  smol: kimi-code/k3:minimal
+  slow: kimi-code/k3:high
+  vision: kimi-code/k3:medium
+  plan: kimi-code/k3:high
+  designer: kimi-code/k3:high
+  commit: kimi-code/k3:minimal
+  task: kimi-code/k3:medium

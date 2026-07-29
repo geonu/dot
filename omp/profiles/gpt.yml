@@ -2,10 +2,10 @@
 # Use when Anthropic/Claude quota is exhausted or intentionally avoided.
 modelRoles:
   default: openai-codex/gpt-5.6-terra:medium
-  smol: openai-codex/gpt-5.4-mini:low
-  slow: openai-codex/gpt-5.6-terra:high
-  vision: openai-codex/gpt-5.6-terra:high
-  plan: openai-codex/gpt-5.6-terra:xhigh
-  designer: openai-codex/gpt-5.6-terra:high
-  commit: openai-codex/gpt-5.4-mini:off
+  smol: openai-codex/gpt-5.6-luna:low
+  slow: openai-codex/gpt-5.6-sol:high
+  vision: openai-codex/gpt-5.6-sol:high
+  plan: openai-codex/gpt-5.6-sol:xhigh
+  designer: openai-codex/gpt-5.6-sol:high
+  commit: openai-codex/gpt-5.6-luna:off
   task: openai-codex/gpt-5.6-terra:medium

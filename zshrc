@@ -203,16 +203,16 @@ _omp_default_profile() {
 }
 
 _omp_profile_choices() {
-  print -- "gpt-glm/gpt/claude/combo-claude/combo-gpt/combo-grok/config"
+  print -- "gpt-glm/gpt/kimi/claude/combo-claude/combo-gpt/combo-grok/config"
 }
 
 _omp_profile_usage() {
-  print -- "gpt-glm|gpt|claude|combo-claude|combo-gpt|combo-grok|config"
+  print -- "gpt-glm|gpt|kimi|claude|combo-claude|combo-gpt|combo-grok|config"
 }
 
 _omp_canonical_profile() {
   case "${1:-}" in
-    gpt|gpt-glm|claude|combo-claude|combo-gpt|combo-grok|config)
+    gpt|gpt-glm|kimi|claude|combo-claude|combo-gpt|combo-grok|config)
       print -- "$1"
       ;;
     glm)
@@ -326,6 +326,7 @@ _omp_resume_profile() {
 
 ompgpt() { _omp_run_profile gpt "$@"; }
 ompgpt_glm() { _omp_run_profile gpt-glm "$@"; }
+ompkimi() { _omp_run_profile kimi "$@"; }
 ompclaude() { _omp_run_profile claude "$@"; }
 ompcombo_claude() { _omp_run_profile combo-claude "$@"; }
 ompcombo_gpt() { _omp_run_profile combo-gpt "$@"; }
@@ -333,6 +334,7 @@ ompcombo_grok() { _omp_run_profile combo-grok "$@"; }
 
 ompgptr() { _omp_resume_profile gpt "$@"; }
 ompgpt_glmr() { _omp_resume_profile gpt-glm "$@"; }
+ompkimir() { _omp_resume_profile kimi "$@"; }
 ompclauder() { _omp_resume_profile claude "$@"; }
 ompcombo_clauder() { _omp_resume_profile combo-claude "$@"; }
 ompcombo_gptr() { _omp_resume_profile combo-gpt "$@"; }
