@@ -48,6 +48,7 @@ brew "typescript-language-server" # TS/JS LSP (auto-attaches in TS projects: pac
 # Node, Python, Java, ... are managed by mise (see mise/config.toml).
 
 # --- GUI apps (casks) -------------------------------------------------------
+cask "chatgpt"           # OpenAI ChatGPT desktop app
 cask "codex"
 cask "steipete/tap/codexbar"
 cask "gcloud-cli"
