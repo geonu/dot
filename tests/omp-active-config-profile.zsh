@@ -36,6 +36,9 @@ providers = {
         {"id": "claude-opus-4-8", "thinking": {"efforts": ["medium", "high"]}},
         {"id": "claude-sonnet-5", "thinking": {"efforts": ["medium", "high"]}},
     ],
+    "xai-oauth": [
+        {"id": "grok-4.5", "thinking": {"efforts": ["minimal", "low", "medium", "high", "xhigh"]}},
+    ],
     "zai": [
         {"id": "glm-5.2", "thinking": {"efforts": ["high", "max"]}},
     ],
@@ -51,6 +54,6 @@ for provider_id, models in providers.items():
 conn.commit()
 PY
 
-OMP_ACTIVE_PROFILE=combo-gpt bash "$work/bin/omp-profile-check.sh" "$work"
+OMP_ACTIVE_PROFILE=gpt bash "$work/bin/omp-profile-check.sh" "$work"
 
-print -- "ok: active config matches combo-gpt default profile"
+print -- "ok: active config matches gpt default profile"

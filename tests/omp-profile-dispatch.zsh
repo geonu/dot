@@ -8,6 +8,7 @@ repo_root="${0:A:h:h}"
 test_zdotdir="${TMPDIR:-/tmp}/omp-profile-dispatch-zdotdir.$$"
 mkdir -p "$test_zdotdir"
 touch "$test_zdotdir/.zsh_plugins.txt"
+touch "$test_zdotdir/.zsh_plugins.zsh"
 export ZDOTDIR="$test_zdotdir"
 export TERM="${TERM:-xterm-256color}"
 [[ "$TERM" == dumb ]] && export TERM="xterm-256color"
@@ -46,21 +47,21 @@ expected_gpt_glm_flags() {
     --plan openai-codex/gpt-5.6-terra:xhigh
 }
 
-expected_combo_gpt_flags() {
+expected_gpt_flags() {
   print -l -- \
-    --config "$expected_combo_gpt_config" \
+    --config "$expected_gpt_config" \
     --model openai-codex/gpt-5.6-terra \
     --thinking medium \
-    --smol anthropic/claude-haiku-4-5:minimal \
+    --smol openai-codex/gpt-5.4-mini:low \
     --slow openai-codex/gpt-5.6-terra:high \
     --plan openai-codex/gpt-5.6-terra:xhigh
 }
 
 expected_gpt_glm_config="$HOME/.dotfiles/omp/profiles/gpt-glm.yml"
-expected_combo_gpt_config="$HOME/.dotfiles/omp/profiles/combo-gpt.yml"
+expected_gpt_config="$HOME/.dotfiles/omp/profiles/gpt.yml"
 
 ompr_fresh
-assert_args "default fresh profile" "${(@f)$(expected_combo_gpt_flags)}"
+assert_args "default fresh profile" "${(@f)$(expected_gpt_flags)}"
 
 ompr_fresh glm --probe
 assert_args "glm alias" "${(@f)$(expected_gpt_glm_flags)}" --probe

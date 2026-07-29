@@ -10,15 +10,15 @@
 - **GPT only**: Claude 구독 쿼터를 이미 소진했거나 Anthropic 호출을 의도적으로 막을 때.
 - **GPT+GLM**: Claude 쿼터 소진 시 GPT가 오케스트레이션을 맡고 GLM-5.2가 `slow`/`task` worker를 맡는 백업.
 - **Claude only**: Claude 구독 쿼터가 충분하고 OpenAI/Codex 쿼터를 아낄 때.
-- **fable-codex**: 06-22까지 임시. Fable이 계획/리뷰 품질을 맡고 Codex GPT-5.5가 실행 fan-out을 맡는다.
 - **combo-claude**: Claude가 장기 컨텍스트의 주 모델, Codex/GPT는 고추론·비전 버스트.
 - **combo-gpt**: Codex/GPT가 장기 컨텍스트의 주 모델, Claude는 smol/commit 보조.
+- **combo-grok**: Grok이 장기 컨텍스트의 주 모델, Codex/GPT는 고추론·비전 버스트, Claude는 smol/commit 보조.
 
 
 ## 프로필 파일과 tmux 재시작
 
 모델 조합은 `omp/profiles/*.yml`에 같은 이름으로 보관한다. `config.yml`은 현재 기본값
-(combo-claude active config)이고, 프로필은 실행 시 `--config ~/.dotfiles/omp/profiles/<profile>.yml`로
+(`gpt` active config)이고, 프로필은 실행 시 `--config ~/.dotfiles/omp/profiles/<profile>.yml`로
 overlay한다.
 
 | profile | 파일 | 용도 |
@@ -26,24 +26,24 @@ overlay한다.
 | `gpt` | `omp/profiles/gpt.yml` | Claude 쿼터 소진/Anthropic 차단 시 |
 | `gpt-glm` | `omp/profiles/gpt-glm.yml` | Claude 쿼터 소진 시 GPT default + GLM worker |
 | `claude` | `omp/profiles/claude.yml` | Claude 쿼터 여유, Codex 쿼터 보호 시 |
-| `fable-codex` | `omp/profiles/fable-codex.yml` | 06-22 Fable 무료 윈도우: Fable plan + Codex execution |
 | `combo-claude` | `omp/profiles/combo-claude.yml` | Claude default + Codex burst |
 | `combo-gpt` | `omp/profiles/combo-gpt.yml` | GPT default + Claude utility/task |
+| `combo-grok` | `omp/profiles/combo-grok.yml` | Grok default + Codex burst + Claude utility/task |
 | `config` | 없음 | override 없이 현재 `config.yml` 그대로 resume |
 
 tmux 안에서는 `Ctrl-a R`을 누르면 현재 pane에서 실행 중인 OMP 프로세스의 session id를
-먼저 읽고, 같은 cwd에서 pane을 respawn한다. 프롬프트 기본값은 `combo-claude`이며,
-`gpt-glm`, `gpt`, `claude`, `fable-codex`, `combo-claude`, `combo-gpt`, `config` 중 하나를 입력하면 **현재 pane의 세션**을 해당
+먼저 읽고, 같은 cwd에서 pane을 respawn한다. 프롬프트 기본값은 `gpt`이며,
+`gpt-glm`, `gpt`, `claude`, `combo-claude`, `combo-gpt`, `combo-grok`, `config` 중 하나를 입력하면 **현재 pane의 세션**을 해당
 프로필로 이어간다. OMP TUI의 config hot reload가 없고 resume이 세션의 active model을
 복원할 수 있어, wrapper가 현재 pane의 `--resume <session-id>`와 provider override를 함께
 전달한다. 세션 id 결정 우선순위는 ① pane의 라이브 omp 프로세스(`ps --resume` / 열린
-`.jsonl`, 새 세션 파일이 보일 때까지 짧게 재시도) → ② pane에 기록해 둔 `@omp_session`
+.jsonl`, 새 세션 파일이 보일 때까지 짧게 재시도) → ② pane에 기록해 둔 `@omp_session`
 tmux 옵션(omp가 종료돼도 남아 다음 전환에서 같은 대화로 복귀) → ③ pane cwd의 최신
 세션(`run-shell`은 pane cwd를 상속하지 않으므로 pane 디렉토리 기준으로 조회)이다. 그래도
 세션이 없으면 stale pane 옵션을 비우고 해당 프로필로 새 세션을 띄운다. respawn은 항상 수행되어 pane이 죽지 않는다.
 
 정합성 체크는 `bin/omp-profile-check.sh`로 한다. 이 스크립트는 `omp/config.yml`이
-기본 active profile인 `combo-claude`와 같은 role map인지, `omp/profiles/*.yml`, 이 README의
+기본 active profile인 `gpt`와 같은 role map인지, `omp/profiles/*.yml`, 이 README의
 프로필 목록, `zshrc` profile dispatcher, `tmux.conf`의 `@omp-default-profile`/`@omp-profile-choices`,
 save/restore helper의 profile 보존 규칙, 그리고 로컬 `~/.omp/agent/models.db`의 모델/effort
 메타데이터를 함께 검증한다. 모델 가이드나 profile 기본값을 바꾸거나 OMP 업데이트 후에는 이 체크를 먼저 돌린다.
@@ -52,14 +52,14 @@ save/restore helper의 profile 보존 규칙, 그리고 로컬 `~/.omp/agent/mod
 
 | role     | model                         | 비고 |
 |----------|-------------------------------|------|
-| default  | openai-codex/gpt-5.5:medium   | 장기·복합 기본. high 대비 토큰 절반 수준에서 -2pt [S10] |
-| smol     | openai-codex/gpt-5.4-nano:low | gpt 계열은 `minimal` 미지원 |
-| slow     | openai-codex/gpt-5.5:high     | 고추론 버스트. xhigh는 +1pt에 토큰 +67%라 제외 [S10] |
-| vision   | openai-codex/gpt-5.5:high     | 이미지 QA 실패 비용이 큰 경우 high |
-| plan     | openai-codex/gpt-5.5:xhigh    | 설계·계획은 호출 빈도가 낮고 실패 비용이 커서 OpenAI 공식 xhigh 벤치 조건에 맞춤 [S13] |
-| designer | openai-codex/gpt-5.5:high     | UI/디자인 구현 전용 |
-| commit   | openai-codex/gpt-5.4-nano:off | thinking 비활성 |
-| task     | openai-codex/gpt-5.5:medium   | 병렬 서브태스크 품질 하한 보강. high는 토큰 2x라 미사용 [S10] |
+| default  | openai-codex/gpt-5.6-terra:medium   | 장기·복합 기본. high 대비 토큰 절반 수준에서 -2pt [S10] |
+| smol     | openai-codex/gpt-5.4-mini:low | gpt 계열은 `minimal` 미지원 |
+| slow     | openai-codex/gpt-5.6-terra:high     | 고추론 버스트. xhigh는 +1pt에 토큰 +67%라 제외 [S10] |
+| vision   | openai-codex/gpt-5.6-terra:high     | 이미지 QA 실패 비용이 큰 경우 high |
+| plan     | openai-codex/gpt-5.6-terra:xhigh    | 설계·계획은 호출 빈도가 낮고 실패 비용이 커서 OpenAI 공식 xhigh 벤치 조건에 맞춤 [S13] |
+| designer | openai-codex/gpt-5.6-terra:high     | UI/디자인 구현 전용 |
+| commit   | openai-codex/gpt-5.4-mini:off | thinking 비활성 |
+| task     | openai-codex/gpt-5.6-terra:medium   | 병렬 서브태스크 품질 하한 보강. high는 토큰 2x라 미사용 [S10] |
 
 ## GPT+GLM (Claude 쿼터 소진 + GLM worker 백업)
 
@@ -202,23 +202,22 @@ gpt가 절반 수준 → execution은 gpt-5.5 [S15].
 구독제만 유지할 때는 fable을 전 역할에서 제거한다. 이때 주 모델을 누구로 둘지에 따라
 프로필을 둘로 나눈다.
 
-### 현재 세팅 · `config`: `combo-claude` active config
+### 현재 세팅 · `config`: `gpt` active config
 
 `omp/config.yml`. 새 OMP 세션이 profile wrapper 없이 떠도 기본 active profile인
-`combo-claude`와 같은 role map을 쓴다. `Ctrl-a R`에서 `config`를 고르면 profile overlay 없이도
-Claude default + Codex burst 구성으로 resume한다.
+`gpt`와 같은 role map을 쓴다. `Ctrl-a R`에서 `config`를 고르면 profile overlay 없이도
+GPT-only 구성으로 resume한다.
 
 ```yaml
-default: anthropic/claude-opus-4-8:high
-smol: anthropic/claude-haiku-4-5:minimal
-slow: openai-codex/gpt-5.5:high
-vision: openai-codex/gpt-5.5:high
-plan: openai-codex/gpt-5.5:xhigh
-designer: openai-codex/gpt-5.5:high
-commit: anthropic/claude-haiku-4-5:off
-task: openai-codex/gpt-5.5:high
+default: openai-codex/gpt-5.6-terra:medium
+smol: openai-codex/gpt-5.4-mini:low
+slow: openai-codex/gpt-5.6-terra:high
+vision: openai-codex/gpt-5.6-terra:high
+plan: openai-codex/gpt-5.6-terra:xhigh
+designer: openai-codex/gpt-5.6-terra:high
+commit: openai-codex/gpt-5.4-mini:off
+task: openai-codex/gpt-5.6-terra:medium
 ```
-
 ### 현재 세팅 · `combo-claude`: Claude 메인 + Codex 버스트
 
 `omp/profiles/combo-claude.yml`. 장기 컨텍스트 안정성과 Anthropic 품질을 우선한다.
@@ -227,28 +226,44 @@ Codex/GPT는 slow/plan/vision/designer처럼 실패 비용이 큰 버스트 역�
 ```yaml
 default: anthropic/claude-opus-4-8:high
 smol: anthropic/claude-haiku-4-5:minimal
-slow: openai-codex/gpt-5.5:high
-vision: openai-codex/gpt-5.5:high
-plan: openai-codex/gpt-5.5:xhigh
-designer: openai-codex/gpt-5.5:high
+slow: openai-codex/gpt-5.6-terra:high
+vision: openai-codex/gpt-5.6-terra:high
+plan: openai-codex/gpt-5.6-terra:xhigh
+designer: openai-codex/gpt-5.6-terra:high
 commit: anthropic/claude-haiku-4-5:off
-task: openai-codex/gpt-5.5:high
+task: openai-codex/gpt-5.6-terra:high
 ```
 
 ### `combo-gpt`: Codex/GPT 메인 + Claude 보조
 
 `omp/profiles/combo-gpt.yml`. Claude 쿼터를 아끼면서 GPT를 기본 장기 작업에 둔다.
-Claude는 smol/commit으로 남기고, coding execution 성격의 task는 GPT-5.5로 유지한다.
+Claude는 smol/commit으로 남기고, coding execution 성격의 task는 GPT-5.6-Terra로 유지한다.
 
 ```yaml
-default: openai-codex/gpt-5.5:medium
+default: openai-codex/gpt-5.6-terra:medium
 smol: anthropic/claude-haiku-4-5:minimal
-slow: openai-codex/gpt-5.5:high
-vision: openai-codex/gpt-5.5:high
-plan: openai-codex/gpt-5.5:xhigh
-designer: openai-codex/gpt-5.5:high
+slow: openai-codex/gpt-5.6-terra:high
+vision: openai-codex/gpt-5.6-terra:high
+plan: openai-codex/gpt-5.6-terra:xhigh
+designer: openai-codex/gpt-5.6-terra:high
 commit: anthropic/claude-haiku-4-5:off
-task: openai-codex/gpt-5.5:medium
+task: openai-codex/gpt-5.6-terra:medium
+```
+
+### `combo-grok`: Grok 메인 + Codex 버스트 + Claude 보조
+
+`omp/profiles/combo-grok.yml`. xAI 접근이 가능할 때 Grok을 장기 컨텍스트의 기본 모델로 쓰고,
+Codex/GPT는 slow/plan/vision/designer의 고추론·비전 역할을 맡는다. Claude는 smol/commit에만 쓴다.
+
+```yaml
+default: xai-oauth/grok-4.5:medium
+smol: anthropic/claude-haiku-4-5:minimal
+slow: openai-codex/gpt-5.6-terra:high
+vision: openai-codex/gpt-5.6-terra:high
+plan: openai-codex/gpt-5.6-terra:xhigh
+designer: openai-codex/gpt-5.6-terra:high
+commit: anthropic/claude-haiku-4-5:off
+task: openai-codex/gpt-5.6-terra:medium
 ```
 
 default 다운시프트 순서(쿼터 압박 정도에 따라): ① opus-4-8:low ② sonnet-5:medium

@@ -199,20 +199,20 @@ _omp_profile_path() {
 }
 
 _omp_default_profile() {
-  print -- "${OMP_DEFAULT_PROFILE:-combo-gpt}"
+  print -- "${OMP_DEFAULT_PROFILE:-gpt}"
 }
 
 _omp_profile_choices() {
-  print -- "gpt-glm/gpt/claude/combo-claude/combo-gpt/config"
+  print -- "gpt-glm/gpt/claude/combo-claude/combo-gpt/combo-grok/config"
 }
 
 _omp_profile_usage() {
-  print -- "gpt-glm|gpt|claude|combo-claude|combo-gpt|config"
+  print -- "gpt-glm|gpt|claude|combo-claude|combo-gpt|combo-grok|config"
 }
 
 _omp_canonical_profile() {
   case "${1:-}" in
-    gpt|gpt-glm|claude|combo-claude|combo-gpt|config)
+    gpt|gpt-glm|claude|combo-claude|combo-gpt|combo-grok|config)
       print -- "$1"
       ;;
     glm)
@@ -329,12 +329,14 @@ ompgpt_glm() { _omp_run_profile gpt-glm "$@"; }
 ompclaude() { _omp_run_profile claude "$@"; }
 ompcombo_claude() { _omp_run_profile combo-claude "$@"; }
 ompcombo_gpt() { _omp_run_profile combo-gpt "$@"; }
+ompcombo_grok() { _omp_run_profile combo-grok "$@"; }
 
 ompgptr() { _omp_resume_profile gpt "$@"; }
 ompgpt_glmr() { _omp_resume_profile gpt-glm "$@"; }
 ompclauder() { _omp_resume_profile claude "$@"; }
 ompcombo_clauder() { _omp_resume_profile combo-claude "$@"; }
 ompcombo_gptr() { _omp_resume_profile combo-gpt "$@"; }
+ompcombo_grokr() { _omp_resume_profile combo-grok "$@"; }
 
 
 ompr_tmux_respawn() {

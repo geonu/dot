@@ -30,15 +30,15 @@ assert_file_not_contains() {
   fi
 }
 
-assert_file_contains "$tmux_conf" "set -g @omp-default-profile 'combo-gpt'" "tmux default option"
-assert_file_contains "$tmux_conf" "set -g @omp-profile-choices 'gpt-glm/gpt/claude/combo-claude/combo-gpt/config'" "tmux choices option"
+assert_file_contains "$tmux_conf" "set -g @omp-default-profile 'gpt'" "tmux default option"
+assert_file_contains "$tmux_conf" "set -g @omp-profile-choices 'gpt-glm/gpt/claude/combo-claude/combo-gpt/combo-grok/config'" "tmux choices option"
 assert_file_contains "$tmux_conf" '-I "#{@omp-default-profile}"' "single-pane prompt default"
 assert_file_contains "$tmux_conf" 'OMP profile (#{@omp-profile-choices})' "single-pane prompt choices"
 assert_file_contains "$tmux_conf" 'OMP profile ALL panes (#{@omp-profile-choices})' "all-pane prompt choices"
 assert_file_not_contains "$tmux_conf" "@omp-restore-profile" "old restore-only option"
 
 assert_file_contains "$save_script" "@omp_profile" "save pane profile option"
-assert_file_contains "$restore_script" "gpt|gpt-glm|claude|combo-claude|combo-gpt|config)" "restore profile whitelist"
+assert_file_contains "$restore_script" "gpt|gpt-glm|claude|combo-claude|combo-gpt|combo-grok|config)" "restore profile whitelist"
 assert_file_not_contains "$save_script" "@omp-restore-profile" "old save fallback option"
 assert_file_not_contains "$restore_script" "@omp-restore-profile" "old restore fallback option"
 assert_file_not_contains "$save_script" "\${fb:-combo-claude}" "unvalidated save fallback"

@@ -45,6 +45,9 @@ providers = {
     "zai": [
         {"id": "glm-5.2", "thinking": {"efforts": ["high", "max"]}},
     ],
+    "xai-oauth": [
+        {"id": "grok-4.5", "thinking": {"efforts": ["minimal", "low", "medium", "high", "xhigh"]}},
+    ],
 }
 
 conn = sqlite3.connect(db)
@@ -58,7 +61,9 @@ conn.commit()
 PY
 
 content="$(<"$work/tmux.conf")"
-print -r -- "${content/combo-gpt/not-a-profile}" > "$work/tmux.conf"
+default_option="set -g @omp-default-profile 'gpt'"
+invalid_default_option="set -g @omp-default-profile 'not-a-profile'"
+print -r -- "${content/$default_option/$invalid_default_option}" > "$work/tmux.conf"
 
 output_file="$work/check.out"
 if bash "$work/bin/omp-profile-check.sh" "$work" >"$output_file" 2>&1; then
