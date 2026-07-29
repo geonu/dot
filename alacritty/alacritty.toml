@@ -88,15 +88,11 @@ magenta = "#d3869b"
 cyan    = "#8ec07c"
 white   = "#ebdbb2"
 
-# --- paste: route Cmd+V through tmux so external copy reliably lands inside ---
-# Alacritty's native Paste streams the clipboard straight to the pty, where the
-# nested tmux bracketed-paste state is unreliable (multiline breaks) and the omp
-# TUI's OSC52-read paste sees tmux's own empty buffer -- not the macOS clipboard.
-# Send `C-a ]` instead (\u0001 = Ctrl-A prefix, then ]), hitting tmux's prefix `]`
-# binding, which loads pbpaste into a tmux buffer and injects it as a proper
-# per-pane bracketed paste. Every interactive Alacritty auto-execs into tmux
-# (see ~/.zshrc), so the prefix is always live.
+# --- paste -------------------------------------------------------------------
+# Use Alacritty's built-in macOS paste action. The prior character injection
+# (`C-a ]`) did reach tmux when sent directly, but Command-V itself did not
+# dispatch it reliably. tmux's bracketed-paste support receives this action.
 [[keyboard.bindings]]
 key = "V"
 mods = "Command"
-chars = "\u0001]"
+action = "Paste"
