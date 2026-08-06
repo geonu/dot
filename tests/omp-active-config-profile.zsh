@@ -28,19 +28,23 @@ import sys
 
 providers = {
     "openai-codex": [
+        {"id": "gpt-5.6-luna", "thinking": {"efforts": ["low", "medium", "high", "off"]}},
         {"id": "gpt-5.6-terra", "thinking": {"efforts": ["medium", "high", "xhigh"]}},
-        {"id": "gpt-5.4-mini", "thinking": {"efforts": ["low", "medium", "high", "xhigh"]}},
+        {"id": "gpt-5.6-sol", "thinking": {"efforts": ["medium", "high", "xhigh"]}},
     ],
     "anthropic": [
-        {"id": "claude-haiku-4-5", "thinking": {"efforts": ["minimal"]}},
-        {"id": "claude-opus-4-8", "thinking": {"efforts": ["medium", "high"]}},
+        {"id": "claude-haiku-4-5", "thinking": {"efforts": ["minimal", "off"]}},
+        {"id": "claude-opus-5", "thinking": {"efforts": ["medium", "high"]}},
         {"id": "claude-sonnet-5", "thinking": {"efforts": ["medium", "high"]}},
     ],
     "xai-oauth": [
         {"id": "grok-4.5", "thinking": {"efforts": ["minimal", "low", "medium", "high", "xhigh"]}},
     ],
     "zai": [
-        {"id": "glm-5.2", "thinking": {"efforts": ["high", "max"]}},
+        {"id": "glm-5.2", "thinking": {"efforts": ["high", "max", "off"]}},
+    ],
+    "kimi-code": [
+        {"id": "k3", "thinking": {"efforts": ["minimal", "medium", "high"]}},
     ],
 }
 
@@ -54,6 +58,6 @@ for provider_id, models in providers.items():
 conn.commit()
 PY
 
-OMP_ACTIVE_PROFILE=gpt bash "$work/bin/omp-profile-check.sh" "$work"
+OMP_ACTIVE_PROFILE=grok bash "$work/bin/omp-profile-check.sh" "$work"
 
-print -- "ok: active config matches gpt default profile"
+print -- "ok: active config matches grok default profile"

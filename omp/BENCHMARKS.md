@@ -16,7 +16,7 @@ This document records the models currently selected by OMP profiles and the publ
 | Anthropic | Claude Haiku 4.5 | text/image, 200K context, 64K output, minimal–xhigh effort | Claude utility roles |
 | Z.ai | GLM-5.2 | text, 1M context, 128K output, high/max effort | `gpt-glm` `commit`, `task` |
 | Kimi Code | K3 | text/image, 1M context, 128K output, minimal–high effort | `kimi` all roles |
-| xAI | Grok 4.5 | text/image, 500K context, 500K output | `combo-grok` `default` |
+| xAI | Grok 4.5 | text/image, 500K context, 500K output, minimal–xhigh effort | `grok` all roles; `combo-grok` `default` |
 
 ## Public benchmark evidence
 
@@ -43,7 +43,7 @@ All figures below are provider-published. They are decision context, not routing
 - Keep Terra in `task`; Luna is not a coding-worker replacement.
 - Keep Sol's `xhigh` effort exclusive to `plan`; use `high` for its other high-risk roles.
 - Keep GLM-5.2 out of vision and general orchestration because the registered model is text-only and supports only high/max effort.
-- Keep Grok 4.5 as the `combo-grok` default. A model identifier with a larger-looking number is not automatically a newer flagship.
+- Keep Grok 4.5 as the `grok` and `combo-grok` default. A model identifier with a larger-looking number is not automatically a newer flagship.
 - Keep K3 `plan:high` and `commit:minimal`: its registry does not expose `xhigh` or `off`.
 
 ## Verification

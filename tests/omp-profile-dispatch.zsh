@@ -42,9 +42,9 @@ expected_gpt_glm_flags() {
     --config "$expected_gpt_glm_config" \
     --model openai-codex/gpt-5.6-terra \
     --thinking medium \
-    --smol openai-codex/gpt-5.4-mini:low \
-    --slow openai-codex/gpt-5.6-terra:xhigh \
-    --plan openai-codex/gpt-5.6-terra:xhigh
+    --smol openai-codex/gpt-5.6-luna:low \
+    --slow openai-codex/gpt-5.6-sol:xhigh \
+    --plan openai-codex/gpt-5.6-sol:xhigh
 }
 
 expected_gpt_flags() {
@@ -52,16 +52,27 @@ expected_gpt_flags() {
     --config "$expected_gpt_config" \
     --model openai-codex/gpt-5.6-terra \
     --thinking medium \
-    --smol openai-codex/gpt-5.4-mini:low \
-    --slow openai-codex/gpt-5.6-terra:high \
-    --plan openai-codex/gpt-5.6-terra:xhigh
+    --smol openai-codex/gpt-5.6-luna:low \
+    --slow openai-codex/gpt-5.6-sol:high \
+    --plan openai-codex/gpt-5.6-sol:xhigh
+}
+
+expected_grok_flags() {
+  print -l -- \
+    --config "$expected_grok_config" \
+    --model xai-oauth/grok-4.5 \
+    --thinking medium \
+    --smol xai-oauth/grok-4.5:low \
+    --slow xai-oauth/grok-4.5:high \
+    --plan xai-oauth/grok-4.5:xhigh
 }
 
 expected_gpt_glm_config="$HOME/.dotfiles/omp/profiles/gpt-glm.yml"
 expected_gpt_config="$HOME/.dotfiles/omp/profiles/gpt.yml"
+expected_grok_config="$HOME/.dotfiles/omp/profiles/grok.yml"
 
 ompr_fresh
-assert_args "default fresh profile" "${(@f)$(expected_gpt_flags)}"
+assert_args "default fresh profile" "${(@f)$(expected_grok_flags)}"
 
 ompr_fresh glm --probe
 assert_args "glm alias" "${(@f)$(expected_gpt_glm_flags)}" --probe

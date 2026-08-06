@@ -2,7 +2,7 @@
 set -euo pipefail
 
 repo_root="${1:-$(pwd)}"
-active_profile="${OMP_ACTIVE_PROFILE:-gpt}"
+active_profile="${OMP_ACTIVE_PROFILE:-grok}"
 config="$repo_root/omp/config.yml"
 profiles_dir="$repo_root/omp/profiles"
 readme="$repo_root/omp/README.md"
@@ -28,10 +28,10 @@ tmux_conf = Path(sys.argv[7])
 save_script = Path(sys.argv[8])
 restore_script = Path(sys.argv[9])
 role_keys = ["default", "smol", "slow", "vision", "plan", "designer", "commit", "task"]
-profile_names = ["gpt", "gpt-glm", "kimi", "claude", "combo-claude", "combo-gpt", "combo-grok"]
-profile_choices = ["gpt-glm", "gpt", "kimi", "claude", "combo-claude", "combo-gpt", "combo-grok", "config"]
+profile_names = ["gpt", "gpt-glm", "grok", "kimi", "claude", "combo-claude", "combo-gpt", "combo-grok"]
+profile_choices = ["gpt-glm", "gpt", "grok", "kimi", "claude", "combo-claude", "combo-gpt", "combo-grok", "config"]
 known_choices = set(profile_choices)
-default_profile = "gpt"
+default_profile = "grok"
 
 
 def parse_roles(path: Path) -> dict[str, str]:
@@ -139,7 +139,7 @@ if "@omp_profile" not in save_text:
 
 restore_case = re.search(r'case "\$profile" in(?P<body>.*?)esac', restore_text, re.S)
 restore_body = restore_case.group("body") if restore_case else ""
-accepted_restore = set(re.findall(r'\b(gpt-glm|gpt|kimi|claude|combo-claude|combo-gpt|combo-grok|config)\b', restore_body))
+accepted_restore = set(re.findall(r'\b(gpt-glm|gpt|grok|kimi|claude|combo-claude|combo-gpt|combo-grok|config)\b', restore_body))
 missing_restore = set(profile_choices) - accepted_restore
 if missing_restore:
     errors.append(f"{restore_script} profile whitelist missing: {sorted(missing_restore)}")

@@ -100,9 +100,10 @@ _omp_descendant_pids() {
 }
 
 _omp_session_from_process() {
-  local pid command session_path session_id
+  local pid command session_path session_id log_path
 
   for pid in "$@"; do
+    [[ -n "$pid" ]] || continue
     command="$(ps -p "$pid" -o command= 2>/dev/null || true)"
     if [[ "$command" =~ '--resume[ =]([^ ]+)' ]]; then
       print -- "$match[1]"
@@ -119,6 +120,20 @@ _omp_session_from_process() {
       print -- "$match[1]"
       return 0
     fi
+
+    # Newer OMP builds often keep the transcript mmap'd/closed so lsof never
+    # sees a sessions/*.jsonl fd. The per-pid log still carries sessionId once
+    # the agent has logged anything session-scoped (title gen, tools, etc.).
+    for log_path in "$HOME/.omp/logs/omp."*".$pid.log"(N); do
+      [[ -r "$log_path" ]] || continue
+      session_id="$(awk -F'"' '/"sessionId"/ {
+        for (i = 1; i < NF; i++) if ($i == "sessionId") { print $(i + 2); exit }
+      }' "$log_path" 2>/dev/null)"
+      if [[ -n "$session_id" ]]; then
+        print -- "$session_id"
+        return 0
+      fi
+    done
   done
 
   return 1
@@ -159,6 +174,9 @@ _omp_session_from_tmux_pane_wait() {
     return 0
   fi
 
+  # Live omp with no extractable id yet. Retry briefly, then return 2 so the
+  # caller can still use pane-local @omp_session / newest-in-cwd instead of
+  # forcing a fresh session.
   _omp_pane_has_live_omp "$pane_pid" || return 1
   for attempts in {1..10}; do
     sleep 0.2
@@ -199,20 +217,20 @@ _omp_profile_path() {
 }
 
 _omp_default_profile() {
-  print -- "${OMP_DEFAULT_PROFILE:-gpt}"
+  print -- "${OMP_DEFAULT_PROFILE:-grok}"
 }
 
 _omp_profile_choices() {
-  print -- "gpt-glm/gpt/kimi/claude/combo-claude/combo-gpt/combo-grok/config"
+  print -- "gpt-glm/gpt/grok/kimi/claude/combo-claude/combo-gpt/combo-grok/config"
 }
 
 _omp_profile_usage() {
-  print -- "gpt-glm|gpt|kimi|claude|combo-claude|combo-gpt|combo-grok|config"
+  print -- "gpt-glm|gpt|grok|kimi|claude|combo-claude|combo-gpt|combo-grok|config"
 }
 
 _omp_canonical_profile() {
   case "${1:-}" in
-    gpt|gpt-glm|kimi|claude|combo-claude|combo-gpt|combo-grok|config)
+    gpt|gpt-glm|grok|kimi|claude|combo-claude|combo-gpt|combo-grok|config)
       print -- "$1"
       ;;
     glm)
@@ -331,6 +349,7 @@ ompclaude() { _omp_run_profile claude "$@"; }
 ompcombo_claude() { _omp_run_profile combo-claude "$@"; }
 ompcombo_gpt() { _omp_run_profile combo-gpt "$@"; }
 ompcombo_grok() { _omp_run_profile combo-grok "$@"; }
+ompgrok() { _omp_run_profile grok "$@"; }
 
 ompgptr() { _omp_resume_profile gpt "$@"; }
 ompgpt_glmr() { _omp_resume_profile gpt-glm "$@"; }
@@ -339,11 +358,12 @@ ompclauder() { _omp_resume_profile claude "$@"; }
 ompcombo_clauder() { _omp_resume_profile combo-claude "$@"; }
 ompcombo_gptr() { _omp_resume_profile combo-gpt "$@"; }
 ompcombo_grokr() { _omp_resume_profile combo-grok "$@"; }
+ompgrokr() { _omp_resume_profile grok "$@"; }
 
 
 ompr_tmux_respawn() {
   local requested="${1:-}" profile pane="${2:-$(tmux display-message -p '#{pane_id}')}"
-  local pane_pid pane_path session_id session_status launch
+  local pane_pid pane_path session_id launch
 
   if ! profile="$(_omp_profile_arg ompr_tmux_respawn "$requested" "")"; then
     tmux display-message "OMP: invalid profile '${requested:-$(_omp_default_profile)}'; pane not respawned"
@@ -352,26 +372,23 @@ ompr_tmux_respawn() {
 
   pane_pid="$(tmux display-message -t "$pane" -p '#{pane_pid}')"
   pane_path="$(tmux display-message -t "$pane" -p '#{pane_current_path}')"
-  # 1. Exact: read the session straight from the live omp process in this pane.
-  #    A newly-created OMP session can need a short moment before its jsonl is
-  #    visible to lsof; wait for it instead of falling through to stale fallbacks.
-  if session_id="$(_omp_session_from_tmux_pane_wait "$pane_pid")"; then
-    session_status=0
-  else
-    session_status=$?
+  # 1. Exact: live omp in this pane (--resume argv, open sessions/*.jsonl, or
+  #    per-pid log sessionId). Wait briefly for a just-started process; if the
+  #    live extract still fails, fall through to pane-local anchors instead of
+  #    wiping the conversation with ompr_fresh.
+  if ! session_id="$(_omp_session_from_tmux_pane_wait "$pane_pid")"; then
     session_id=""
   fi
 
-  # 2. Exact-ish: the session we last recorded for THIS pane. A pane option
-  #    survives omp exiting, so a re-press after omp quit still hits the right
-  #    conversation instead of guessing.
-  if [[ -z "$session_id" && "$session_status" -ne 2 ]]; then
+  # 2. Exact-ish: the session we last recorded for THIS pane. Survives omp exit
+  #    and is the best anchor when a live omp no longer exposes jsonl fds.
+  if [[ -z "$session_id" ]]; then
     session_id="$(tmux show-options -pqv -t "$pane" @omp_session)"
   fi
 
   # 3. Heuristic last resort: newest session in the pane's own directory.
   #    run-shell does not inherit the pane cwd, so resolve it there explicitly.
-  if [[ -z "$session_id" && "$session_status" -ne 2 && -n "$pane_path" ]]; then
+  if [[ -z "$session_id" && -n "$pane_path" ]]; then
     session_id="$(cd "$pane_path" 2>/dev/null && _omp_latest_session)"
   fi
 
@@ -507,6 +524,8 @@ export LC_ALL=en_US.UTF-8
 # --- runtimes ---------------------------------------------------------------
 # mise manages Node, Python, Java, ... (replaces nvm/pyenv/jenv).
 command -v mise &>/dev/null && eval "$(mise activate zsh)"
+# Local NVIDIA Parakeet transcription for summarize.
+export SUMMARIZE_ONNX_PARAKEET_CMD='["/Users/lee/.local/bin/summarize-parakeet","--tokens={vocab}","--nemo-ctc-model={model}","{input}"]'
 
 # bun
 export BUN_INSTALL="$HOME/.bun"

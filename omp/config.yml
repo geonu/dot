@@ -3,14 +3,14 @@ theme:
   dark: titanium
 setupVersion: 1
 modelRoles: 
-  default: openai-codex/gpt-5.6-terra:medium
-  smol: openai-codex/gpt-5.6-luna:low
-  slow: openai-codex/gpt-5.6-sol:high
-  vision: openai-codex/gpt-5.6-sol:high
-  plan: openai-codex/gpt-5.6-sol:xhigh
-  designer: openai-codex/gpt-5.6-sol:high
-  commit: openai-codex/gpt-5.6-luna:off
-  task: openai-codex/gpt-5.6-terra:medium
+  default: xai-oauth/grok-4.5:medium
+  smol: xai-oauth/grok-4.5:low
+  slow: xai-oauth/grok-4.5:high
+  vision: xai-oauth/grok-4.5:medium
+  plan: xai-oauth/grok-4.5:xhigh
+  designer: xai-oauth/grok-4.5:high
+  commit: xai-oauth/grok-4.5:minimal
+  task: xai-oauth/grok-4.5:medium
 memory: 
   backend: local
 defaultThinkingLevel: auto
@@ -22,3 +22,6 @@ task:
   showResolvedModelBadge: true
 dev: 
   autoqaConsent: granted
+browser: 
+  relay: true
+  relayUrl: http://127.0.0.1:27777

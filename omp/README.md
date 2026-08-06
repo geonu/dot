@@ -8,6 +8,7 @@
 
 - **GPT only**: Luna(경량)·Terra(기본 실행)·Sol(고추론)을 모두 쓰는 Codex-only 구성.
 - **GPT+GLM**: GPT 역할 분리와 GLM-5.2의 별도 task 쿼터를 결합한 fallback.
+- **Grok only**: Grok 4.5 단독. 장기 컨텍스트·비전·고추론을 한 모델이 처리.
 - **Kimi only**: Kimi K3의 1M-context coding endpoint를 단독 사용.
 - **Claude only**: Opus 5를 장기·고위험 역할에, Sonnet 5/Haiku 4.5를 보조 역할에 배정.
 - **combo-claude**: Opus 5가 장기 컨텍스트를, Sol/Terra가 burst/task를 맡음.
@@ -18,13 +19,14 @@
 ## 프로필 파일과 tmux 재시작
 
 모델 조합은 `omp/profiles/*.yml`에 같은 이름으로 보관한다. `config.yml`은 현재 기본값
-(`gpt` active config)이고, 프로필은 실행 시 `--config ~/.dotfiles/omp/profiles/<profile>.yml`로
+(`grok` active config)이고, 프로필은 실행 시 `--config ~/.dotfiles/omp/profiles/<profile>.yml`로
 overlay한다.
 
 | profile | 파일 | 용도 |
 |---------|------|------|
 | `gpt` | `omp/profiles/gpt.yml` | Claude를 쓰지 않는 Luna/Terra/Sol 구성 |
 | `gpt-glm` | `omp/profiles/gpt-glm.yml` | Terra/Sol orchestration + GLM-5.2 task |
+| `grok` | `omp/profiles/grok.yml` | Grok 4.5 단독 구성 |
 | `kimi` | `omp/profiles/kimi.yml` | Kimi K3 단독 구성 |
 | `claude` | `omp/profiles/claude.yml` | Opus 5 중심 Claude-only 구성 |
 | `combo-claude` | `omp/profiles/combo-claude.yml` | Opus 5 + Sol/Terra burst |
@@ -33,18 +35,18 @@ overlay한다.
 | `config` | 없음 | override 없이 현재 `config.yml` 그대로 resume |
 
 tmux 안에서는 `Ctrl-a R`을 누르면 현재 pane에서 실행 중인 OMP 프로세스의 session id를
-먼저 읽고, 같은 cwd에서 pane을 respawn한다. 프롬프트 기본값은 `gpt`이며,
-`gpt-glm`, `gpt`, `kimi`, `claude`, `combo-claude`, `combo-gpt`, `combo-grok`, `config` 중 하나를 입력하면 **현재 pane의 세션**을 해당
+먼저 읽고, 같은 cwd에서 pane을 respawn한다. 프롬프트 기본값은 `grok`이며,
+`gpt-glm`, `gpt`, `grok`, `kimi`, `claude`, `combo-claude`, `combo-gpt`, `combo-grok`, `config` 중 하나를 입력하면 **현재 pane의 세션**을 해당
 프로필로 이어간다. OMP TUI의 config hot reload가 없고 resume이 세션의 active model을
 복원할 수 있어, wrapper가 현재 pane의 `--resume <session-id>`와 provider override를 함께
 전달한다. 세션 id 결정 우선순위는 ① pane의 라이브 omp 프로세스(`ps --resume` / 열린
-.jsonl`, 새 세션 파일이 보일 때까지 짧게 재시도) → ② pane에 기록해 둔 `@omp_session`
-tmux 옵션(omp가 종료돼도 남아 다음 전환에서 같은 대화로 복귀) → ③ pane cwd의 최신
+`.jsonl` / per-pid 로그의 `sessionId`, 새 세션 단서가 보일 때까지 짧게 재시도) → ② pane에 기록해 둔 `@omp_session`
+tmux 옵션(omp가 종료돼도 남아 다음 전환에서 같은 대화로 복귀; live 추출이 실패해도 사용) → ③ pane cwd의 최신
 세션(`run-shell`은 pane cwd를 상속하지 않으므로 pane 디렉토리 기준으로 조회)이다. 그래도
 세션이 없으면 stale pane 옵션을 비우고 해당 프로필로 새 세션을 띄운다. respawn은 항상 수행되어 pane이 죽지 않는다.
 
 정합성 체크는 `bin/omp-profile-check.sh`로 한다. 이 스크립트는 `omp/config.yml`이
-기본 active profile인 `gpt`와 같은 role map인지, `omp/profiles/*.yml`, 이 README의
+기본 active profile인 `grok`와 같은 role map인지, `omp/profiles/*.yml`, 이 README의
 프로필 목록, `zshrc` profile dispatcher, `tmux.conf`의 `@omp-default-profile`/`@omp-profile-choices`,
 save/restore helper의 profile 보존 규칙, 그리고 로컬 `~/.omp/agent/models.db`의 모델/effort
 메타데이터를 함께 검증한다. 모델 가이드나 profile 기본값을 바꾸거나 OMP 업데이트 후에는 이 체크를 먼저 돌린다.
@@ -60,6 +62,12 @@ save/restore helper의 profile 보존 규칙, 그리고 로컬 `~/.omp/agent/mod
 `plan`만 `xhigh`이고 나머지 Sol 역할은 `high`다. Luna·Terra·Sol은 모두 text/image,
 272K context, 128K output을 지원한다.
 
+## Grok only
+
+모든 역할이 Grok 4.5다. `smol`은 `low`, `commit`은 `minimal`, `default`/`task`/`vision`은
+`medium`, `slow`/`designer`는 `high`, `plan`만 `xhigh`다. text/image, 500K context,
+500K output을 지원한다.
+
 ## GPT+GLM
 
 `gpt-glm`은 Terra를 `default`, Sol을 `slow`/`vision`/`plan`/`designer`, Luna를 `smol`에
@@ -73,8 +81,8 @@ Opus 5는 `default`/`slow`/`vision`/`plan`, Sonnet 5는 `designer`/`task`, Haiku
 
 ## 현재 프로필 정책
 
-`omp/config.yml`은 `gpt`와 같은 role map이다. 새 세션 또는 `config` resume은 Luna를 경량
-역할, Terra를 일반 실행, Sol을 고추론 역할에 사용한다.
+`omp/config.yml`은 `grok`와 같은 role map이다. 새 세션 또는 `config` resume은 Grok 4.5를
+전 역할에 사용한다.
 
 `combo-claude`는 Opus 5를 `default`, Sol을 `slow`/`vision`/`plan`/`designer`, Terra를
 `task`에 둔다. `combo-gpt`는 Terra를 `default`/`task`, Sol을 고추론 역할에 둔다.
@@ -97,8 +105,8 @@ text-only이고 High/Max effort만 지원한다. 따라서 `gpt-glm`에서 고�
 
 ## 운용 원칙
 
-1. `smol`/`commit`은 경량 모델, `default`/`task`는 실행 균형 모델, `slow`/`plan`/`vision`/`designer`는 고추론 모델로 분리한다.
-2. GPT profile은 Luna → Terra → Sol의 비용·추론 티어를 유지한다.
+1. `smol`/`commit`은 경량 effort, `default`/`task`는 실행 균형, `slow`/`plan`/`vision`/`designer`는 고추론으로 분리한다. single-model 프로필은 같은 모델에 effort 티어만 나눈다.
+2. GPT profile은 Luna → Terra → Sol의 비용·추론 티어를 유지한다. Grok-only는 Grok 4.5 한 모델에 effort 티어만 적용한다.
 3. `plan`만 예외적으로 `xhigh`를 쓴다. model metadata가 지원하지 않는 effort는 배정하지 않는다.
 4. `gpt-glm`의 GLM-5.2는 text-only High/Max model이므로 일반 orchestration이나 vision에 쓰지 않는다.
 5. registry 갱신 뒤에는 `bin/omp-profile-check.sh`를 실행하고, 모든 기존 provider selector가 현재 metadata에 존재하는지 확인한다.
@@ -119,7 +127,7 @@ text-only이고 High/Max effort만 지원한다. 따라서 `gpt-glm`에서 고�
 
 글로벌 정책은 default를 "작업자"가 아닌 "오케스트레이터"로 규정하고, plan/slow/task
 escalation 임계값과 default가 직접 처리해도 되는 범위를 못박는다. 모델 프로필과 독립이라
-`gpt`/`gpt-glm`/`kimi`/`claude`/`combo-*` 어디서나 동일하게 적용된다.
+`gpt`/`gpt-glm`/`grok`/`kimi`/`claude`/`combo-*` 어디서나 동일하게 적용된다.
 
 로드 확인: 새 세션에서
 `omp -p --no-tools "output verbatim the bullet lines under 'Anti-patterns'"`로
