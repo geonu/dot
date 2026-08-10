@@ -89,10 +89,11 @@ cyan    = "#8ec07c"
 white   = "#ebdbb2"
 
 # --- paste -------------------------------------------------------------------
-# Use Alacritty's built-in macOS paste action. The prior character injection
-# (`C-a ]`) did reach tmux when sent directly, but Command-V itself did not
-# dispatch it reliably. tmux's bracketed-paste support receives this action.
+# Command-V always invokes tmux's paste command (`C-a ]`) rather than sending
+# raw bracketed input to whichever tmux key table is active. In particular, raw
+# paste is discarded while copy-mode is active after Alt+wheel scrolling.
+# Ctrl-V remains direct application paste for images in OMP.
 [[keyboard.bindings]]
 key = "V"
 mods = "Command"
-action = "Paste"
+chars = "\u0001]"
