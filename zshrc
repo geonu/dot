@@ -217,7 +217,7 @@ _omp_profile_path() {
 }
 
 _omp_default_profile() {
-  print -- "${OMP_DEFAULT_PROFILE:-grok}"
+  print -- "${OMP_DEFAULT_PROFILE:-gpt}"
 }
 
 _omp_profile_choices() {

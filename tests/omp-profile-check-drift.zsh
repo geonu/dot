@@ -65,7 +65,7 @@ conn.commit()
 PY
 
 content="$(<"$work/tmux.conf")"
-default_option="set -g @omp-default-profile 'grok'"
+default_option="set -g @omp-default-profile 'gpt'"
 invalid_default_option="set -g @omp-default-profile 'not-a-profile'"
 print -r -- "${content/$default_option/$invalid_default_option}" > "$work/tmux.conf"
 

@@ -30,7 +30,7 @@ assert_file_not_contains() {
   fi
 }
 
-assert_file_contains "$tmux_conf" "set -g @omp-default-profile 'grok'" "tmux default option"
+assert_file_contains "$tmux_conf" "set -g @omp-default-profile 'gpt'" "tmux default option"
 assert_file_contains "$tmux_conf" "set -g @omp-profile-choices 'gpt-glm/gpt/grok/kimi/claude/combo-claude/combo-gpt/combo-grok/config'" "tmux choices option"
 assert_file_contains "$tmux_conf" '-I "#{@omp-default-profile}"' "single-pane prompt default"
 assert_file_contains "$tmux_conf" 'OMP profile (#{@omp-profile-choices})' "single-pane prompt choices"

@@ -72,7 +72,7 @@ expected_gpt_config="$HOME/.dotfiles/omp/profiles/gpt.yml"
 expected_grok_config="$HOME/.dotfiles/omp/profiles/grok.yml"
 
 ompr_fresh
-assert_args "default fresh profile" "${(@f)$(expected_grok_flags)}"
+assert_args "default fresh profile" "${(@f)$(expected_gpt_flags)}"
 
 ompr_fresh glm --probe
 assert_args "glm alias" "${(@f)$(expected_gpt_glm_flags)}" --probe

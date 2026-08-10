@@ -2,7 +2,7 @@
 set -euo pipefail
 
 repo_root="${1:-$(pwd)}"
-active_profile="${OMP_ACTIVE_PROFILE:-grok}"
+active_profile="${OMP_ACTIVE_PROFILE:-gpt}"
 config="$repo_root/omp/config.yml"
 profiles_dir="$repo_root/omp/profiles"
 readme="$repo_root/omp/README.md"
@@ -31,7 +31,7 @@ role_keys = ["default", "smol", "slow", "vision", "plan", "designer", "commit", 
 profile_names = ["gpt", "gpt-glm", "grok", "kimi", "claude", "combo-claude", "combo-gpt", "combo-grok"]
 profile_choices = ["gpt-glm", "gpt", "grok", "kimi", "claude", "combo-claude", "combo-gpt", "combo-grok", "config"]
 known_choices = set(profile_choices)
-default_profile = "grok"
+default_profile = "gpt"
 
 
 def parse_roles(path: Path) -> dict[str, str]:

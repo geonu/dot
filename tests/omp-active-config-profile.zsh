@@ -58,6 +58,6 @@ for provider_id, models in providers.items():
 conn.commit()
 PY
 
-OMP_ACTIVE_PROFILE=grok bash "$work/bin/omp-profile-check.sh" "$work"
+OMP_ACTIVE_PROFILE=gpt bash "$work/bin/omp-profile-check.sh" "$work"
 
-print -- "ok: active config matches grok default profile"
+print -- "ok: active config matches gpt default profile"
