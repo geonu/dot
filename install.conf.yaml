@@ -47,6 +47,7 @@
     ~/.omp/agent/config.yml: omp/config.yml
     ~/.omp/agent/mcp.json: omp/mcp.json
     ~/.omp/agent/APPEND_SYSTEM.md: omp/APPEND_SYSTEM.md
+    ~/.omp/agent/AGENTS.md: agents/CORE.md
     ~/.omp/agent/RULES.md: omp/RULES.md
     ~/.omp/agent/extensions: omp/extensions
     ~/.claude/CLAUDE.md: claude/CLAUDE.md
