@@ -42,6 +42,7 @@
     ~/.tmux.conf: tmux.conf
     ~/.psqlrc: psqlrc
     ~/.codex/AGENTS.md: codex/AGENTS.md
+    ~/agents.md: agents/CORE.md
     ~/.claude/settings.json: claude/settings.json
     ~/.omp/agent/config.yml: omp/config.yml
     ~/.omp/agent/mcp.json: omp/mcp.json
