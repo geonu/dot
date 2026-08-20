@@ -43,11 +43,16 @@
     ~/.psqlrc: psqlrc
     ~/.codex/AGENTS.md: agents/CORE.md
     ~/agents.md: agents/CORE.md
+    ~/AGENTS.md:
+        force: true
+        path: agents/CORE.md
     ~/.claude/settings.json: claude/settings.json
     ~/.omp/agent/config.yml: omp/config.yml
     ~/.omp/agent/mcp.json: omp/mcp.json
     ~/.omp/agent/APPEND_SYSTEM.md: omp/APPEND_SYSTEM.md
-    ~/.omp/agent/AGENTS.md: agents/CORE.md
+    ~/.omp/agent/AGENTS.md:
+        force: true
+        path: ~/AGENTS.md
     ~/.omp/agent/RULES.md: omp/RULES.md
     ~/.omp/agent/extensions: omp/extensions
     ~/.claude/CLAUDE.md: claude/CLAUDE.md

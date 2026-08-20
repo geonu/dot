@@ -8,11 +8,14 @@ not replace it.
 
 ## Session start (always first)
 At the start of every session, before any investigation, planning, or edits,
-read the project's `AGENTS.md` if one exists — first the launch-cwd
-`AGENTS.md`, then any nested `AGENTS.md` in directories you are about to touch
-(deeper files override shallower ones). Treat its rules as binding project
-context. Only after reading it do you begin other work. If no `AGENTS.md`
-exists, proceed normally.
+apply the global user policy from `~/AGENTS.md` first. The dotfiles installer
+links the same file into `~/.omp/agent/AGENTS.md`, so OMP receives it as its
+global instruction source.
+
+Then read the launch-cwd `AGENTS.md` if one exists, followed by any nested
+`AGENTS.md` in directories you are about to touch; deeper files override
+broader project rules. Treat every applicable file as binding context. Only
+after this ordered load do you begin other work.
 
 ## Escalate to `plan` before editing when ANY holds
 - The change touches 3+ files or crosses a module/package boundary.
