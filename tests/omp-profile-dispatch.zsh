@@ -60,11 +60,11 @@ expected_gpt_flags() {
 expected_grok_flags() {
   print -l -- \
     --config "$expected_grok_config" \
-    --model xai-oauth/grok-4.5 \
+    --model xai-oauth/grok-4.6 \
     --thinking medium \
-    --smol xai-oauth/grok-4.5:low \
-    --slow xai-oauth/grok-4.5:high \
-    --plan xai-oauth/grok-4.5:xhigh
+    --smol xai-oauth/grok-4.6:low \
+    --slow xai-oauth/grok-4.6:high \
+    --plan xai-oauth/grok-4.6:xhigh
 }
 
 expected_gpt_glm_config="$HOME/.dotfiles/omp/profiles/gpt-glm.yml"

@@ -93,11 +93,12 @@ for name, path in {"config": config, **{name: profiles_dir / f"{name}.yml" for n
         if model_meta is None:
             errors.append(f"{path}: {role}: unknown model {provider}/{model}")
             continue
-        if effort and effort != "off":
-            efforts = (model_meta.get("thinking") or {}).get("efforts") or []
-            if effort not in efforts:
-                errors.append(f"{path}: {role}: unsupported effort {effort} for {provider}/{model}; available={efforts}")
-
+        thinking = model_meta.get("thinking") or {}
+        efforts = thinking.get("efforts") or []
+        if effort == "off" and thinking.get("requiresEffort"):
+            errors.append(f"{path}: {role}: unsupported effort off for {provider}/{model}; model requires an effort; available={efforts}")
+        elif effort and effort != "off" and effort not in efforts:
+            errors.append(f"{path}: {role}: unsupported effort {effort} for {provider}/{model}; available={efforts}")
 config_roles = parse_roles(config)
 if active_profile not in {"config", "default"}:
     active_path = profiles_dir / f"{active_profile}.yml"

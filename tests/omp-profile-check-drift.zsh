@@ -34,7 +34,7 @@ import sys
 db = sys.argv[1]
 providers = {
     "openai-codex": [
-        {"id": "gpt-5.6-luna", "thinking": {"efforts": ["low", "medium", "high", "off"]}},
+        {"id": "gpt-5.6-luna", "thinking": {"efforts": ["low", "medium", "high"]}},
         {"id": "gpt-5.6-terra", "thinking": {"efforts": ["medium", "high", "xhigh"]}},
         {"id": "gpt-5.6-sol", "thinking": {"efforts": ["medium", "high", "xhigh"]}},
     ],
@@ -44,10 +44,10 @@ providers = {
         {"id": "claude-sonnet-5", "thinking": {"efforts": ["medium", "high"]}},
     ],
     "zai": [
-        {"id": "glm-5.2", "thinking": {"efforts": ["high", "max", "off"]}},
+        {"id": "glm-5.3", "thinking": {"efforts": ["low", "high", "max"], "requiresEffort": True}},
     ],
     "xai-oauth": [
-        {"id": "grok-4.5", "thinking": {"efforts": ["minimal", "low", "medium", "high", "xhigh"]}},
+        {"id": "grok-4.6", "thinking": {"efforts": ["minimal", "low", "medium", "high", "xhigh"]}},
     ],
     "kimi-code": [
         {"id": "k3", "thinking": {"efforts": ["minimal", "medium", "high"]}},
@@ -63,6 +63,43 @@ for provider_id, models in providers.items():
     )
 conn.commit()
 PY
+
+python3 - "$work/omp/profiles/gpt.yml" <<'PY'
+import sys
+from pathlib import Path
+
+path = Path(sys.argv[1])
+text = path.read_text()
+text = text.replace(
+    "  smol: openai-codex/gpt-5.6-luna:low",
+    "  smol: openai-codex/gpt-5.6-luna:off",
+)
+text = text.replace(
+    "  commit: openai-codex/gpt-5.6-luna:off",
+    "  commit: zai/glm-5.3:low",
+)
+path.write_text(text)
+PY
+
+OMP_ACTIVE_PROFILE=config bash "$work/bin/omp-profile-check.sh" "$work"
+
+python3 - "$work/omp/profiles/gpt.yml" <<'PY'
+import sys
+from pathlib import Path
+
+path = Path(sys.argv[1])
+path.write_text(path.read_text().replace("zai/glm-5.3:low", "zai/glm-5.3:off"))
+PY
+
+output_file="$work/check.out"
+if OMP_ACTIVE_PROFILE=config bash "$work/bin/omp-profile-check.sh" "$work" >"$output_file" 2>&1; then
+  fail "expected profile check to reject off for a model that requires an effort"
+fi
+
+output="$(<"$output_file")"
+if [[ "$output" != *"unsupported effort off for zai/glm-5.3"* || "$output" != *"requires an effort"* ]]; then
+  fail "expected required-effort failure output, got: $output"
+fi
 
 content="$(<"$work/tmux.conf")"
 default_option="set -g @omp-default-profile 'gpt'"

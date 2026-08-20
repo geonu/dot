@@ -38,10 +38,10 @@ providers = {
         {"id": "claude-sonnet-5", "thinking": {"efforts": ["medium", "high"]}},
     ],
     "xai-oauth": [
-        {"id": "grok-4.5", "thinking": {"efforts": ["minimal", "low", "medium", "high", "xhigh"]}},
+        {"id": "grok-4.6", "thinking": {"efforts": ["minimal", "low", "medium", "high", "xhigh"]}},
     ],
     "zai": [
-        {"id": "glm-5.2", "thinking": {"efforts": ["high", "max", "off"]}},
+        {"id": "glm-5.3", "thinking": {"efforts": ["low", "high", "max"], "requiresEffort": True}},
     ],
     "kimi-code": [
         {"id": "k3", "thinking": {"efforts": ["minimal", "medium", "high"]}},

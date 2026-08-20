@@ -7,13 +7,13 @@
 ## 모드 구분
 
 - **GPT only**: Luna(경량)·Terra(기본 실행)·Sol(고추론)을 모두 쓰는 Codex-only 구성.
-- **GPT+GLM**: GPT 역할 분리와 GLM-5.2의 별도 task 쿼터를 결합한 fallback.
-- **Grok only**: Grok 4.5 단독. 장기 컨텍스트·비전·고추론을 한 모델이 처리.
+- **GPT+GLM**: GPT 역할 분리와 GLM-5.3의 별도 task 쿼터를 결합한 fallback.
+- **Grok only**: Grok 4.6 단독. 장기 컨텍스트·비전·고추론을 한 모델이 처리.
 - **Kimi only**: Kimi K3의 1M-context coding endpoint를 단독 사용.
 - **Claude only**: Opus 5를 장기·고위험 역할에, Sonnet 5/Haiku 4.5를 보조 역할에 배정.
 - **combo-claude**: Opus 5가 장기 컨텍스트를, Sol/Terra가 burst/task를 맡음.
 - **combo-gpt**: Terra가 장기 기본·task를, Sol이 고위험 판단을 맡음.
-- **combo-grok**: Grok 4.5가 장기 컨텍스트를, Sol/Terra가 burst/task를 맡음.
+- **combo-grok**: Grok 4.6이 장기 컨텍스트를, Sol/Terra가 burst/task를 맡음.
 
 
 ## 프로필 파일과 tmux 재시작
@@ -25,13 +25,13 @@ overlay한다.
 | profile | 파일 | 용도 |
 |---------|------|------|
 | `gpt` | `omp/profiles/gpt.yml` | Claude를 쓰지 않는 Luna/Terra/Sol 구성 |
-| `gpt-glm` | `omp/profiles/gpt-glm.yml` | Terra/Sol orchestration + GLM-5.2 task |
-| `grok` | `omp/profiles/grok.yml` | Grok 4.5 단독 구성 |
+| `gpt-glm` | `omp/profiles/gpt-glm.yml` | Terra/Sol orchestration + GLM-5.3 task |
+| `grok` | `omp/profiles/grok.yml` | Grok 4.6 단독 구성 |
 | `kimi` | `omp/profiles/kimi.yml` | Kimi K3 단독 구성 |
 | `claude` | `omp/profiles/claude.yml` | Opus 5 중심 Claude-only 구성 |
 | `combo-claude` | `omp/profiles/combo-claude.yml` | Opus 5 + Sol/Terra burst |
 | `combo-gpt` | `omp/profiles/combo-gpt.yml` | Terra/Sol + Claude utility |
-| `combo-grok` | `omp/profiles/combo-grok.yml` | Grok 4.5 + Sol/Terra + Claude utility |
+| `combo-grok` | `omp/profiles/combo-grok.yml` | Grok 4.6 + Sol/Terra + Claude utility |
 | `config` | 없음 | override 없이 현재 `config.yml` 그대로 resume |
 
 tmux 안에서는 `Ctrl-a R`을 누르면 현재 pane에서 실행 중인 OMP 프로세스의 session id를
@@ -64,15 +64,15 @@ save/restore helper의 profile 보존 규칙, 그리고 로컬 `~/.omp/agent/mod
 
 ## Grok only
 
-모든 역할이 Grok 4.5다. `smol`은 `low`, `commit`은 `minimal`, `default`/`task`/`vision`은
+모든 역할이 Grok 4.6이다. `smol`은 `low`, `commit`은 `minimal`, `default`/`task`/`vision`은
 `medium`, `slow`/`designer`는 `high`, `plan`만 `xhigh`다. text/image, 500K context,
 500K output을 지원한다.
 
 ## GPT+GLM
 
 `gpt-glm`은 Terra를 `default`, Sol을 `slow`/`vision`/`plan`/`designer`, Luna를 `smol`에
-둔다. GLM-5.2는 text-only이며 High/Max effort만 지원하므로 `commit:off`와 `task:max`에
-한정한다.
+둔다. effort가 필수인 GLM-5.3은 text-only이며 `low`/`high`/`max`만 지원하므로
+`commit:low`와 `task:max`에 한정한다.
 
 ## Claude only
 
@@ -86,7 +86,7 @@ Opus 5는 `default`/`slow`/`vision`/`plan`, Sonnet 5는 `designer`/`task`, Haiku
 
 `combo-claude`는 Opus 5를 `default`, Sol을 `slow`/`vision`/`plan`/`designer`, Terra를
 `task`에 둔다. `combo-gpt`는 Terra를 `default`/`task`, Sol을 고추론 역할에 둔다.
-`combo-grok`은 Grok 4.5를 `default`로 유지하며 같은 Sol/Terra 역할 분리를 쓴다.
+`combo-grok`은 Grok 4.6을 `default`에 `medium` effort로 유지하며 같은 Sol/Terra 역할 분리를 쓴다.
 
 ## Kimi와 GLM
 
@@ -94,21 +94,22 @@ Kimi Code provider에는 K3가 등록되어 있다. K3는 text/image, 1,048,576 
 output, `minimal`~`high` effort를 지원하므로 `kimi` profile에서 모든 역할을 단독 처리한다.
 K3는 `xhigh`와 `off`를 지원하지 않아 `plan`은 `high`, `commit`은 `minimal`이다.
 
-GLM provider의 최신 등록 모델은 GLM-5.2다. 1M context와 131,072 output을 제공하지만
-text-only이고 High/Max effort만 지원한다. 따라서 `gpt-glm`에서 고볼륨 task에만 유지한다.
+GLM provider의 최신 등록 모델은 GLM-5.3이다. 1M context와 131,072 output을 제공하지만
+text-only이고 effort가 필수이며 `low`/`high`/`max`만 지원한다. 따라서 `gpt-glm`에서
+`commit:low`와 고볼륨 `task:max`에만 유지한다.
 
 ## 모델 갱신 기준
 
 모델 이름의 숫자만으로 우선순위를 정하지 않는다. provider가 제공하는 현재 레지스트리,
-지원 modality/effort, 해당 프로필의 구독·역할 목적을 함께 확인한다. 예를 들어
-`grok-4.20-0309-reasoning`은 registry에 있어도 Grok 4.5를 자동으로 대체하지 않는다.
+지원 modality/effort, 해당 프로필의 구독·역할 목적을 함께 확인한다. Grok 4.20 계열은
+구버전이므로 프로필에서 사용하지 않고, 현재 범용 coding/vision 모델인 Grok 4.6을 쓴다.
 
 ## 운용 원칙
 
 1. `smol`/`commit`은 경량 effort, `default`/`task`는 실행 균형, `slow`/`plan`/`vision`/`designer`는 고추론으로 분리한다. single-model 프로필은 같은 모델에 effort 티어만 나눈다.
-2. GPT profile은 Luna → Terra → Sol의 비용·추론 티어를 유지한다. Grok-only는 Grok 4.5 한 모델에 effort 티어만 적용한다.
+2. GPT profile은 Luna → Terra → Sol의 비용·추론 티어를 유지한다. Grok-only는 Grok 4.6 한 모델에 effort 티어만 적용한다.
 3. `plan`만 예외적으로 `xhigh`를 쓴다. model metadata가 지원하지 않는 effort는 배정하지 않는다.
-4. `gpt-glm`의 GLM-5.2는 text-only High/Max model이므로 일반 orchestration이나 vision에 쓰지 않는다.
+4. `gpt-glm`의 GLM-5.3은 effort가 필수인 text-only `low`/`high`/`max` model이므로 일반 orchestration이나 vision에 쓰지 않는다.
 5. registry 갱신 뒤에는 `bin/omp-profile-check.sh`를 실행하고, 모든 기존 provider selector가 현재 metadata에 존재하는지 확인한다.
 
 ## 오케스트레이션 정책 (APPEND_SYSTEM)

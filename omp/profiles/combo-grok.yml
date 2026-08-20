@@ -2,7 +2,7 @@
 # Use when xAI access is available for long-running context while Codex/GPT owns high-effort and vision work.
 # Claude is reserved for cheap/small utility work; Sol handles high-risk reasoning and Terra executes coding tasks.
 modelRoles:
-  default: xai-oauth/grok-4.5:medium
+  default: xai-oauth/grok-4.6:medium
   smol: anthropic/claude-haiku-4-5:minimal
   slow: openai-codex/gpt-5.6-sol:high
   vision: openai-codex/gpt-5.6-sol:high

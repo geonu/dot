@@ -1,5 +1,5 @@
 # Claude-free OMP backup profile.
-# GPT-5.6-Terra owns orchestration, Sol handles high-risk escalation, planning, and UI/vision; GLM-5.2 handles high-volume task work on a separate quota pool.
+# GPT-5.6-Terra owns orchestration, Sol handles high-risk escalation, planning, and UI/vision; GLM-5.3 handles high-volume task work on a separate quota pool.
 modelRoles:
   default: openai-codex/gpt-5.6-terra:medium
   smol: openai-codex/gpt-5.6-luna:low
@@ -7,5 +7,5 @@ modelRoles:
   vision: openai-codex/gpt-5.6-sol:high
   plan: openai-codex/gpt-5.6-sol:xhigh
   designer: openai-codex/gpt-5.6-sol:high
-  commit: zai/glm-5.2:off
-  task: zai/glm-5.2:max
+  commit: zai/glm-5.3:low
+  task: zai/glm-5.3:max
