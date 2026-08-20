@@ -5,8 +5,8 @@ repo boundaries. **No secrets in this file.**
 
 - Host path (linked by dotbot): `~/workspace/AGENTS.md`
 - Source of truth in git: `geonu/dot` → `workspace/AGENTS.md`
-- Per-claw business manuals (e.g. tandum `AGENTS.md`) stay in that claw's repo.
-  They link here for fleet/credential rules; they do not duplicate them.
+- Per-claw business manuals (e.g. `<company-claw>/AGENTS.md`) stay in that
+claw's repo. They link here for fleet/credential rules; they do not duplicate them.
 
 ---
 
@@ -15,7 +15,7 @@ repo boundaries. **No secrets in this file.**
 | Repo | GitHub | Contains | Must NOT contain |
 |------|--------|----------|------------------|
 | **dot** (`geonu/dot`) | public/private dotfiles | shell, editor, Brewfile, **this policy**, small host helpers (`claw-id`, `credentials-init`) | API keys, OAuth stores, agent memory, company KB |
-| **tandum** (`geonu/tandum`) | company claw + KB | typeclaw agent folder, onboarding KB, collectors, skills | host-wide fleet policy (link only), raw tool OAuth under `~/credentials` |
+| **company-claw** (`~/workspace/<company-claw>`) | company-claw + KB | typeclaw agent folder, onboarding KB, collectors, skills | host-wide fleet policy (link only), raw tool OAuth under `~/credentials` |
 | **claw** (`geonu/claw`) | legacy / unused | empty placeholder | do not revive as personal claw; prefer `~/workspace/personal` |
 | **product repos** (overflowing, jangbu, …) | app code | application source | claw runtime state, `~/credentials` |
 
@@ -31,7 +31,7 @@ repo boundaries. **No secrets in this file.**
 
 | Identity | Meaning | Credentials root | Typical claw folder |
 |----------|---------|------------------|---------------------|
-| `company` | Tandum / work | `~/credentials/company` | `~/workspace/tandum` |
+| `company` | company / work | `~/credentials/company` | `~/workspace/<company-claw>` |
 | `personal` | private | `~/credentials/personal` | `~/workspace/personal` |
 | `shared` | explicit exceptions only | `~/credentials/shared` | mounted RO when needed |
 
@@ -56,7 +56,7 @@ Rules:
 ```text
 ~/workspace/
   AGENTS.md                 ← this file (symlink → dot)
-  tandum/                   ← company claw (typeclaw)
+  <company-claw>/          ← company-claw (typeclaw)
   personal/                 ← personal claw (typeclaw; identity=personal)
   geonu/                    ← personal code (dot lives at geonu/dot)
   overflowing/              ← product / runners (not a claw)
@@ -79,7 +79,7 @@ Rules:
 ~/workspace/
   AGENTS.md
   claws/
-    tandum/
+    <company-claw>/
     personal/
   repos/
     geonu/
@@ -112,7 +112,7 @@ Optional future marker in a claw folder (not required today):
 
 ```yaml
 # claw.yaml — index only; runtime config remains authoritative
-id: tandum
+id: company-claw
 identity: company
 runtime: typeclaw
 credentials: ~/credentials/company
@@ -219,7 +219,7 @@ per OAuth store.
 5. After mount changes: runtime restart/rebuild as required (typeclaw:
    mounts are boot-only).
 
-### Company claw (tandum) — intended mounts
+### company-claw — intended mounts
 
 Target host paths (migrate off ad-hoc `~/.config/...` when ready):
 
@@ -232,7 +232,7 @@ Target host paths (migrate off ad-hoc `~/.config/...` when ready):
 ### Personal claw — intended mounts
 
 - Only `~/credentials/personal/...`
-- **No** cafe24, hwahae, jangbu company tokens, tandum bot secrets
+- **No** company-only commerce or bot tokens
 
 ---
 
@@ -243,8 +243,8 @@ Target host paths (migrate off ad-hoc `~/.config/...` when ready):
 credentials-init
 claw-id company
 
-# company claw
-cd ~/workspace/tandum
+# company-claw
+cd ~/workspace/<company-claw>
 typeclaw doctor
 typeclaw start   # when Docker/OrbStack is up
 
@@ -271,7 +271,7 @@ Migration of an existing tool store into L0:
 | Artifact | Git? | Where |
 |----------|------|--------|
 | This policy, helpers, dotfiles | yes | `geonu/dot` |
-| tandum KB + typeclaw.json (non-secret) | yes | `geonu/tandum` |
+| company-claw KB + typeclaw.json (non-secret) | yes | `~/workspace/<company-claw>` |
 | `secrets.json`, `.env`, `.typeclaw/` | **no** | claw folder, gitignored |
 | `~/credentials/**` | **no** | host only; back up encrypted/out-of-band |
 | Agent memory/sessions | runtime-managed / claw repo rules | never into dot |
