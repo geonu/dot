@@ -1,7 +1,7 @@
 symbolPreset: nerd
 theme: 
   dark: titanium
-setupVersion: 1
+setupVersion: 2
 modelRoles:
   default: openai-codex/gpt-5.6-terra:medium
   smol: openai-codex/gpt-5.6-luna:low
@@ -25,3 +25,5 @@ dev:
 browser: 
   relay: true
   relayUrl: http://127.0.0.1:27777
+composer:
+  shape: field
