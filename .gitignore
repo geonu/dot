@@ -8,3 +8,6 @@
 
 # session state (claude /remember)
 .remember/
+
+# OMP runtime lock (config.yml symlink target)
+/omp/config.yml.lock
