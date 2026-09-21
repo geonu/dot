@@ -13,7 +13,7 @@ export HOME="$test_home"
 export OMP_TMUX_RESTORE_CONTEXT=manual
 
 sidecar="$restore_dir/omp_panes"
-print -r -- "session"$'\t'"1"$'\t'"1"$'\t'"$cwd"$'\t'"gpt-glm"$'\t'"11111111-1111-1111-1111-111111111111" > "$sidecar"
+print -r -- "session"$'\t'"1"$'\t'"1"$'\t'"$cwd"$'\t'"gpt"$'\t'"11111111-1111-1111-1111-111111111111" > "$sidecar"
 
 typeset display_msg=""
 typeset -gi respawn_called=0

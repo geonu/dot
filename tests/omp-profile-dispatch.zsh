@@ -37,15 +37,6 @@ assert_args() {
   fi
 }
 
-expected_gpt_glm_flags() {
-  print -l -- \
-    --config "$expected_gpt_glm_config" \
-    --model openai-codex/gpt-5.6-terra \
-    --thinking medium \
-    --smol openai-codex/gpt-5.6-luna:low \
-    --slow openai-codex/gpt-5.6-sol:xhigh \
-    --plan openai-codex/gpt-5.6-sol:xhigh
-}
 
 expected_gpt_flags() {
   print -l -- \
@@ -53,8 +44,18 @@ expected_gpt_flags() {
     --model openai-codex/gpt-5.6-terra \
     --thinking medium \
     --smol openai-codex/gpt-5.6-luna:low \
-    --slow openai-codex/gpt-5.6-sol:high \
-    --plan openai-codex/gpt-5.6-sol:xhigh
+    --slow openai-codex/gpt-6-astra:high \
+    --plan openai-codex/gpt-6-astra:xhigh
+}
+
+expected_combo_claude_flags() {
+  print -l -- \
+    --config "$expected_combo_claude_config" \
+    --model anthropic/claude-opus-5 \
+    --thinking xhigh \
+    --smol anthropic/claude-haiku-4-5:minimal \
+    --slow openai-codex/gpt-6-astra:high \
+    --plan openai-codex/gpt-6-astra:xhigh
 }
 
 expected_grok_flags() {
@@ -67,15 +68,12 @@ expected_grok_flags() {
     --plan xai-oauth/grok-4.6:xhigh
 }
 
-expected_gpt_glm_config="$HOME/.dotfiles/omp/profiles/gpt-glm.yml"
 expected_gpt_config="$HOME/.dotfiles/omp/profiles/gpt.yml"
-expected_grok_config="$HOME/.dotfiles/omp/profiles/grok.yml"
+expected_combo_claude_config="$HOME/.dotfiles/omp/profiles/combo-claude.yml"
 
 ompr_fresh
-assert_args "default fresh profile" "${(@f)$(expected_gpt_flags)}"
+assert_args "default fresh profile" "${(@f)$(expected_combo_claude_flags)}"
 
-ompr_fresh glm --probe
-assert_args "glm alias" "${(@f)$(expected_gpt_glm_flags)}" --probe
 
 ompr_fresh config --probe
 assert_args "config fresh profile" --probe
@@ -83,8 +81,8 @@ if ompr_fresh fable-codex --probe 2>/dev/null; then
   fail "removed Fable profile must be rejected"
 fi
 
-ompr gpt-glm 12345678 --probe
-assert_args "resume profile switch" "${(@f)$(expected_gpt_glm_flags)}" --resume 12345678 --probe
+ompr gpt 12345678 --probe
+assert_args "resume profile switch" "${(@f)$(expected_gpt_flags)}" --resume 12345678 --probe
 bad_default_stderr="$test_zdotdir/bad-default.err"
 OMP_DEFAULT_PROFILE=not-a-profile
 if ompr_fresh 2>"$bad_default_stderr"; then

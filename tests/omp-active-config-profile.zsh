@@ -31,20 +31,16 @@ providers = {
         {"id": "gpt-5.6-luna", "thinking": {"efforts": ["low", "medium", "high", "off"]}},
         {"id": "gpt-5.6-terra", "thinking": {"efforts": ["medium", "high", "xhigh"]}},
         {"id": "gpt-5.6-sol", "thinking": {"efforts": ["medium", "high", "xhigh"]}},
+        {"id": "gpt-6-astra", "thinking": {"efforts": ["low", "medium", "high", "xhigh", "max"]}},
     ],
     "anthropic": [
         {"id": "claude-haiku-4-5", "thinking": {"efforts": ["minimal", "off"]}},
-        {"id": "claude-opus-5", "thinking": {"efforts": ["medium", "high"]}},
+        {"id": "claude-opus-5", "thinking": {"efforts": ["medium", "high", "xhigh"]}},
         {"id": "claude-sonnet-5", "thinking": {"efforts": ["medium", "high"]}},
+        {"id": "claude-fable-5-1", "thinking": {"efforts": ["low", "medium", "high", "xhigh", "max"]}},
     ],
     "xai-oauth": [
         {"id": "grok-4.6", "thinking": {"efforts": ["minimal", "low", "medium", "high", "xhigh"]}},
-    ],
-    "zai": [
-        {"id": "glm-5.3", "thinking": {"efforts": ["low", "high", "max"], "requiresEffort": True}},
-    ],
-    "kimi-code": [
-        {"id": "k3", "thinking": {"efforts": ["minimal", "medium", "high"]}},
     ],
 }
 
@@ -58,6 +54,6 @@ for provider_id, models in providers.items():
 conn.commit()
 PY
 
-OMP_ACTIVE_PROFILE=gpt bash "$work/bin/omp-profile-check.sh" "$work"
+OMP_ACTIVE_PROFILE=combo-claude bash "$work/bin/omp-profile-check.sh" "$work"
 
-print -- "ok: active config matches gpt default profile"
+print -- "ok: active config matches combo-claude default profile"

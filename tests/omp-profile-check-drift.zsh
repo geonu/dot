@@ -34,23 +34,23 @@ import sys
 db = sys.argv[1]
 providers = {
     "openai-codex": [
-        {"id": "gpt-5.6-luna", "thinking": {"efforts": ["low", "medium", "high"]}},
+        {"id": "gpt-5.6-luna", "thinking": {"efforts": ["low", "medium", "high", "off"]}},
         {"id": "gpt-5.6-terra", "thinking": {"efforts": ["medium", "high", "xhigh"]}},
         {"id": "gpt-5.6-sol", "thinking": {"efforts": ["medium", "high", "xhigh"]}},
+        {"id": "gpt-6-astra", "thinking": {"efforts": ["low", "medium", "high", "xhigh", "max"]}},
     ],
     "anthropic": [
         {"id": "claude-haiku-4-5", "thinking": {"efforts": ["minimal", "off"]}},
-        {"id": "claude-opus-5", "thinking": {"efforts": ["medium", "high"]}},
+        {"id": "claude-opus-5", "thinking": {"efforts": ["medium", "high", "xhigh"]}},
         {"id": "claude-sonnet-5", "thinking": {"efforts": ["medium", "high"]}},
+        {"id": "claude-fable-5-1", "thinking": {"efforts": ["low", "medium", "high", "xhigh", "max"]}},
     ],
+    # Fixture provider: no profile routes this model; it proves requires-effort validation.
     "zai": [
         {"id": "glm-5.3", "thinking": {"efforts": ["low", "high", "max"], "requiresEffort": True}},
     ],
     "xai-oauth": [
         {"id": "grok-4.6", "thinking": {"efforts": ["minimal", "low", "medium", "high", "xhigh"]}},
-    ],
-    "kimi-code": [
-        {"id": "k3", "thinking": {"efforts": ["minimal", "medium", "high"]}},
     ],
 }
 
@@ -102,7 +102,7 @@ if [[ "$output" != *"unsupported effort off for zai/glm-5.3"* || "$output" != *"
 fi
 
 content="$(<"$work/tmux.conf")"
-default_option="set -g @omp-default-profile 'gpt'"
+default_option="set -g @omp-default-profile 'combo-claude'"
 invalid_default_option="set -g @omp-default-profile 'not-a-profile'"
 print -r -- "${content/$default_option/$invalid_default_option}" > "$work/tmux.conf"
 
