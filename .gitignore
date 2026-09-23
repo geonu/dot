@@ -9,5 +9,8 @@
 # session state (claude /remember)
 .remember/
 
+# host development linked worktrees
+/.worktrees/
+
 # OMP runtime lock (config.yml symlink target)
 /omp/config.yml.lock

@@ -1,0 +1,100 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+usage() {
+  cat <<'USAGE'
+Usage: git worktree-new [-n DIRECTORY] BRANCH [START_POINT]
+
+Create a new local branch and linked worktree at the main checkout's
+.worktrees/DIRECTORY. DIRECTORY defaults to BRANCH with slashes replaced by dashes.
+USAGE
+}
+
+die() {
+  printf 'git-worktree-new: %s\n' "$*" >&2
+  exit 1
+}
+
+name=''
+while (($#)); do
+  case "$1" in
+    -h|--help)
+      usage
+      exit 0
+      ;;
+    -n|--name)
+      (($# >= 2)) || die "$1 requires DIRECTORY"
+      name=$2
+      shift 2
+      ;;
+    --)
+      shift
+      break
+      ;;
+    -*)
+      die "unknown option: $1"
+      ;;
+    *)
+      break
+      ;;
+  esac
+done
+
+(($# == 1 || $# == 2)) || {
+  usage >&2
+  exit 1
+}
+
+branch=$1
+start_point=${2:-HEAD}
+normalized_branch=$(git check-ref-format --branch "$branch" 2>/dev/null) || die "invalid branch: $branch"
+[[ $normalized_branch == "$branch" ]] || die "ambiguous branch shorthand is not allowed: $branch"
+
+if [[ -z $name ]]; then
+  name=${branch//\//-}
+fi
+[[ $name != . && $name != .. && $name =~ ^[A-Za-z0-9][A-Za-z0-9._-]*$ ]] || \
+  die "invalid directory name: $name"
+
+caller_top=$(git rev-parse --show-toplevel 2>/dev/null) || die "not inside a Git worktree"
+caller_top=$(cd "$caller_top" && pwd -P)
+start_oid=$(git -C "$caller_top" rev-parse --verify --end-of-options "${start_point}^{commit}" 2>/dev/null) || \
+  die "start point is not a commit: $start_point"
+
+common_dir=$(git -C "$caller_top" rev-parse --path-format=absolute --git-common-dir 2>/dev/null) || \
+  die "cannot determine Git common directory"
+main=$(cd "$(dirname "$common_dir")" 2>/dev/null && pwd -P) || die "invalid Git common directory"
+[[ $common_dir == "$main/.git" && -d $common_dir && ! -L $common_dir ]] || \
+  die "separate or nonstandard Git directory is not supported"
+main_top=$(git -C "$main" rev-parse --show-toplevel 2>/dev/null) || die "main checkout is unavailable"
+main_top=$(cd "$main_top" && pwd -P)
+[[ $main_top == "$main" ]] || die "Git common directory does not belong to a main checkout"
+
+ignore_file=$main/.gitignore
+[[ -f $ignore_file ]] || die "main checkout must contain .gitignore with /.worktrees/"
+found_ignore=false
+while IFS= read -r line || [[ -n $line ]]; do
+  if [[ $line == '/.worktrees/' ]]; then
+    found_ignore=true
+    break
+  fi
+done < "$ignore_file"
+$found_ignore || die "main .gitignore must contain the exact line: /.worktrees/"
+git -C "$main" check-ignore --no-index -q -- .worktrees/.git-worktree-new-ignore-check || \
+  die "main .gitignore does not ignore .worktrees contents"
+
+if git -C "$main" ls-files -- .worktrees | IFS= read -r _; then
+  die "tracked content exists under .worktrees"
+fi
+
+worktrees=$main/.worktrees
+if [[ -e $worktrees || -L $worktrees ]]; then
+  [[ -d $worktrees && ! -L $worktrees ]] || die ".worktrees must be a real directory"
+fi
+
+destination=$worktrees/$name
+[[ ! -e $destination && ! -L $destination ]] || die "destination already exists: $destination"
+git -C "$main" show-ref --verify --quiet "refs/heads/$branch" && die "local branch already exists: $branch"
+
+mkdir -p "$worktrees"
+git -C "$main" worktree add -b "$branch" "$destination" "$start_oid"

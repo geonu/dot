@@ -89,6 +89,23 @@ Rules:
 Move only after LaunchAgents and docs paths are updated. Until then Phase A
 is valid; this file describes both.
 
+### 3.3 Host development linked worktrees
+
+Create host development worktrees only beneath their main checkout:
+`<repo>/.worktrees/<name>`. Every consumer repository ignores that directory
+with the root-anchored exact line `/.worktrees/`. Use
+`git worktree-new [-n DIRECTORY] BRANCH [START_POINT]`; it creates a new local
+branch, defaults `DIRECTORY` to `BRANCH` with `/` replaced by `-`, and works
+when invoked from either the main or a linked worktree.
+
+Do **not** automatically migrate existing worktrees. After auditing its dirty
+state and active processes, migrate one deliberately with
+`git -C <main> worktree move <old-path> <main>/.worktrees/<name>`. Never use
+filesystem `rm` or `mv`, and do not remove or prune an existing worktree as
+part of migration.
+TypeClaw container-agent temporary worktrees under `/tmp/cc-*` and
+`/tmp/cx-*` are runtime exceptions and are not covered by this host layout.
+
 ---
 
 ## 4. Runtime contract (typeclaw today, swappable later)

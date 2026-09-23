@@ -12,7 +12,7 @@ Personal macOS development environment, managed with
 | Editor   | [Neovim](https://neovim.io) (Lua config, lazy.nvim)                                               |
 | Runtimes | [mise](https://mise.jdx.dev) — Node, Python, Java, …                                              |
 | Packages | [Homebrew](https://brew.sh) (`Brewfile`)                                                          |
-| Fleet    | Multi-claw host policy + helpers (`workspace/AGENTS.md`, `claw-id`, `credentials-init`)         |
+| Fleet    | Multi-claw host policy + helpers (`workspace/AGENTS.md`, `claw-id`, `credentials-init`, `git-worktree-new`) |
 
 ## Repo boundaries
 
@@ -25,7 +25,7 @@ Personal macOS development environment, managed with
 Linked onto the machine by `./install`:
 
 - `~/workspace/AGENTS.md` ← `workspace/AGENTS.md` (fleet rules)
-- `~/.local/bin/claw-id`, `credentials-init`
+- `~/.local/bin/claw-id`, `credentials-init`, `git-worktree-new`
 
 After bootstrap on a new Mac: `credentials-init && claw-id company`, then restore
 or re-auth tool credentials into `~/credentials/<identity>/` (see fleet AGENTS).

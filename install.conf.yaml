@@ -62,6 +62,7 @@
     ~/workspace/AGENTS.md: workspace/AGENTS.md
     ~/.local/bin/claw-id: bin/claw-id
     ~/.local/bin/credentials-init: bin/credentials-init
+    ~/.local/bin/git-worktree-new: bin/git-worktree-new
 
 # Converge Homebrew to the Brewfile (mirrors the `clean` directive for symlinks):
 # trust the taps the Brewfile declares, install anything missing, and uninstall
