@@ -1,12 +1,11 @@
 # GPT-only OMP model profile.
 # Use when Anthropic/Claude quota is exhausted or intentionally avoided.
-# GPT-6 Astra owns slow/vision/plan for high-risk reasoning, multimodal, and planning work; GPT-5.6 Sol keeps designer, and Terra executes tasks.
+# GPT-6 Astra owns slow/vision/plan for high-risk reasoning, multimodal, and planning work, and Terra executes tasks.
 modelRoles:
   default: openai-codex/gpt-5.6-terra:medium
   smol: openai-codex/gpt-6-luna:low
   slow: openai-codex/gpt-6-astra:high
   vision: openai-codex/gpt-6-astra:high
   plan: openai-codex/gpt-6-astra:xhigh
-  designer: openai-codex/gpt-5.6-sol:high
   commit: openai-codex/gpt-6-luna:off
   task: openai-codex/gpt-5.6-terra:medium

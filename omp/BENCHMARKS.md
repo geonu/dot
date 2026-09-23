@@ -12,10 +12,10 @@ This document records the models currently selected by OMP profiles and the publ
 | OpenAI Codex | GPT-6 Luna | text/image, registry `contextWindow` 272,000, `maxContextWindow` 872,000, 128,000 output, low–max effort (`off` accepted without `requiresEffort`) | `smol:low`, `commit:off` in `gpt`, `gpt-claude`, `claude-gpt`, and `grok-gpt` |
 | OpenAI Codex | GPT-5.6 Luna (superseded baseline; unrouted) | text/image, 1,000,000 context (872,000 usable via `maxContextWindow`), 128,000 output, low–max effort | — |
 | OpenAI Codex | GPT-5.6 Terra | text/image, 1,000,000 context (872,000 usable via `maxContextWindow`), 128,000 output, low–max effort | `gpt` `default`, `task`; GPT-side mixed-profile execution roles |
-| OpenAI Codex | GPT-5.6 Sol | text/image, 1,000,000 context (872,000 usable via `maxContextWindow`), 128,000 output, low–max effort | `designer` in `gpt`, `gpt-claude`, `claude-gpt`, and `grok-gpt` |
+| OpenAI Codex | GPT-5.6 Sol (unrouted) | text/image, 1,000,000 context (872,000 usable via `maxContextWindow`), 128,000 output, low–max effort | — (its only role, `designer`, was removed upstream in OMP 18.1.5, 2026-09-03) |
 | Anthropic | Claude Fable 5.1 | text/image, 1,000,000 context, 128,000 output, low–max effort | `claude` `default:medium`, `slow:high`, `plan:xhigh`; `gpt-claude` `slow:high` |
 | Anthropic | Claude Opus 5.5 | text/image, 1,000,000 context, 128,000 output, low–max effort | `claude-gpt` `default:xhigh`; `claude` `vision:medium`; `gpt-claude` `task:medium` |
-| Anthropic | Claude Sonnet 5 | text/image, 1,000,000 context, 128,000 output, low–max effort | `claude` `designer`, `task` |
+| Anthropic | Claude Sonnet 5 | text/image, 1,000,000 context, 128,000 output, low–max effort | `claude` `task` |
 | Anthropic | Claude Haiku 4.5 | text/image, 200,000 context, 64,000 output, minimal–xhigh effort | `claude` `smol`, `commit` only |
 | xAI | Grok 4.7 | text/image, 500,000 context, 500,000 output, minimal–xhigh effort | `grok` all roles; `grok-gpt` `default:medium` |
 
@@ -45,7 +45,7 @@ All figures below are provider-published. They are decision context, not routing
 
 ## Routing policy
 
-- Route GPT-6 Astra to `slow:high`, `vision:high`, and `plan:xhigh` in every GPT-side profile; retain Sol `high` for `designer`, and Terra for `default` and `task` in GPT-only profiles. Astra keeps those roles because it leads Terminal-Bench-Science 0.1 (**64.6%** vs Opus 5.5's **58.7%**) and AutomationBench (**41.4%** vs **40.0%**), while mixed profiles deliberately split provider quota pools.
+- Route GPT-6 Astra to `slow:high`, `vision:high`, and `plan:xhigh` in every GPT-side profile; keep Terra for `default` and `task` in GPT-only profiles. The `designer` role was removed upstream in OMP 18.1.5 (2026-09-03), so no profile routes it. Astra keeps those roles because it leads Terminal-Bench-Science 0.1 (**64.6%** vs Opus 5.5's **58.7%**) and AutomationBench (**41.4%** vs **40.0%**), while mixed profiles deliberately split provider quota pools.
 - Use Claude Fable 5.1 for the Claude-only profile's `default`, `slow`, and `plan` roles on its separate Anthropic Fable quota bucket. Use Opus 5.5 wherever superseded Opus 5 was routed: `claude-gpt` `default:xhigh`, Claude-only `vision:medium`, and `gpt-claude` `task:medium`.
 - `gpt-claude`는 Astra 오케스트레이터와 Opus 5.5 워커를 짝지어 가장 호출량이 많은 두 역할을 서로 다른 provider 쿼터 풀에 과금하고, `slow`는 Fable 5.1의 전용 Anthropic 버킷에 둔다. 다만 `default`의 Astra는 $10/$50, `task`의 Opus 5.5는 $4/$20로, 저비용 프로필의 Terra $2/$12와 Sonnet 5 $2/$10보다 비싸다.
 - Keep Grok 4.7 as the `grok` and `grok-gpt` default at the identical price to superseded Grok 4.6. Grok 4.20 variants are prohibited and must not be selected by current profiles.

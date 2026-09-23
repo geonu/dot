@@ -6,6 +6,5 @@ modelRoles:
   slow: xai-oauth/grok-4.7:high
   vision: xai-oauth/grok-4.7:medium
   plan: xai-oauth/grok-4.7:xhigh
-  designer: xai-oauth/grok-4.7:high
   commit: xai-oauth/grok-4.7:minimal
   task: xai-oauth/grok-4.7:medium
