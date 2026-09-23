@@ -30,6 +30,7 @@ providers = {
     "openai-codex:0.155.1": [
         {"id": "gpt-6-luna", "thinking": {"efforts": ["low", "medium", "high", "xhigh", "max"]}},
         {"id": "gpt-5.6-terra", "thinking": {"efforts": ["medium", "high", "xhigh"]}},
+        {"id": "gpt-6-sol", "thinking": {"efforts": ["low", "medium", "high", "xhigh", "max"]}},
         {"id": "gpt-5.6-sol", "thinking": {"efforts": ["medium", "high", "xhigh"]}},
         {"id": "gpt-6-astra", "thinking": {"efforts": ["low", "medium", "high", "xhigh", "max"]}},
     ],
