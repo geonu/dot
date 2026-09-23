@@ -1,8 +1,8 @@
 # Mixed OMP model profile, Claude-primary.
 # Use when both subscriptions have quota and Claude should own long-running context.
-# Opus 5 owns default long-running orchestration at xhigh; Astra owns burst reasoning/planning, Sol keeps visual/design work, and Terra executes tasks.
+# Opus 5.5 owns default long-running orchestration at xhigh; Astra owns burst reasoning/planning, Sol keeps visual/design work, and Terra executes tasks.
 modelRoles:
-  default: anthropic/claude-opus-5:xhigh
+  default: anthropic/claude-opus-5-5:xhigh
   smol: anthropic/claude-haiku-4-5:minimal
   slow: openai-codex/gpt-6-astra:high
   vision: openai-codex/gpt-6-astra:high

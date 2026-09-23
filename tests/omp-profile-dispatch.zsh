@@ -51,7 +51,7 @@ expected_gpt_flags() {
 expected_combo_claude_flags() {
   print -l -- \
     --config "$expected_combo_claude_config" \
-    --model anthropic/claude-opus-5 \
+    --model anthropic/claude-opus-5-5 \
     --thinking xhigh \
     --smol anthropic/claude-haiku-4-5:minimal \
     --slow openai-codex/gpt-6-astra:high \
@@ -61,11 +61,11 @@ expected_combo_claude_flags() {
 expected_grok_flags() {
   print -l -- \
     --config "$expected_grok_config" \
-    --model xai-oauth/grok-4.6 \
+    --model xai-oauth/grok-4.7 \
     --thinking medium \
-    --smol xai-oauth/grok-4.6:low \
-    --slow xai-oauth/grok-4.6:high \
-    --plan xai-oauth/grok-4.6:xhigh
+    --smol xai-oauth/grok-4.7:low \
+    --slow xai-oauth/grok-4.7:high \
+    --plan xai-oauth/grok-4.7:xhigh
 }
 
 expected_gpt_config="$HOME/.dotfiles/omp/profiles/gpt.yml"

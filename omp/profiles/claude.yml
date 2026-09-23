@@ -1,11 +1,11 @@
 # Claude-only OMP model profile.
 # Use when Anthropic quota is available and Codex/OpenAI quota should be protected.
-# Fable 5.1 owns default/slow/plan in a separate Anthropic Fable quota bucket; Opus 5 stays on vision, Sonnet 5 on designer/task, and Haiku 4.5 on utility roles.
+# Fable 5.1 owns default/slow/plan in a separate Anthropic Fable quota bucket; Opus 5.5 stays on vision, Sonnet 5 on designer/task, and Haiku 4.5 on utility roles.
 modelRoles:
   default: anthropic/claude-fable-5-1:medium
   smol: anthropic/claude-haiku-4-5:minimal
   slow: anthropic/claude-fable-5-1:high
-  vision: anthropic/claude-opus-5:medium
+  vision: anthropic/claude-opus-5-5:medium
   plan: anthropic/claude-fable-5-1:xhigh
   designer: anthropic/claude-sonnet-5:high
   commit: anthropic/claude-haiku-4-5:off

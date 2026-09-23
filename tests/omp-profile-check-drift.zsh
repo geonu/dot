@@ -41,7 +41,7 @@ providers = {
     ],
     "anthropic": [
         {"id": "claude-haiku-4-5", "thinking": {"efforts": ["minimal", "off"]}},
-        {"id": "claude-opus-5", "thinking": {"efforts": ["medium", "high", "xhigh"]}},
+        {"id": "claude-opus-5-5", "thinking": {"efforts": ["low", "medium", "high", "xhigh", "max"]}},
         {"id": "claude-sonnet-5", "thinking": {"efforts": ["medium", "high"]}},
         {"id": "claude-fable-5-1", "thinking": {"efforts": ["low", "medium", "high", "xhigh", "max"]}},
     ],
@@ -50,7 +50,7 @@ providers = {
         {"id": "glm-5.3", "thinking": {"efforts": ["low", "high", "max"], "requiresEffort": True}},
     ],
     "xai-oauth": [
-        {"id": "grok-4.6", "thinking": {"efforts": ["minimal", "low", "medium", "high", "xhigh"]}},
+        {"id": "grok-4.7", "thinking": {"efforts": ["minimal", "low", "medium", "high", "xhigh"]}},
     ],
 }
 

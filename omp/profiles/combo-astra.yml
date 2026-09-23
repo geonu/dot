@@ -1,6 +1,6 @@
 # Mixed OMP model profile, Astra-primary.
 # Use when Codex should orchestrate while Anthropic capacity is reserved for coding-task fan-out.
-# Astra owns orchestration, vision, and planning; Opus 5 executes tasks, Luna keeps utilities cheap, and Fable 5.1 handles slow escalation from its separate Anthropic quota bucket.
+# Astra owns orchestration, vision, and planning; Opus 5.5 executes tasks, Luna keeps utilities cheap, and Fable 5.1 handles slow escalation from its separate Anthropic quota bucket.
 modelRoles:
   default: openai-codex/gpt-6-astra:high
   smol: openai-codex/gpt-5.6-luna:low
@@ -9,4 +9,4 @@ modelRoles:
   plan: openai-codex/gpt-6-astra:xhigh
   designer: openai-codex/gpt-5.6-sol:high
   commit: openai-codex/gpt-5.6-luna:off
-  task: anthropic/claude-opus-5:medium
+  task: anthropic/claude-opus-5-5:medium

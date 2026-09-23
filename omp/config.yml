@@ -3,7 +3,7 @@ theme:
   dark: titanium
 setupVersion: 2
 modelRoles:
-  default: anthropic/claude-opus-5:xhigh
+  default: anthropic/claude-opus-5-5:xhigh
   smol: anthropic/claude-haiku-4-5:minimal
   slow: openai-codex/gpt-6-astra:high
   vision: openai-codex/gpt-6-astra:high
