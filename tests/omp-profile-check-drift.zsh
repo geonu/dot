@@ -33,7 +33,7 @@ import sys
 
 db = sys.argv[1]
 providers = {
-    "openai-codex": [
+    "openai-codex:0.155.1": [
         {"id": "gpt-5.6-luna", "thinking": {"efforts": ["low", "medium", "high", "off"]}},
         {"id": "gpt-5.6-terra", "thinking": {"efforts": ["medium", "high", "xhigh"]}},
         {"id": "gpt-5.6-sol", "thinking": {"efforts": ["medium", "high", "xhigh"]}},

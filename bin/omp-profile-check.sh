@@ -73,7 +73,8 @@ providers = {}
 try:
     conn = sqlite3.connect(f"file:{models_db}?mode=ro", uri=True)
     for provider_id, models_json in conn.execute("select provider_id, models from model_cache"):
-        providers[provider_id] = {m["id"]: m for m in json.loads(models_json)}
+        base_id = provider_id.split(":", 1)[0]
+        providers.setdefault(base_id, {}).update({m["id"]: m for m in json.loads(models_json)})
 except (sqlite3.Error, json.JSONDecodeError) as exc:
     raise SystemExit(f"cannot read models db {models_db}: {exc}") from exc
 
