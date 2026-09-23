@@ -34,7 +34,7 @@ import sys
 db = sys.argv[1]
 providers = {
     "openai-codex:0.155.1": [
-        {"id": "gpt-5.6-luna", "thinking": {"efforts": ["low", "medium", "high", "off"]}},
+        {"id": "gpt-6-luna", "thinking": {"efforts": ["low", "medium", "high", "xhigh", "max"]}},
         {"id": "gpt-5.6-terra", "thinking": {"efforts": ["medium", "high", "xhigh"]}},
         {"id": "gpt-5.6-sol", "thinking": {"efforts": ["medium", "high", "xhigh"]}},
         {"id": "gpt-6-astra", "thinking": {"efforts": ["low", "medium", "high", "xhigh", "max"]}},
@@ -71,13 +71,17 @@ from pathlib import Path
 path = Path(sys.argv[1])
 text = path.read_text()
 text = text.replace(
-    "  smol: openai-codex/gpt-5.6-luna:low",
-    "  smol: openai-codex/gpt-5.6-luna:off",
+    "  smol: openai-codex/gpt-6-luna:low",
+    "  smol: openai-codex/gpt-6-luna:off",
 )
+if "  smol: openai-codex/gpt-6-luna:low" in text:
+    raise SystemExit("failed to inject smol effort drift")
 text = text.replace(
-    "  commit: openai-codex/gpt-5.6-luna:off",
+    "  commit: openai-codex/gpt-6-luna:off",
     "  commit: zai/glm-5.3:low",
 )
+if "  commit: openai-codex/gpt-6-luna:off" in text:
+    raise SystemExit("failed to inject commit model drift")
 path.write_text(text)
 PY
 
@@ -102,7 +106,7 @@ if [[ "$output" != *"unsupported effort off for zai/glm-5.3"* || "$output" != *"
 fi
 
 content="$(<"$work/tmux.conf")"
-default_option="set -g @omp-default-profile 'combo-claude'"
+default_option="set -g @omp-default-profile 'claude-gpt'"
 invalid_default_option="set -g @omp-default-profile 'not-a-profile'"
 print -r -- "${content/$default_option/$invalid_default_option}" > "$work/tmux.conf"
 

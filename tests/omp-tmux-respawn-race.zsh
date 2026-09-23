@@ -91,7 +91,7 @@ tmux() {
   esac
 }
 
-ompr_tmux_respawn combo-claude %1
+ompr_tmux_respawn claude-gpt %1
 
 if [[ "$respawn_launch" != *"OMP_RESUME_SESSION_ID=$new_uuid"* ]]; then
   print -u2 "expected respawn to resume newly opened session $new_uuid"

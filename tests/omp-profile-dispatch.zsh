@@ -43,17 +43,17 @@ expected_gpt_flags() {
     --config "$expected_gpt_config" \
     --model openai-codex/gpt-5.6-terra \
     --thinking medium \
-    --smol openai-codex/gpt-5.6-luna:low \
+    --smol openai-codex/gpt-6-luna:low \
     --slow openai-codex/gpt-6-astra:high \
     --plan openai-codex/gpt-6-astra:xhigh
 }
 
-expected_combo_claude_flags() {
+expected_claude_gpt_flags() {
   print -l -- \
-    --config "$expected_combo_claude_config" \
+    --config "$expected_claude_gpt_config" \
     --model anthropic/claude-opus-5-5 \
     --thinking xhigh \
-    --smol anthropic/claude-haiku-4-5:minimal \
+    --smol openai-codex/gpt-6-luna:low \
     --slow openai-codex/gpt-6-astra:high \
     --plan openai-codex/gpt-6-astra:xhigh
 }
@@ -69,10 +69,10 @@ expected_grok_flags() {
 }
 
 expected_gpt_config="$HOME/.dotfiles/omp/profiles/gpt.yml"
-expected_combo_claude_config="$HOME/.dotfiles/omp/profiles/combo-claude.yml"
+expected_claude_gpt_config="$HOME/.dotfiles/omp/profiles/claude-gpt.yml"
 
 ompr_fresh
-assert_args "default fresh profile" "${(@f)$(expected_combo_claude_flags)}"
+assert_args "default fresh profile" "${(@f)$(expected_claude_gpt_flags)}"
 
 
 ompr_fresh config --probe

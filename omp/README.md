@@ -6,35 +6,33 @@
 
 ## 모드 구분
 
-- **GPT only**: Luna(경량)·Terra(기본 실행)·Astra(고위험 추론·비전)·Sol(설계)을 쓰는 Codex-only 구성.
-- **Grok only**: Grok 4.6 단독. 장기 컨텍스트·비전·고추론을 한 모델이 처리.
-- **Claude only**: Fable 5.1을 상위 역할에, Opus 5를 비전에, Sonnet 5/Haiku 4.5를 보조 역할에 배정.
-- **combo-astra**: Astra가 `default`/`vision`/`plan` 오케스트레이션을, Opus 5가 `task` coding fan-out을, Fable 5.1이 `slow` escalation을, Luna가 유틸리티 역할을 맡는다. 오케스트레이터와 워커가 서로 다른 provider 쿼터 풀을 쓰는 구성이다.
-- **combo-claude**: 기본 프로필. Opus 5가 `default:xhigh` 오케스트레이터를, Astra가 `slow`/`vision`/`plan`을, Sol/Terra가 설계/task를 맡음.
-- **combo-gpt**: Terra가 장기 기본·task를, Astra가 `slow`/`vision`/`plan`을, Sol이 설계를 맡음.
-- **combo-grok**: Grok 4.6이 장기 컨텍스트를, Astra가 `slow`/`vision`/`plan`을, Sol/Terra가 설계/task를 맡음.
+- **GPT only**: GPT-6 Luna(경량)·Terra(기본 실행)·Astra(고위험 추론·비전)·Sol(설계)을 쓰는 Codex-only 구성.
+- **Grok only**: Grok 4.7 단독. 장기 컨텍스트·비전·고추론을 한 모델이 처리.
+- **Claude only**: Fable 5.1을 상위 역할에, Opus 5.5를 비전에, Sonnet 5/Haiku 4.5를 보조 역할에 배정.
+- **claude-gpt**: 기본 프로필. Opus 5.5가 `default:xhigh` 오케스트레이터를, Astra가 `slow`/`vision`/`plan`을, Sol/Terra가 설계/task를, GPT-6 Luna가 유틸리티 역할을 맡음.
+- **gpt-claude**: Astra가 `default`/`vision`/`plan` 오케스트레이션을, Opus 5.5가 `task` coding fan-out을, Fable 5.1이 `slow` escalation을, GPT-6 Luna가 유틸리티 역할을 맡는다. 오케스트레이터와 워커가 서로 다른 provider 쿼터 풀을 쓰는 구성이다.
+- **grok-gpt**: Grok 4.7이 장기 컨텍스트를, Astra가 `slow`/`vision`/`plan`을, Sol/Terra가 설계/task를, GPT-6 Luna가 유틸리티 역할을 맡음.
 
 
 ## 프로필 파일과 tmux 재시작
 
 모델 조합은 `omp/profiles/*.yml`에 같은 이름으로 보관한다. `config.yml`은 현재 기본값
-(`combo-claude` active config)이고, 프로필은 실행 시 `--config ~/.dotfiles/omp/profiles/<profile>.yml`로
-overlay한다.
+(`claude-gpt` active config)이고, 프로필은 실행 시 `--config ~/.dotfiles/omp/profiles/<profile>.yml`로
+overlay한다. 단일 provider 프로필은 provider 이름을, 혼합 프로필은 default/오케스트레이터 역할 provider와 나머지 역할 provider를 `<provider>-<provider>`로 표기한다.
 
 | profile | 파일 | 용도 |
 |---------|------|------|
-| `gpt` | `omp/profiles/gpt.yml` | Luna/Terra + Astra `slow`/`vision`/`plan` + Sol `designer` Codex-only 구성 |
-| `grok` | `omp/profiles/grok.yml` | Grok 4.6 단독 구성 |
-| `claude` | `omp/profiles/claude.yml` | Fable 5.1 상위 역할 + Opus 5 비전 Claude-only 구성 |
-| `combo-astra` | `omp/profiles/combo-astra.yml` | Astra 오케스트레이션 + Opus 5 `task` 구성 |
-| `combo-claude` | `omp/profiles/combo-claude.yml` | 기본 프로필: Opus 5 `default:xhigh` + Astra `slow`/`vision`/`plan` + Sol `designer` + Terra `task` |
-| `combo-gpt` | `omp/profiles/combo-gpt.yml` | Terra + Astra `slow`/`vision`/`plan` + Sol `designer` + Claude utility |
-| `combo-grok` | `omp/profiles/combo-grok.yml` | Grok 4.6 + Astra `slow`/`vision`/`plan` + Sol `designer` + Terra `task` + Claude utility |
+| `gpt` | `omp/profiles/gpt.yml` | GPT-6 Luna/Terra + Astra `slow`/`vision`/`plan` + Sol `designer` Codex-only 구성 |
+| `grok` | `omp/profiles/grok.yml` | Grok 4.7 단독 구성 |
+| `claude` | `omp/profiles/claude.yml` | Fable 5.1 상위 역할 + Opus 5.5 비전 Claude-only 구성 |
+| `claude-gpt` | `omp/profiles/claude-gpt.yml` | 기본 프로필: Opus 5.5 `default:xhigh` + Astra `slow`/`vision`/`plan` + Sol `designer` + Terra `task` + GPT-6 Luna utility |
+| `gpt-claude` | `omp/profiles/gpt-claude.yml` | Astra 오케스트레이션 + Opus 5.5 `task` + GPT-6 Luna utility 구성 |
+| `grok-gpt` | `omp/profiles/grok-gpt.yml` | Grok 4.7 + Astra `slow`/`vision`/`plan` + Sol `designer` + Terra `task` + GPT-6 Luna utility |
 | `config` | 없음 | override 없이 현재 `config.yml` 그대로 resume |
 
 tmux 안에서는 `Ctrl-a R`을 누르면 현재 pane에서 실행 중인 OMP 프로세스의 session id를
-먼저 읽고, 같은 cwd에서 pane을 respawn한다. 프롬프트 기본값은 `combo-claude`이며,
-`gpt`, `grok`, `claude`, `combo-astra`, `combo-claude`, `combo-gpt`, `combo-grok`, `config` 중 하나를 입력하면 **현재 pane의 세션**을 해당
+먼저 읽고, 같은 cwd에서 pane을 respawn한다. 프롬프트 기본값은 `claude-gpt`이며,
+`gpt`, `grok`, `claude`, `claude-gpt`, `gpt-claude`, `grok-gpt`, `config` 중 하나를 입력하면 **현재 pane의 세션**을 해당
 프로필로 이어간다. OMP TUI의 config hot reload가 없고 resume이 세션의 active model을
 복원할 수 있어, wrapper가 현재 pane의 `--resume <session-id>`와 provider override를 함께
 전달한다. 세션 id 결정 우선순위는 ① pane의 라이브 omp 프로세스(`ps --resume` / 열린
@@ -44,7 +42,7 @@ tmux 옵션(omp가 종료돼도 남아 다음 전환에서 같은 대화로 복�
 세션이 없으면 stale pane 옵션을 비우고 해당 프로필로 새 세션을 띄운다. respawn은 항상 수행되어 pane이 죽지 않는다.
 
 정합성 체크는 `bin/omp-profile-check.sh`로 한다. 이 스크립트는 `omp/config.yml`이
-기본 active profile인 `combo-claude`와 같은 role map인지, `omp/profiles/*.yml`, 이 README의
+기본 active profile인 `claude-gpt`와 같은 role map인지, `omp/profiles/*.yml`, 이 README의
 프로필 목록, `zshrc` profile dispatcher, `tmux.conf`의 `@omp-default-profile`/`@omp-profile-choices`,
 save/restore helper의 profile 보존 규칙, 그리고 로컬 `~/.omp/agent/models.db`의 모델/effort
 메타데이터를 함께 검증한다. 모델 가이드나 profile 기본값을 바꾸거나 OMP 업데이트 후에는 이 체크를 먼저 돌린다.
@@ -53,50 +51,48 @@ save/restore helper의 profile 보존 규칙, 그리고 로컬 `~/.omp/agent/mod
 
 | role | model | 배정 원칙 |
 |------|-------|----------|
-| `smol`, `commit` | GPT-5.6 Luna | 경량 lookup 및 thinking-off 메시지 |
+| `smol`, `commit` | GPT-6 Luna | 경량 lookup 및 thinking-off 메시지 |
 | `default`, `task` | GPT-5.6 Terra | 일반 장기 작업과 coding fan-out |
 | `slow`, `vision`, `plan` | GPT-6 Astra | 실패 비용이 높은 추론·시각 작업 |
 | `designer` | GPT-5.6 Sol | 설계 작업 |
 
-`plan`만 Astra의 `xhigh`이고 `slow`와 `vision`은 `high`다. Luna·Terra·Sol은 모두 text/image,
-1,000,000 context(usable `maxContextWindow` 872,000), 128,000 output과 `low`~`max` effort를 지원한다.
+`plan`만 Astra의 `xhigh`이고 `slow`와 `vision`은 `high`다. GPT-6 Luna는 text/image, registry `contextWindow` 272,000, `maxContextWindow` 872,000, 128,000 output과 `low`~`max` effort를 지원하며 `off`도 별도 effort 없이 허용한다. Terra·Sol은 text/image, 1,000,000 context(usable `maxContextWindow` 872,000), 128,000 output과 `low`~`max` effort를 지원한다.
 
 ## Grok only
 
-모든 역할이 Grok 4.6이다. `smol`은 `low`, `commit`은 `minimal`, `default`/`task`/`vision`은
+모든 역할이 Grok 4.7이다. `smol`은 `low`, `commit`은 `minimal`, `default`/`task`/`vision`은
 `medium`, `slow`/`designer`는 `high`, `plan`만 `xhigh`다. text/image, 500K context,
 500K output을 지원한다.
 
 
 ## Claude only
 
-Fable 5.1은 `default:medium`/`slow:high`/`plan:xhigh`, Opus 5는 `vision:medium`, Sonnet 5는
-`designer`/`task`, Haiku 4.5는 `smol`/`commit`을 맡는다. Fable 5.1·Opus 5·Sonnet 5는 1M context·128K output을 지원한다.
+Fable 5.1은 `default:medium`/`slow:high`/`plan:xhigh`, Opus 5.5는 `vision:medium`, Sonnet 5는
+`designer`/`task`, Haiku 4.5는 `smol`/`commit`을 맡는다. Fable 5.1·Opus 5.5·Sonnet 5는 1M context·128K output을 지원한다.
 
 ## 현재 프로필 정책
 
-`omp/config.yml`은 `combo-claude`와 같은 role map이다. 새 세션 또는 `config` resume은
-Opus 5 `default:xhigh` 오케스트레이터 구성을 사용한다.
+`omp/config.yml`은 `claude-gpt`와 같은 role map이다. 새 세션 또는 `config` resume은
+Opus 5.5 `default:xhigh` 오케스트레이터 구성을 사용한다.
 
-`combo-astra`는 Astra를 `default`/`vision`/`plan`에, Opus 5를 `task`에, Fable 5.1을 `slow`에, Luna를 유틸리티 역할에 둔다. `default`의 Astra(10/50)와 `task`의 Opus 5(5/25)는 가장 호출량이 많은 두 역할이라 비용·쿼터 소모가 크고, 대규모 fan-out 시 Anthropic 5시간 버킷이 먼저 한계에 닿는다.
+`gpt-claude`는 Astra를 `default`/`vision`/`plan`에, Opus 5.5를 `task`에, Fable 5.1을 `slow`에, GPT-6 Luna를 `smol`/`commit`에 둔다. `default`의 Astra(10/50)와 `task`의 Opus 5.5(4/20)는 가장 호출량이 많은 두 역할이라 비용·쿼터 소모가 크고, 대규모 fan-out 시 Anthropic 5시간 버킷이 먼저 한계에 닿는다.
 
-`combo-claude`는 Opus 5를 `default:xhigh`, Astra를 `slow:high`/`vision:high`/`plan:xhigh`, Sol을
-`designer`, Terra를 `task`에 둔다. `combo-gpt`는 Terra를 `default`/`task`, Astra를
-`slow`/`vision`/`plan`, Sol을 `designer`에 둔다. `combo-grok`은 Grok 4.6을 `default`에
-`medium` effort로 유지하며 같은 Astra/Sol/Terra 역할 분리를 쓴다.
+`claude-gpt`는 Opus 5.5를 `default:xhigh`, Astra를 `slow:high`/`vision:high`/`plan:xhigh`, Sol을
+`designer`, Terra를 `task`에 둔다. `grok-gpt`는 Grok 4.7을 `default`에
+`medium` effort로 유지하며 같은 Astra/Sol/Terra 역할 분리를 쓴다. 세 혼합 프로필 모두 GPT-6 Luna를 `smol`/`commit`에 둔다.
 
 
 ## 모델 갱신 기준
 
 모델 이름의 숫자만으로 우선순위를 정하지 않는다. provider가 제공하는 현재 레지스트리,
 지원 modality/effort, 해당 프로필의 구독·역할 목적을 함께 확인한다. Grok 4.20 계열은
-구버전이므로 프로필에서 사용하지 않고, 현재 범용 coding/vision 모델인 Grok 4.6을 쓴다.
+구버전이므로 프로필에서 사용하지 않고, 현재 범용 coding/vision 모델인 Grok 4.7을 쓴다.
 
 ## 운용 원칙
 
 1. `smol`/`commit`은 경량 effort, `default`/`task`는 실행 균형, `slow`/`plan`/`vision`/`designer`는 고추론으로 분리한다. single-model 프로필은 같은 모델에 effort 티어만 나눈다.
-2. GPT profile은 Luna → Terra와 Astra(`slow`/`vision`/`plan`) → Sol(`designer`)의 비용·역할 분리를 유지한다. Grok-only는 Grok 4.6 한 모델에 effort 티어만 적용한다.
-3. `plan`만 예외적으로 `xhigh`를 쓴다. Astra, Fable 5.1, Opus 5처럼 registry가 `xhigh`를 제공하는 모델에만 배정하며, metadata가 지원하지 않는 effort는 배정하지 않는다.
+2. GPT profile은 GPT-6 Luna → Terra와 Astra(`slow`/`vision`/`plan`) → Sol(`designer`)의 비용·역할 분리를 유지한다. Grok-only는 Grok 4.7 한 모델에 effort 티어만 적용한다.
+3. `plan`만 예외적으로 `xhigh`를 쓴다. Astra, Fable 5.1, Opus 5.5처럼 registry가 `xhigh`를 제공하는 모델에만 배정하며, metadata가 지원하지 않는 effort는 배정하지 않는다.
 4. registry 갱신 뒤에는 `bin/omp-profile-check.sh`를 실행하고, 모든 기존 provider selector가 현재 metadata에 존재하는지 확인한다.
 
 ## 오케스트레이션 정책 (APPEND_SYSTEM)
@@ -115,7 +111,7 @@ Opus 5 `default:xhigh` 오케스트레이터 구성을 사용한다.
 
 글로벌 정책은 default를 "작업자"가 아닌 "오케스트레이터"로 규정하고, plan/slow/task
 escalation 임계값과 default가 직접 처리해도 되는 범위를 못박는다. 모델 프로필과 독립이라
-`gpt`/`grok`/`claude`/`combo-*` 어디서나 동일하게 적용된다.
+`gpt`/`grok`/`claude`/`claude-gpt`/`gpt-claude`/`grok-gpt` 어디서나 동일하게 적용된다.
 
 로드 확인: 새 세션에서
 `omp -p --no-tools "output verbatim the bullet lines under 'Anti-patterns'"`로

@@ -217,24 +217,21 @@ _omp_profile_path() {
 }
 
 _omp_default_profile() {
-  print -- "${OMP_DEFAULT_PROFILE:-combo-claude}"
+  print -- "${OMP_DEFAULT_PROFILE:-claude-gpt}"
 }
 
 _omp_profile_choices() {
-  print -- "gpt/grok/claude/combo-astra/combo-claude/combo-gpt/combo-grok/config"
+  print -- "gpt/grok/claude/claude-gpt/gpt-claude/grok-gpt/config"
 }
 
 _omp_profile_usage() {
-  print -- "gpt|grok|claude|combo-astra|combo-claude|combo-gpt|combo-grok|config"
+  print -- "gpt|grok|claude|claude-gpt|gpt-claude|grok-gpt|config"
 }
 
 _omp_canonical_profile() {
   case "${1:-}" in
-    gpt|grok|claude|combo-astra|combo-claude|combo-gpt|combo-grok|config)
+    gpt|grok|claude|claude-gpt|gpt-claude|grok-gpt|config)
       print -- "$1"
-      ;;
-    combo|combination|mixed)
-      print -- "combo-gpt"
       ;;
     default)
       print -- "config"
@@ -341,18 +338,16 @@ _omp_resume_profile() {
 
 ompgpt() { _omp_run_profile gpt "$@"; }
 ompclaude() { _omp_run_profile claude "$@"; }
-ompcombo_astra() { _omp_run_profile combo-astra "$@"; }
-ompcombo_claude() { _omp_run_profile combo-claude "$@"; }
-ompcombo_gpt() { _omp_run_profile combo-gpt "$@"; }
-ompcombo_grok() { _omp_run_profile combo-grok "$@"; }
+ompgpt_claude() { _omp_run_profile gpt-claude "$@"; }
+ompclaude_gpt() { _omp_run_profile claude-gpt "$@"; }
+ompgrok_gpt() { _omp_run_profile grok-gpt "$@"; }
 ompgrok() { _omp_run_profile grok "$@"; }
 
 ompgptr() { _omp_resume_profile gpt "$@"; }
 ompclauder() { _omp_resume_profile claude "$@"; }
-ompcombo_astrar() { _omp_resume_profile combo-astra "$@"; }
-ompcombo_clauder() { _omp_resume_profile combo-claude "$@"; }
-ompcombo_gptr() { _omp_resume_profile combo-gpt "$@"; }
-ompcombo_grokr() { _omp_resume_profile combo-grok "$@"; }
+ompgpt_clauder() { _omp_resume_profile gpt-claude "$@"; }
+ompclaude_gptr() { _omp_resume_profile claude-gpt "$@"; }
+ompgrok_gptr() { _omp_resume_profile grok-gpt "$@"; }
 ompgrokr() { _omp_resume_profile grok "$@"; }
 
 

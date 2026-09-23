@@ -15,7 +15,7 @@
 # provider mix.
 _omp_known_profile() {
   case "$1" in
-    gpt|grok|claude|combo-astra|combo-claude|combo-gpt|combo-grok|config) return 0 ;;
+    gpt|grok|claude|claude-gpt|gpt-claude|grok-gpt|config) return 0 ;;
     *) return 1 ;;
   esac
 }

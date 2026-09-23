@@ -28,7 +28,7 @@ import sys
 
 providers = {
     "openai-codex:0.155.1": [
-        {"id": "gpt-5.6-luna", "thinking": {"efforts": ["low", "medium", "high", "off"]}},
+        {"id": "gpt-6-luna", "thinking": {"efforts": ["low", "medium", "high", "xhigh", "max"]}},
         {"id": "gpt-5.6-terra", "thinking": {"efforts": ["medium", "high", "xhigh"]}},
         {"id": "gpt-5.6-sol", "thinking": {"efforts": ["medium", "high", "xhigh"]}},
         {"id": "gpt-6-astra", "thinking": {"efforts": ["low", "medium", "high", "xhigh", "max"]}},
@@ -54,6 +54,6 @@ for provider_id, models in providers.items():
 conn.commit()
 PY
 
-OMP_ACTIVE_PROFILE=combo-claude bash "$work/bin/omp-profile-check.sh" "$work"
+OMP_ACTIVE_PROFILE=claude-gpt bash "$work/bin/omp-profile-check.sh" "$work"
 
-print -- "ok: active config matches combo-claude default profile"
+print -- "ok: active config matches claude-gpt default profile"
