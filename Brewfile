@@ -8,6 +8,7 @@
 
 # --- taps -------------------------------------------------------------------
 tap "can1357/tap"
+tap "gyorgysh/keepresso"
 tap "steipete/tap"
 tap "supabase/tap"
 
@@ -60,6 +61,7 @@ cask "font-hack-nerd-font" # terminal font (Alacritty config)
 # or `git clone … && make app` for a /Applications bundle. Config is unaffected.
 cask "alacritty"           # terminal emulator (GPU, low-RAM, primary)
 cask "google-chrome"
+cask "gyorgysh/keepresso/keepresso" # caffeinate-style sleep/idle keeper (menu bar)
 cask "orbstack"           # docker/linux runtime (Docker Desktop replacement)
 cask "rectangle"           # window manager
 cask "tailscale-app"       # mesh VPN
