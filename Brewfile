@@ -7,6 +7,9 @@
 # `./install` symlinks this to ~/.Brewfile so `brew bundle --global` works too.
 
 # --- taps -------------------------------------------------------------------
+# Homebrew only loads third-party tap items that are trusted. Trust is declared
+# per item (`trusted: true`), not per tap, and `brew bundle cleanup --force`
+# resets the trust store to exactly these declarations.
 tap "can1357/tap"
 tap "gyorgysh/keepresso"
 tap "steipete/tap"
@@ -31,12 +34,12 @@ brew "jq"                  # JSON processor
 brew "libpq"               # PostgreSQL client libraries (psql)
 brew "mise"                # polyglot runtime manager (replaces nvm/pyenv/jenv)
 brew "neovim"              # editor
-brew "can1357/tap/omp"     # oh-my-pi coding agent (config in omp/)
+brew "can1357/tap/omp", trusted: true # oh-my-pi coding agent (config in omp/)
 brew "pnpm"                # Node package manager
 brew "railway"             # Railway CLI
 brew "ripgrep"             # modern `grep` file search (used by nvim)
 brew "starship"            # shell prompt
-brew "supabase/tap/supabase" # Supabase CLI (replaces supabase MCP)
+brew "supabase/tap/supabase", trusted: true # Supabase CLI (replaces supabase MCP)
 brew "tmux"                # terminal multiplexer
 brew "vercel-cli"          # Vercel CLI (replaces vercel MCP)
 brew "yq"                  # YAML processor
@@ -52,7 +55,7 @@ brew "typescript-language-server" # TS/JS LSP (auto-attaches in TS projects: pac
 # --- GUI apps (casks) -------------------------------------------------------
 cask "chatgpt"           # OpenAI ChatGPT desktop app
 cask "codex"
-cask "steipete/tap/codexbar"
+cask "steipete/tap/codexbar", trusted: true
 cask "gcloud-cli"
 cask "font-hack-nerd-font" # terminal font (Alacritty config)
 # DEPRECATED cask, disabled 2026-09-01 (fails macOS Gatekeeper / not notarized).
@@ -61,7 +64,7 @@ cask "font-hack-nerd-font" # terminal font (Alacritty config)
 # or `git clone … && make app` for a /Applications bundle. Config is unaffected.
 cask "alacritty"           # terminal emulator (GPU, low-RAM, primary)
 cask "google-chrome"
-cask "gyorgysh/keepresso/keepresso" # caffeinate-style sleep/idle keeper (menu bar)
+cask "gyorgysh/keepresso/keepresso", trusted: true # caffeinate-style sleep/idle keeper (menu bar)
 cask "orbstack"           # docker/linux runtime (Docker Desktop replacement)
 cask "rectangle"           # window manager
 cask "tailscale-app"       # mesh VPN
