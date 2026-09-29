@@ -1,0 +1,10 @@
+# pip --user packages for mise's python (mise/config.toml); console scripts
+# land in ~/.local/bin. Installed with
+# `mise exec -- python -m pip install --user -r`, which skips anything
+# already satisfied, so ./install never upgrades these.
+lxml_html_clean
+openpyxl
+playwright
+pypdf
+python-pptx
+trafilatura

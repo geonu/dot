@@ -1,0 +1,4 @@
+# Global npm packages for mise's node (mise/config.toml), installed with
+# `mise exec -- npm install -g`. Not Homebrew's node, which exists only as a
+# formula dependency. ./install only adds missing entries.
+vibe-notion

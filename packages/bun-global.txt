@@ -1,0 +1,6 @@
+# Global bun packages, installed with `bun add -g` into $BUN_INSTALL (~/.bun).
+# LaunchAgents call ~/.bun/bin/* directly, so these must not move elsewhere.
+# ./install only adds missing entries; it never upgrades or removes them.
+@mariozechner/pi-coding-agent
+agent-messenger
+typeclaw

@@ -80,6 +80,31 @@
     stdout: true
     stderr: true
 
+# Runtimes and user-level globals that live outside Homebrew. Each has exactly
+# one home: runtimes in mise (mise/config.toml), bun globals in ~/.bun, npm
+# globals under mise's node, pip --user packages under mise's python (lists in
+# packages/). Install-if-missing only: nothing here upgrades or removes. bun
+# itself comes from its official installer (see README) and is skipped if absent.
+- shell:
+  - command: |
+      command -v mise >/dev/null 2>&1 || { echo "mise not installed; skipping runtimes/globals"; exit 0; }
+      mise install
+      grep -vE '^[[:space:]]*(#|$)' packages/npm-global.txt | while read -r p; do
+        mise exec -- npm ls -g --depth=0 "$p" >/dev/null 2>&1 || mise exec -- npm install -g "$p"
+      done
+      mise exec -- python -m pip install --user --quiet --disable-pip-version-check -r packages/pip-user.txt
+      bun_home="${BUN_INSTALL:-$HOME/.bun}"
+      if [ -x "$bun_home/bin/bun" ]; then
+        grep -vE '^[[:space:]]*(#|$)' packages/bun-global.txt | while read -r p; do
+          [ -d "$bun_home/install/global/node_modules/$p" ] || "$bun_home/bin/bun" add -g "$p"
+        done
+      else
+        echo "bun not installed; skipping packages/bun-global.txt"
+      fi
+    description: Installing mise runtimes and user-level global packages
+    stdout: true
+    stderr: true
+
 # Bootstrap tmux plugins: clone TPM if missing, then install/update the plugins
 # declared in tmux.conf (resurrect, continuum, yank, sensible). Without this a
 # fresh machine has no plugins and @continuum-restore silently does nothing.

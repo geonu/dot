@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 #
 # One-shot setup for a fresh macOS machine:
-#   Homebrew -> Brewfile packages -> dotfile symlinks -> mise runtimes
+#   Homebrew -> Brewfile packages -> ./install (symlinks, Brewfile sync,
+#   mise runtimes and user-level globals)
 #
 # Safe to re-run; every step is idempotent.
 
@@ -25,12 +26,8 @@ fi
 echo "==> Installing Homebrew packages from Brewfile"
 brew bundle install --file="${BASEDIR}/Brewfile"
 
-# 3. Dotfile symlinks + plugin-manager bootstrap
-echo "==> Linking dotfiles"
+# 3. Dotfile symlinks, package sync, mise runtimes + globals, plugin bootstrap
+echo "==> Running ./install"
 "${BASEDIR}/install"
-
-# 4. Runtimes
-echo "==> Installing runtimes with mise"
-mise install
 
 echo "==> Done. Open a new shell to pick up the new configuration."

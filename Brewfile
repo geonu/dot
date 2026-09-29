@@ -29,19 +29,23 @@ brew "eza"                 # modern `ls` (maintained fork of exa)
 brew "fd"                  # modern `find` file search
 brew "fzf"                 # fuzzy finder (omppick session picker)
 brew "gh"                  # GitHub CLI
+brew "git-filter-repo"     # rewrite git history (strip files/secrets from commits)
 brew "gogcli"              # Google Workspace CLI (gog) — replaces unmaintained googleworkspace-cli/gws
 brew "jq"                  # JSON processor
 brew "libpq"               # PostgreSQL client libraries (psql)
+brew "mas"                 # Mac App Store CLI (backs the `mas` entries below)
 brew "mise"                # polyglot runtime manager (replaces nvm/pyenv/jenv)
 brew "neovim"              # editor
 brew "can1357/tap/omp", trusted: true # oh-my-pi coding agent (config in omp/)
 brew "pnpm"                # Node package manager
+brew "postgresql@16"       # local PostgreSQL 16 server (data: $(brew --prefix)/var/postgresql@16)
 brew "railway"             # Railway CLI
 brew "ripgrep"             # modern `grep` file search (used by nvim)
 brew "starship"            # shell prompt
+brew "summarize"           # AI summarizer for URLs/media (SUMMARIZE_* config in zshrc)
 brew "supabase/tap/supabase", trusted: true # Supabase CLI (replaces supabase MCP)
 brew "tmux"                # terminal multiplexer
-brew "vercel-cli"          # Vercel CLI (replaces vercel MCP)
+brew "vercel"              # Vercel CLI (replaces vercel MCP)
 brew "yq"                  # YAML processor
 brew "zoxide"              # modern `cd` with directory jumping
 
@@ -50,22 +54,42 @@ brew "bash-language-server" # bash/zsh LSP (bin/, zshrc, tests/*.zsh)
 brew "yaml-language-server" # YAML LSP (omp/ configs, .github/workflows)
 brew "typescript-language-server" # TS/JS LSP (auto-attaches in TS projects: package.json/tsconfig.json)
 
-# Node, Python, Java, ... are managed by mise (see mise/config.toml).
+# Node and Python for your own use come from mise (see mise/config.toml). The
+# node/python@3.14 kegs Homebrew pulls in are formula dependencies only; an
+# interactive shell puts mise ahead of them on PATH.
 
 # --- GUI apps (casks) -------------------------------------------------------
+# Apps that update themselves (`auto_updates`) were adopted in place with
+# `brew install --cask --adopt`; Homebrew tracks them and the app keeps
+# updating itself. AdGuard Mini has no cask and stays a manual install.
+cask "1password"          # password manager (1Password for Safari is under mas)
+cask "aside"               # Aside browser (also links ~/.local/bin/aside)
+cask "charles"             # HTTP(S) debugging proxy
 cask "chatgpt"           # OpenAI ChatGPT desktop app
+cask "claude"              # Claude desktop app (Claude Code CLI: see README)
 cask "codex"
 cask "steipete/tap/codexbar", trusted: true
 cask "gcloud-cli"
 cask "font-hack-nerd-font" # terminal font (Alacritty config)
-# DEPRECATED cask, disabled 2026-09-01 (fails macOS Gatekeeper / not notarized).
-# BEFORE 2026-09-01: remove this line and build from source instead, e.g.
-#   mise use -g rust@latest && cargo install alacritty   (binary -> ~/.cargo/bin)
-# or `git clone … && make app` for a /Applications bundle. Config is unaffected.
+# DISABLED cask since 2026-09-01 (fails the Gatekeeper check / not notarized).
+# Kept on purpose: the installed app keeps working and `brew bundle` leaves an
+# installed cask alone, but a fresh `brew bundle install` fails on this line.
+# Removing the line makes `cleanup --force` uninstall the app, so replace it
+# first (e.g. `git clone … && make app` for a /Applications bundle).
 cask "alacritty"           # terminal emulator (GPU, low-RAM, primary)
 cask "google-chrome"
 cask "gyorgysh/keepresso/keepresso", trusted: true # caffeinate-style sleep/idle keeper (menu bar)
+cask "muse"                # Meta Muse AI assistant
+cask "notion"              # Notion desktop
 cask "orbstack"           # docker/linux runtime (Docker Desktop replacement)
 cask "rectangle"           # window manager
+cask "slack"
+cask "spotify"
 cask "tailscale-app"       # mesh VPN
 cask "visual-studio-code"
+
+# --- Mac App Store (needs an App Store sign-in; IDs from `mas list`) ---------
+mas "1Password for Safari", id: 1569813296
+mas "Day One", id: 1055511498
+mas "Numbers", id: 361304891
+mas "Xcode", id: 497799835
