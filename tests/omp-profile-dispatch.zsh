@@ -41,7 +41,7 @@ assert_args() {
 expected_gpt_flags() {
   print -l -- \
     --config "$expected_gpt_config" \
-    --model openai-codex/gpt-5.6-terra \
+    --model openai-codex/gpt-6.1-sol \
     --thinking medium \
     --smol openai-codex/gpt-6-luna:low \
     --slow openai-codex/gpt-6-astra:high \

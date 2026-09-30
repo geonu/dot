@@ -1,8 +1,8 @@
 # GPT-Claude OMP model profile.
 # GPT owns the default role; Claude owns slow and task roles.
-# Astra owns orchestration, vision, and planning; Opus 5.5 executes tasks, GPT-6 Luna keeps utilities cheap, and Fable 5.1 handles slow escalation from its separate Anthropic quota bucket.
+# GPT-6.1 Sol owns orchestration, Astra owns vision/plan, Opus 5.5 executes tasks, Fable 5.1 handles slow escalation, and GPT-6 Luna keeps utilities lightweight.
 modelRoles:
-  default: openai-codex/gpt-6-astra:high
+  default: openai-codex/gpt-6.1-sol:high
   smol: openai-codex/gpt-6-luna:low
   slow: anthropic/claude-fable-5-1:high
   vision: openai-codex/gpt-6-astra:high
