@@ -109,7 +109,7 @@ if [[ "$output" != *"unsupported effort off for zai/glm-5.3"* || "$output" != *"
 fi
 
 content="$(<"$work/tmux.conf")"
-default_option="set -g @omp-default-profile 'claude-gpt'"
+default_option="set -g @omp-default-profile 'gpt-claude'"
 invalid_default_option="set -g @omp-default-profile 'not-a-profile'"
 print -r -- "${content/$default_option/$invalid_default_option}" > "$work/tmux.conf"
 

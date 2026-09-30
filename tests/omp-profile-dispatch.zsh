@@ -48,13 +48,13 @@ expected_gpt_flags() {
     --plan openai-codex/gpt-6-astra:xhigh
 }
 
-expected_claude_gpt_flags() {
+expected_gpt_claude_flags() {
   print -l -- \
-    --config "$expected_claude_gpt_config" \
-    --model anthropic/claude-opus-5-5 \
+    --config "$expected_gpt_claude_config" \
+    --model openai-codex/gpt-6.1-sol \
     --thinking high \
     --smol openai-codex/gpt-6-luna:low \
-    --slow openai-codex/gpt-6-astra:high \
+    --slow anthropic/claude-fable-5-1:high \
     --plan openai-codex/gpt-6-astra:xhigh
 }
 
@@ -69,10 +69,10 @@ expected_grok_flags() {
 }
 
 expected_gpt_config="$HOME/.dotfiles/omp/profiles/gpt.yml"
-expected_claude_gpt_config="$HOME/.dotfiles/omp/profiles/claude-gpt.yml"
+expected_gpt_claude_config="$HOME/.dotfiles/omp/profiles/gpt-claude.yml"
 
 ompr_fresh
-assert_args "default fresh profile" "${(@f)$(expected_claude_gpt_flags)}"
+assert_args "default fresh profile" "${(@f)$(expected_gpt_claude_flags)}"
 
 
 ompr_fresh config --probe

@@ -57,6 +57,6 @@ for provider_id, models in providers.items():
 conn.commit()
 PY
 
-OMP_ACTIVE_PROFILE=claude-gpt bash "$work/bin/omp-profile-check.sh" "$work"
+bash "$work/bin/omp-profile-check.sh" "$work"
 
-print -- "ok: active config matches claude-gpt default profile"
+print -- "ok: active config matches gpt-claude default profile"
