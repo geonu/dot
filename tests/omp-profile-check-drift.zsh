@@ -123,4 +123,30 @@ if [[ "$output" != *"@omp-default-profile"* ]]; then
   fail "expected @omp-default-profile in failure output, got: $output"
 fi
 
-print -- "ok: profile check rejects default-profile drift"
+cp "$repo_root/tmux.conf" "$work/tmux.conf"
+cp "$repo_root/omp/profiles/gpt.yml" "$work/omp/profiles/gpt.yml"
+bash "$work/bin/omp-profile-check.sh" "$work" >/dev/null
+
+# config.yml overrides deep-merge into every --config overlay; an unpinned key leaks across profiles.
+content="$(<"$work/omp/profiles/claude.yml")"
+print -r -- "${content/    sonic: \"@smol\"/}" > "$work/omp/profiles/claude.yml"
+if bash "$work/bin/omp-profile-check.sh" "$work" >"$output_file" 2>&1; then
+  fail "expected profile check to reject a profile that does not pin sonic"
+fi
+output="$(<"$output_file")"
+if [[ "$output" != *"claude.yml: task.agentModelOverrides keys must be"* ]]; then
+  fail "expected missing override pin failure, got: $output"
+fi
+cp "$repo_root/omp/profiles/claude.yml" "$work/omp/profiles/claude.yml"
+
+content="$(<"$work/omp/config.yml")"
+print -r -- "${content/    sonic: openai-codex\/gpt-6.1-sol:low/    sonic: \"@smol\"}" > "$work/omp/config.yml"
+if bash "$work/bin/omp-profile-check.sh" "$work" >"$output_file" 2>&1; then
+  fail "expected profile check to reject config.yml override drift from the default profile"
+fi
+output="$(<"$output_file")"
+if [[ "$output" != *"task.agentModelOverrides must match omp/profiles/gpt-claude.yml"* ]]; then
+  fail "expected override drift failure, got: $output"
+fi
+
+print -- "ok: profile check rejects default-profile and agent-override drift"

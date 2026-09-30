@@ -5,7 +5,7 @@ setupVersion: 2
 modelRoles:
   default: openai-codex/gpt-6.1-sol:high
   smol: openai-codex/gpt-6-luna:low
-  slow: anthropic/claude-fable-5-1:high
+  slow: anthropic/claude-opus-5-5:xhigh
   vision: openai-codex/gpt-6-astra:high
   plan: openai-codex/gpt-6-astra:xhigh
   commit: openai-codex/gpt-6-luna:off
@@ -19,6 +19,9 @@ display:
 showHardwareCursor: true
 task: 
   showResolvedModelBadge: true
+  agentModelOverrides:
+    reviewer: openai-codex/gpt-6-astra:high
+    sonic: openai-codex/gpt-6.1-sol:low
 dev: 
   autoqaConsent: granted
 browser: 

@@ -8,3 +8,8 @@ modelRoles:
   plan: xai-oauth/grok-4.7:xhigh
   commit: xai-oauth/grok-4.7:minimal
   task: xai-oauth/grok-4.7:medium
+# Neutral pins: omp/config.yml overrides deep-merge into every overlay; keep bundled reviewer/sonic defaults.
+task:
+  agentModelOverrides:
+    reviewer: "@slow"
+    sonic: "@smol"

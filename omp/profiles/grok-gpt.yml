@@ -9,3 +9,8 @@ modelRoles:
   plan: openai-codex/gpt-6-astra:xhigh
   commit: openai-codex/gpt-6-luna:off
   task: openai-codex/gpt-6.1-sol:medium
+# Neutral pins: omp/config.yml overrides deep-merge into every overlay; keep bundled reviewer/sonic defaults.
+task:
+  agentModelOverrides:
+    reviewer: "@slow"
+    sonic: "@smol"

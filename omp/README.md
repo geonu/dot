@@ -10,7 +10,7 @@
 - **Grok only**: Grok 4.7 단독. 장기 컨텍스트·비전·고추론을 한 모델이 처리.
 - **Claude only**: Fable 5.1을 상위 역할에, Opus 5.5를 비전에, Sonnet 5.5/Haiku 4.5를 보조 역할에 배정.
 - **claude-gpt**: Opus 5.5가 `default:high` 오케스트레이터를, Astra가 `slow`/`vision`/`plan`을, GPT-6.1 Sol이 `task`를, GPT-6 Luna가 유틸리티 역할을 맡음.
-- **gpt-claude**: 기본 프로필. GPT-6.1 Sol이 `default:high` 오케스트레이션을, Astra가 `vision`/`plan`을, Opus 5.5가 `task` coding fan-out을, Fable 5.1이 `slow` escalation을, GPT-6 Luna가 유틸리티 역할을 맡는다. 오케스트레이터와 워커가 서로 다른 provider 쿼터 풀을 쓰는 구성이다.
+- **gpt-claude**: 기본 프로필. GPT-6.1 Sol이 `default:high` 오케스트레이션을, Astra가 `vision`/`plan`과 `reviewer` 에이전트를, Opus 5.5가 `task` coding fan-out과 `slow:xhigh` escalation을, GPT-6 Luna가 유틸리티 역할을, GPT-6.1 Sol `low`가 `sonic` 에이전트를 맡는다. 오케스트레이터와 워커가 서로 다른 provider 쿼터 풀을 쓰는 구성이다.
 - **grok-gpt**: Grok 4.7이 장기 컨텍스트를, Astra가 `slow`/`vision`/`plan`을, GPT-6.1 Sol이 `task`를, GPT-6 Luna가 유틸리티 역할을 맡음.
 
 
@@ -20,13 +20,15 @@
 (`gpt-claude` active config)이고, 프로필은 실행 시 `--config ~/.dotfiles/omp/profiles/<profile>.yml`로
 overlay한다. 단일 provider 프로필은 provider 이름을, 혼합 프로필은 default/오케스트레이터 역할 provider와 나머지 역할 provider를 `<provider>-<provider>`로 표기한다.
 
+OMP는 `config.yml` 위에 overlay를 deep-merge한다. 그래서 `config.yml`의 `task.agentModelOverrides`(`gpt-claude`의 `reviewer`/`sonic` override)는 그 키를 정하지 않은 다른 프로필에도 그대로 샌다. 나머지 프로필은 bundled 기본값과 같은 `reviewer: "@slow"`, `sonic: "@smol"`을 명시해 두고, 체크 스크립트는 모든 프로필에 두 키가 있는지 확인한다.
+
 | profile | 파일 | 용도 |
 |---------|------|------|
 | `gpt` | `omp/profiles/gpt.yml` | GPT-6 Luna + GPT-6.1 Sol `default`/`task` + Astra `slow`/`vision`/`plan` Codex-only 구성 |
 | `grok` | `omp/profiles/grok.yml` | Grok 4.7 단독 구성 |
 | `claude` | `omp/profiles/claude.yml` | Fable 5.1 상위 역할 + Opus 5.5 비전 Claude-only 구성 |
 | `claude-gpt` | `omp/profiles/claude-gpt.yml` | Opus 5.5 `default:high` + Astra `slow`/`vision`/`plan` + GPT-6.1 Sol `task` + GPT-6 Luna utility |
-| `gpt-claude` | `omp/profiles/gpt-claude.yml` | 기본 프로필: GPT-6.1 Sol `default:high` + Astra `vision`/`plan` + Opus 5.5 `task` + Fable 5.1 `slow` + GPT-6 Luna utility 구성 |
+| `gpt-claude` | `omp/profiles/gpt-claude.yml` | 기본 프로필: GPT-6.1 Sol `default:high` + Astra `vision`/`plan`/`reviewer` + Opus 5.5 `task`/`slow:xhigh` + GPT-6 Luna utility + GPT-6.1 Sol `sonic:low` 구성 |
 | `grok-gpt` | `omp/profiles/grok-gpt.yml` | Grok 4.7 + Astra `slow`/`vision`/`plan` + GPT-6.1 Sol `task` + GPT-6 Luna utility |
 | `config` | 없음 | override 없이 현재 `config.yml` 그대로 resume |
 
@@ -42,7 +44,7 @@ tmux 옵션(omp가 종료돼도 남아 다음 전환에서 같은 대화로 복�
 세션이 없으면 stale pane 옵션을 비우고 해당 프로필로 새 세션을 띄운다. respawn은 항상 수행되어 pane이 죽지 않는다.
 
 정합성 체크는 `bin/omp-profile-check.sh`로 한다. 이 스크립트는 `omp/config.yml`이
-기본 active profile인 `gpt-claude`와 같은 role map인지, `omp/profiles/*.yml`, 이 README의
+기본 active profile인 `gpt-claude`와 같은 role map·`task.agentModelOverrides`인지, 모든 프로필이 `reviewer`/`sonic` override를 명시하는지, `omp/profiles/*.yml`, 이 README의
 프로필 목록, `zshrc` profile dispatcher, `tmux.conf`의 `@omp-default-profile`/`@omp-profile-choices`,
 save/restore helper의 profile 보존 규칙, 그리고 로컬 `~/.omp/agent/models.db`의 모델/effort
 메타데이터를 함께 검증한다. 모델 가이드나 profile 기본값을 바꾸거나 OMP 업데이트 후에는 이 체크를 먼저 돌린다.
@@ -72,10 +74,12 @@ Fable 5.1은 `default:medium`/`slow:high`/`plan:xhigh`, Opus 5.5는 `vision:medi
 
 ## 현재 프로필 정책
 
-`omp/config.yml`은 기본 프로필인 `gpt-claude`와 같은 role map이다. 새 세션 또는 `config` resume은
+`omp/config.yml`은 기본 프로필인 `gpt-claude`와 같은 role map과 `task.agentModelOverrides`를 쓴다. 새 세션 또는 `config` resume은
 GPT-6.1 Sol `default:high` 오케스트레이터 구성을 사용한다.
 
-`gpt-claude`는 GPT-6.1 Sol을 `default:high`에, Astra를 `vision`/`plan`에, Opus 5.5를 `task`에, Fable 5.1을 `slow`에, GPT-6 Luna를 `smol`/`commit`에 둔다. `default`의 GPT-6.1 Sol(2/10)과 `task`의 Opus 5.5(4/20)는 가장 호출량이 많은 두 역할이라 비용·쿼터 소모가 크고, 대규모 fan-out 시 Anthropic 5시간 버킷이 먼저 한계에 닿는다.
+`gpt-claude`는 GPT-6.1 Sol을 `default:high`에, Astra를 `vision`/`plan`에, Opus 5.5를 `task`와 `slow:xhigh`에, GPT-6 Luna를 `smol`/`commit`에 둔다. `default`의 GPT-6.1 Sol(2/10)과 `task`의 Opus 5.5(4/20)는 가장 호출량이 많은 두 역할이라 비용·쿼터 소모가 크고, 대규모 fan-out 시 Anthropic 5시간 버킷이 먼저 한계에 닿는다.
+
+`task.agentModelOverrides`로 에이전트 두 개를 따로 보낸다. bundled `reviewer`는 `@slow`를 쓰므로 그대로 두면 Opus가 쓴 코드를 Opus가 리뷰하게 된다. 그래서 `reviewer`는 GPT-6 Astra `high`로 돌려 다른 vendor가 리뷰하게 한다. bundled `sonic`은 `@smol`(GPT-6 Luna `low`)인데, Luna는 `low`에서 Terminal-Bench 4.0 0.0%라 `sonic`은 GPT-6.1 Sol `low`로 보낸다. 둘 다 OpenAI 쿼터 풀에 남는다.
 
 `claude-gpt`는 Opus 5.5를 `default:high`, Astra를 `slow:high`/`vision:high`/`plan:xhigh`,
 GPT-6.1 Sol을 `task`에 둔다. `grok-gpt`는 Grok 4.7을 `default`에

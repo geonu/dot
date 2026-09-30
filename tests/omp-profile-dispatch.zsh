@@ -54,7 +54,7 @@ expected_gpt_claude_flags() {
     --model openai-codex/gpt-6.1-sol \
     --thinking high \
     --smol openai-codex/gpt-6-luna:low \
-    --slow anthropic/claude-fable-5-1:high \
+    --slow anthropic/claude-opus-5-5:xhigh \
     --plan openai-codex/gpt-6-astra:xhigh
 }
 

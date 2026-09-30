@@ -32,6 +32,7 @@ profile_names = ["gpt", "grok", "claude", "claude-gpt", "gpt-claude", "grok-gpt"
 profile_choices = ["gpt", "grok", "claude", "claude-gpt", "gpt-claude", "grok-gpt", "config"]
 known_choices = set(profile_choices)
 default_profile = "gpt-claude"
+agent_override_keys = ["reviewer", "sonic"]
 
 
 def parse_roles(path: Path) -> dict[str, str]:
@@ -47,6 +48,25 @@ def parse_roles(path: Path) -> dict[str, str]:
             key, value = raw.strip().split(": ", 1)
             roles[key] = value.split(" #", 1)[0].strip()
     return roles
+
+
+def parse_agent_overrides(path: Path) -> dict[str, str]:
+    overrides = {}
+    in_task = in_overrides = False
+    for raw in path.read_text().splitlines():
+        if not raw.strip() or raw.lstrip().startswith("#"):
+            continue
+        if not raw.startswith(" "):
+            in_task = raw.rstrip() == "task:"
+            in_overrides = False
+            continue
+        if in_task and raw.startswith("  ") and not raw.startswith("   "):
+            in_overrides = raw.rstrip() == "  agentModelOverrides:"
+            continue
+        if in_overrides and raw.startswith("    ") and ": " in raw:
+            key, value = raw.strip().split(": ", 1)
+            overrides[key] = value.split(" #", 1)[0].strip().strip("\"'")
+    return overrides
 
 
 def tmux_option(text: str, option: str):
@@ -79,27 +99,44 @@ except (sqlite3.Error, json.JSONDecodeError) as exc:
     raise SystemExit(f"cannot read models db {models_db}: {exc}") from exc
 
 errors = []
+
+
+def check_selector(path: Path, label: str, selector: str) -> None:
+    if selector.startswith("@"):
+        if selector[1:] not in role_keys:
+            errors.append(f"{path}: {label}: unknown role alias {selector}")
+        return
+    if "/" not in selector:
+        errors.append(f"{path}: {label}: selector lacks provider: {selector}")
+        return
+    provider, rest = selector.split("/", 1)
+    model, effort = rest.rsplit(":", 1) if ":" in rest else (rest, "")
+    model_meta = providers.get(provider, {}).get(model)
+    if model_meta is None:
+        errors.append(f"{path}: {label}: unknown model {provider}/{model}")
+        return
+    thinking = model_meta.get("thinking") or {}
+    efforts = thinking.get("efforts") or []
+    if effort == "off" and thinking.get("requiresEffort"):
+        errors.append(f"{path}: {label}: unsupported effort off for {provider}/{model}; model requires an effort; available={efforts}")
+    elif effort and effort != "off" and effort not in efforts:
+        errors.append(f"{path}: {label}: unsupported effort {effort} for {provider}/{model}; available={efforts}")
+
+
 for name, path in {"config": config, **{name: profiles_dir / f"{name}.yml" for name in profile_names}}.items():
+    # omp deep-merges config.yml under every --config overlay, so each profile must pin every override key.
+    overrides = parse_agent_overrides(path)
+    if sorted(overrides) != agent_override_keys:
+        errors.append(f"{path}: task.agentModelOverrides keys must be {agent_override_keys}, got {sorted(overrides)}")
+    for agent, selector in overrides.items():
+        for candidate in selector.split(","):
+            check_selector(path, f"agentModelOverrides.{agent}", candidate.strip())
     roles = parse_roles(path)
     if list(roles.keys()) != role_keys:
         errors.append(f"{path}: role keys mismatch: {list(roles.keys())}")
         continue
     for role, selector in roles.items():
-        if "/" not in selector:
-            errors.append(f"{path}: {role}: selector lacks provider: {selector}")
-            continue
-        provider, rest = selector.split("/", 1)
-        model, effort = rest.rsplit(":", 1) if ":" in rest else (rest, "")
-        model_meta = providers.get(provider, {}).get(model)
-        if model_meta is None:
-            errors.append(f"{path}: {role}: unknown model {provider}/{model}")
-            continue
-        thinking = model_meta.get("thinking") or {}
-        efforts = thinking.get("efforts") or []
-        if effort == "off" and thinking.get("requiresEffort"):
-            errors.append(f"{path}: {role}: unsupported effort off for {provider}/{model}; model requires an effort; available={efforts}")
-        elif effort and effort != "off" and effort not in efforts:
-            errors.append(f"{path}: {role}: unsupported effort {effort} for {provider}/{model}; available={efforts}")
+        check_selector(path, role, selector)
 config_roles = parse_roles(config)
 if active_profile not in {"config", "default"}:
     active_path = profiles_dir / f"{active_profile}.yml"
@@ -107,6 +144,8 @@ if active_profile not in {"config", "default"}:
         errors.append(f"unknown active profile: {active_profile} ({active_path} missing)")
     elif config_roles != parse_roles(active_path):
         errors.append(f"omp/config.yml must match omp/profiles/{active_profile}.yml (active default profile)")
+    elif parse_agent_overrides(config) != parse_agent_overrides(active_path):
+        errors.append(f"omp/config.yml task.agentModelOverrides must match omp/profiles/{active_profile}.yml (active default profile)")
 
 readme_text = readme.read_text()
 for name in profile_names:
