@@ -9,7 +9,7 @@
 - **GPT only**: GPT-6 Luna(경량)·GPT-6.1 Sol(기본·task)·Astra(고위험 추론·비전)를 쓰는 Codex-only 구성.
 - **Grok only**: Grok 4.7 단독. 장기 컨텍스트·비전·고추론을 한 모델이 처리.
 - **Claude only**: Fable 5.1을 상위 역할에, Opus 5.5를 비전에, Sonnet 5.5/Haiku 4.5를 보조 역할에 배정.
-- **claude-gpt**: 기본 프로필. Opus 5.5가 `default:xhigh` 오케스트레이터를, Astra가 `slow`/`vision`/`plan`을, GPT-6.1 Sol이 `task`를, GPT-6 Luna가 유틸리티 역할을 맡음.
+- **claude-gpt**: 기본 프로필. Opus 5.5가 `default:high` 오케스트레이터를, Astra가 `slow`/`vision`/`plan`을, GPT-6.1 Sol이 `task`를, GPT-6 Luna가 유틸리티 역할을 맡음.
 - **gpt-claude**: GPT-6.1 Sol이 `default:high` 오케스트레이션을, Astra가 `vision`/`plan`을, Opus 5.5가 `task` coding fan-out을, Fable 5.1이 `slow` escalation을, GPT-6 Luna가 유틸리티 역할을 맡는다. 오케스트레이터와 워커가 서로 다른 provider 쿼터 풀을 쓰는 구성이다.
 - **grok-gpt**: Grok 4.7이 장기 컨텍스트를, Astra가 `slow`/`vision`/`plan`을, GPT-6.1 Sol이 `task`를, GPT-6 Luna가 유틸리티 역할을 맡음.
 
@@ -25,7 +25,7 @@ overlay한다. 단일 provider 프로필은 provider 이름을, 혼합 프로필
 | `gpt` | `omp/profiles/gpt.yml` | GPT-6 Luna + GPT-6.1 Sol `default`/`task` + Astra `slow`/`vision`/`plan` Codex-only 구성 |
 | `grok` | `omp/profiles/grok.yml` | Grok 4.7 단독 구성 |
 | `claude` | `omp/profiles/claude.yml` | Fable 5.1 상위 역할 + Opus 5.5 비전 Claude-only 구성 |
-| `claude-gpt` | `omp/profiles/claude-gpt.yml` | 기본 프로필: Opus 5.5 `default:xhigh` + Astra `slow`/`vision`/`plan` + GPT-6.1 Sol `task` + GPT-6 Luna utility |
+| `claude-gpt` | `omp/profiles/claude-gpt.yml` | 기본 프로필: Opus 5.5 `default:high` + Astra `slow`/`vision`/`plan` + GPT-6.1 Sol `task` + GPT-6 Luna utility |
 | `gpt-claude` | `omp/profiles/gpt-claude.yml` | GPT-6.1 Sol `default:high` + Astra `vision`/`plan` + Opus 5.5 `task` + Fable 5.1 `slow` + GPT-6 Luna utility 구성 |
 | `grok-gpt` | `omp/profiles/grok-gpt.yml` | Grok 4.7 + Astra `slow`/`vision`/`plan` + GPT-6.1 Sol `task` + GPT-6 Luna utility |
 | `config` | 없음 | override 없이 현재 `config.yml` 그대로 resume |
@@ -73,11 +73,11 @@ Fable 5.1은 `default:medium`/`slow:high`/`plan:xhigh`, Opus 5.5는 `vision:medi
 ## 현재 프로필 정책
 
 `omp/config.yml`은 `claude-gpt`와 같은 role map이다. 새 세션 또는 `config` resume은
-Opus 5.5 `default:xhigh` 오케스트레이터 구성을 사용한다.
+Opus 5.5 `default:high` 오케스트레이터 구성을 사용한다.
 
 `gpt-claude`는 GPT-6.1 Sol을 `default:high`에, Astra를 `vision`/`plan`에, Opus 5.5를 `task`에, Fable 5.1을 `slow`에, GPT-6 Luna를 `smol`/`commit`에 둔다. `default`의 GPT-6.1 Sol(2/10)과 `task`의 Opus 5.5(4/20)는 가장 호출량이 많은 두 역할이라 비용·쿼터 소모가 크고, 대규모 fan-out 시 Anthropic 5시간 버킷이 먼저 한계에 닿는다.
 
-`claude-gpt`는 기본 프로필이며 Opus 5.5를 `default:xhigh`, Astra를 `slow:high`/`vision:high`/`plan:xhigh`,
+`claude-gpt`는 기본 프로필이며 Opus 5.5를 `default:high`, Astra를 `slow:high`/`vision:high`/`plan:xhigh`,
 GPT-6.1 Sol을 `task`에 둔다. `grok-gpt`는 Grok 4.7을 `default`에
 `medium` effort로 유지하고 같은 Astra/GPT-6.1 Sol 역할 분리를 쓴다. 세 혼합 프로필 모두 GPT-6 Luna를 `smol`/`commit`에 둔다.
 

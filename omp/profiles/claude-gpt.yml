@@ -1,8 +1,8 @@
 # Claude-GPT OMP model profile.
 # Claude owns the default role; GPT owns the remaining roles.
-# Opus 5.5 owns default long-running orchestration at xhigh; Astra owns slow/vision/plan, GPT-6.1 Sol executes tasks, and GPT-6 Luna keeps utilities lightweight.
+# Opus 5.5 owns default long-running orchestration at high; Astra owns slow/vision/plan, GPT-6.1 Sol executes tasks, and GPT-6 Luna keeps utilities lightweight.
 modelRoles:
-  default: anthropic/claude-opus-5-5:xhigh
+  default: anthropic/claude-opus-5-5:high
   smol: openai-codex/gpt-6-luna:low
   slow: openai-codex/gpt-6-astra:high
   vision: openai-codex/gpt-6-astra:high

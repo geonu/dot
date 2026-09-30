@@ -52,7 +52,7 @@ expected_claude_gpt_flags() {
   print -l -- \
     --config "$expected_claude_gpt_config" \
     --model anthropic/claude-opus-5-5 \
-    --thinking xhigh \
+    --thinking high \
     --smol openai-codex/gpt-6-luna:low \
     --slow openai-codex/gpt-6-astra:high \
     --plan openai-codex/gpt-6-astra:xhigh
