@@ -87,6 +87,7 @@ cask "rectangle"           # window manager
 cask "slack"
 cask "spotify"
 cask "tailscale-app"       # mesh VPN
+cask "tunnelbear"          # TunnelBear VPN client
 cask "visual-studio-code"
 
 # --- Mac App Store (needs an App Store sign-in; IDs from `mas list`) ---------
