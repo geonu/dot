@@ -148,7 +148,7 @@ if missing_restore:
     errors.append(f"{restore_script} profile whitelist missing: {sorted(missing_restore)}")
 
 for path, text in [(save_script, save_text), (restore_script, restore_text)]:
-    if "${fb:-claude-gpt}" in text:
+    if f"${{fb:-{default_profile}}}" in text:
         errors.append(f"{path} uses an unvalidated default-profile fallback")
 
 if f'print -- "${{OMP_DEFAULT_PROFILE:-{default_profile}}}"' not in zsh_text:
