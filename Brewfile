@@ -79,15 +79,12 @@ cask "font-hack-nerd-font" # terminal font (Alacritty config)
 cask "alacritty"           # terminal emulator (GPU, low-RAM, primary)
 cask "google-chrome"
 cask "gyorgysh/keepresso/keepresso", trusted: true # caffeinate-style sleep/idle keeper (menu bar)
-cask "muse"                # Meta Muse AI assistant
 cask "notion"              # Notion desktop
 cask "orbstack"           # docker/linux runtime (Docker Desktop replacement)
-cask "protonvpn"           # Proton VPN client
 cask "rectangle"           # window manager
 cask "slack"
 cask "spotify"
 cask "tailscale-app"       # mesh VPN
-cask "tunnelbear"          # TunnelBear VPN client
 cask "visual-studio-code"
 
 # --- Mac App Store (needs an App Store sign-in; IDs from `mas list`) ---------
