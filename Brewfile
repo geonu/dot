@@ -82,6 +82,7 @@ cask "gyorgysh/keepresso/keepresso", trusted: true # caffeinate-style sleep/idle
 cask "muse"                # Meta Muse AI assistant
 cask "notion"              # Notion desktop
 cask "orbstack"           # docker/linux runtime (Docker Desktop replacement)
+cask "protonvpn"           # Proton VPN client
 cask "rectangle"           # window manager
 cask "slack"
 cask "spotify"
