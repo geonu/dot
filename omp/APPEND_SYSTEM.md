@@ -25,18 +25,59 @@ after this ordered load do you begin other work.
   concrete model names by substring. Query the resolved `provider/model` ID
   instead; the effort suffix is not part of the catalog ID. Keep configured
   mapping, available registry listing, and actual request success distinct.
-- For role-directed `task` calls, set `tasks[].model` explicitly to `@plan`,
-  `@slow`, `@task`, `@smol`, or `@default`. `@default` means the parent's active
-  model, not `modelRoles.default`. A call's model selector overrides
-  `task.agentModelOverrides`, which override agent defaults. Agent names such
-  as `reviewer` select behavior, not roles; choosing `reviewer` does not
-  guarantee `@slow`.
-- Fail role resolution or dispatch only on an actual missing mapping,
-  unavailable concrete model, or dispatch error. Report
-  `role -> concrete selector -> exact error` (`unresolved` if no mapping).
-  Never label a task blocked from a role-name substring search, ask permission
-  based on guessed unavailability, or silently substitute another model.
-  Existing fallback-approval requirements remain unchanged.
+- Keep `modelRoles` entries scalar: launchers and profile checks consume the
+  primary selector. Use the effective profile's primary, not a hardcoded model.
+  Request-time recovery is configured separately by `retry.modelFallback` and
+  `retry.fallbackChains`; a bare task `@role` does not install that role's tail.
+- The user preauthorizes these ordered fallback tails for the supported roles:
+
+  | Role | After the effective role primary |
+  | --- | --- |
+  | `plan` | configured default |
+  | `slow` | `openai-codex/gpt-6-astra:xhigh` -> configured default |
+  | `task` | `openai-codex/gpt-6-luna:medium` -> configured default |
+
+  These are role-specific, not model/provider-wide chains: `slow` and `task`
+  can share a primary model but need different tails.
+- For role-directed `task` calls, construct an ordered concrete candidate list:
+  the effective `cfg://modelRoles` primary followed, for `plan`/`slow`/`task`,
+  by that role's effective `cfg://retry.fallbackChains` entries above. Resolve
+  aliases to concrete `provider/model:effort` selectors, preserving configured
+  effort. Here configured default means effective `modelRoles.default`, never
+  the parent's active model: task's literal `@default` means the latter, so do
+  not pass it as this fallback. Deduplicate by `provider/model`, retaining the
+  first selector and its effort; do not retry the same model at another effort.
+  Other roles get only their resolved primary unless separately authorized.
+- Set `tasks[].model` explicitly to the remaining concrete candidates as an
+  ordered array. Start with the first currently eligible candidate; skip only
+  candidates with actual resolution/availability failures or known cooldowns.
+  This installs a per-spawn request retry chain as well as startup preferences.
+  A call's model selector overrides `task.agentModelOverrides`, which override
+  agent defaults. Agent names such as `reviewer` select behavior, not roles;
+  choosing `reviewer` does not guarantee `slow`.
+- Native selector lists are preferences, not a hard allowlist, and native
+  recovery can consult a fallback model's own chain. Require the actual selected
+  model and effort to remain in the approved resolved list; do not let child
+  work proceed on an out-of-list selection. Never accept an arbitrary caller
+  default, built-in fallback, or unapproved chain extension.
+- Track actual failures and cooldowns for the runnable slice. If child dispatch,
+  startup, or a request terminates before native recovery completes, retry the
+  unchanged runnable slice on the next approved candidate with the remaining
+  array. Never restart the list or revisit a failed/cooling-down model, including
+  after a long 429/Retry-After failure already observed once; do not hammer it
+  or raise retry/wait limits to force it through.
+- Announce each actual switch once as `role: previous -> selected (reason)`;
+  do not ask permission for these preapproved switches or stop at a suggestion.
+  Block only after approved candidates are exhausted or a real authority
+  prerequisite prevents proceeding. Report each
+  `role -> concrete selector -> exact error` (`unresolved` for a missing mapping).
+  Never infer exhaustion from a role-name substring search or guessed
+  unavailability; distinguish catalog availability from actual request success.
+- Fallback changes the model, not task scope, acceptance criteria, verification,
+  or security requirements. It does not authorize other roles' substitutions,
+  cross-identity/provider activation, new paid credentials, or changes to
+  `maxRetries`, `maxDelayMs`, `usageReservePolicy`, or `waitForUsageReset`.
+  All unrelated approval requirements remain in force.
 
 ## Escalate to `plan` before editing when ANY holds
 - The change touches 3+ files or crosses a module/package boundary.
