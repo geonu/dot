@@ -1,5 +1,5 @@
-# Grok-only OMP model profile.
-# Use when xAI access should own every role; Grok 4.7 covers long context, vision, and high-effort work alone.
+# Grok-primary OMP model profile.
+# Grok 4.7 owns every primary; approved recovery may use Astra or Luna.
 modelRoles:
   default: xai-oauth/grok-4.7:medium
   smol: xai-oauth/grok-4.7:low
@@ -8,6 +8,14 @@ modelRoles:
   plan: xai-oauth/grok-4.7:xhigh
   commit: xai-oauth/grok-4.7:minimal
   task: xai-oauth/grok-4.7:medium
+# Concrete retry tails omit the default because it is already every role's primary.
+retry:
+  fallbackChains:
+    plan: []
+    slow:
+      - openai-codex/gpt-6-astra:xhigh
+    task:
+      - openai-codex/gpt-6-luna:medium
 # Neutral pins: omp/config.yml overrides deep-merge into every overlay; keep bundled reviewer/sonic defaults.
 task:
   agentModelOverrides:

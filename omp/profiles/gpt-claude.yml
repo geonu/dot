@@ -10,6 +10,17 @@ modelRoles:
   plan: openai-codex/gpt-6-astra:xhigh
   commit: openai-codex/gpt-6-luna:off
   task: anthropic/claude-opus-5-5:medium
+# Chat retry tails require concrete selectors; keep these aligned with modelRoles.default.
+retry:
+  fallbackChains:
+    plan:
+      - openai-codex/gpt-6.1-sol:high
+    slow:
+      - openai-codex/gpt-6-astra:xhigh
+      - openai-codex/gpt-6.1-sol:high
+    task:
+      - openai-codex/gpt-6-luna:medium
+      - openai-codex/gpt-6.1-sol:high
 task:
   agentModelOverrides:
     reviewer: openai-codex/gpt-6-astra:high

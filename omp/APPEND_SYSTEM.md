@@ -39,15 +39,24 @@ after this ordered load do you begin other work.
 
   These are role-specific, not model/provider-wide chains: `slow` and `task`
   can share a primary model but need different tails.
+- Native chat retry tails use concrete `provider/model:effort` selectors.
+  OMP 18.6.1 skips role aliases such as `@default` in those tails; bare model
+  selectors inherit the failing turn's effort. Global config and each supported
+  profile therefore supply explicit, deduplicated role tails. Changing a native
+  role primary or configured default through `/models`, `--config`, or another
+  override requires updating the affected retry tails too; native recovery does
+  not regenerate them from `modelRoles`.
 - For role-directed `task` calls, construct an ordered concrete candidate list:
   the effective `cfg://modelRoles` primary followed, for `plan`/`slow`/`task`,
-  by that role's effective `cfg://retry.fallbackChains` entries above. Resolve
-  aliases to concrete `provider/model:effort` selectors, preserving configured
-  effort. Here configured default means effective `modelRoles.default`, never
-  the parent's active model: task's literal `@default` means the latter, so do
-  not pass it as this fallback. Deduplicate by `provider/model`, retaining the
-  first selector and its effort; do not retry the same model at another effort.
-  Other roles get only their resolved primary unless separately authorized.
+  by the role-specific candidates in the table above. Resolve configured
+  default afresh from effective `cfg://modelRoles.default`, with its effort;
+  never copy a stale concrete default from `cfg://retry.fallbackChains` after
+  a role/default override. Resolve primary aliases to concrete selectors too.
+  Task's literal `@default` means the parent's active model, not configured
+  default, so do not pass it as this fallback. Deduplicate by `provider/model`,
+  retaining the first selector and its effort; do not retry the same model at
+  another effort. Other roles get only their resolved primary unless separately
+  authorized.
 - Set `tasks[].model` explicitly to the remaining concrete candidates as an
   ordered array. Start with the first currently eligible candidate; skip only
   candidates with actual resolution/availability failures or known cooldowns.

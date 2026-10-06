@@ -9,6 +9,16 @@ modelRoles:
   plan: openai-codex/gpt-6-astra:xhigh
   commit: openai-codex/gpt-6-luna:off
   task: openai-codex/gpt-6.1-sol:medium
+# Concrete retry tails follow this profile's default; omit models already used by the primary.
+retry:
+  fallbackChains:
+    plan:
+      - xai-oauth/grok-4.7:medium
+    slow:
+      - xai-oauth/grok-4.7:medium
+    task:
+      - openai-codex/gpt-6-luna:medium
+      - xai-oauth/grok-4.7:medium
 # Neutral pins: omp/config.yml overrides deep-merge into every overlay; keep bundled reviewer/sonic defaults.
 task:
   agentModelOverrides:

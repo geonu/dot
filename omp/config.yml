@@ -13,14 +13,15 @@ modelRoles:
 retry:
   modelFallback: true
   fallbackChains:
+    # Chat retry tails require concrete selectors; keep these aligned with modelRoles.default.
     plan:
-      - "@default"
+      - openai-codex/gpt-6.1-sol:high
     slow:
       - openai-codex/gpt-6-astra:xhigh
-      - "@default"
+      - openai-codex/gpt-6.1-sol:high
     task:
       - openai-codex/gpt-6-luna:medium
-      - "@default"
+      - openai-codex/gpt-6.1-sol:high
 memory: 
   backend: local
 defaultThinkingLevel: auto

@@ -1,5 +1,5 @@
-# Claude-only OMP model profile.
-# Use when Anthropic quota is available and Codex/OpenAI quota should be protected.
+# Claude-primary OMP model profile.
+# Keep normal traffic on Anthropic; approved recovery may use Astra or Luna.
 # Fable 5.1 owns default/slow/plan in a separate Anthropic Fable quota bucket; Opus 5.5 stays on vision, Sonnet 5.5 on task, and Haiku 4.5 on utility roles.
 modelRoles:
   default: anthropic/claude-fable-5-1:medium
@@ -9,6 +9,15 @@ modelRoles:
   plan: anthropic/claude-fable-5-1:xhigh
   commit: anthropic/claude-haiku-4-5:off
   task: anthropic/claude-sonnet-5-5:medium
+# Concrete retry tails follow this profile's default; omit models already used by the primary.
+retry:
+  fallbackChains:
+    plan: []
+    slow:
+      - openai-codex/gpt-6-astra:xhigh
+    task:
+      - openai-codex/gpt-6-luna:medium
+      - anthropic/claude-fable-5-1:medium
 # Neutral pins: omp/config.yml overrides deep-merge into every overlay; keep bundled reviewer/sonic defaults.
 task:
   agentModelOverrides:
