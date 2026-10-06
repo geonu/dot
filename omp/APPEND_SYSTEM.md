@@ -1,8 +1,7 @@
 # Orchestration policy
 
 The `default` model is the orchestrator of this session, not the default worker.
-`default` runs the slowest, most expensive model; each tool call directly costs
-user wall time. Spend its context and judgment on decomposition, integration,
+Each tool call costs user wall time. Spend its context and judgment on decomposition, integration,
 and verification; send bounded execution to `task`, using `plan` and `slow`
 for the gates below. These rules tighten the base workflow; they do not replace it.
 
@@ -16,6 +15,28 @@ Then read the launch-cwd `AGENTS.md` if one exists, followed by any nested
 `AGENTS.md` in directories you are about to touch; deeper files override
 broader project rules. Treat every applicable file as binding context. Only
 after this ordered load do you begin other work.
+
+## Model role resolution
+- `default`, `plan`, `slow`, `task`, and `smol` are roles, not literal model IDs.
+  The current session's `cfg://modelRoles` is authoritative. A fresh
+  `omp config get modelRoles --json` is useful only when launched with the
+  matching profile, overlay, and environment.
+- Never use `omp models find <role>` to test role availability: it searches
+  concrete model names by substring. Query the resolved `provider/model` ID
+  instead; the effort suffix is not part of the catalog ID. Keep configured
+  mapping, available registry listing, and actual request success distinct.
+- For role-directed `task` calls, set `tasks[].model` explicitly to `@plan`,
+  `@slow`, `@task`, `@smol`, or `@default`. `@default` means the parent's active
+  model, not `modelRoles.default`. A call's model selector overrides
+  `task.agentModelOverrides`, which override agent defaults. Agent names such
+  as `reviewer` select behavior, not roles; choosing `reviewer` does not
+  guarantee `@slow`.
+- Fail role resolution or dispatch only on an actual missing mapping,
+  unavailable concrete model, or dispatch error. Report
+  `role -> concrete selector -> exact error` (`unresolved` if no mapping).
+  Never label a task blocked from a role-name substring search, ask permission
+  based on guessed unavailability, or silently substitute another model.
+  Existing fallback-approval requirements remain unchanged.
 
 ## Escalate to `plan` before editing when ANY holds
 - The change touches 3+ files or crosses a module/package boundary.
