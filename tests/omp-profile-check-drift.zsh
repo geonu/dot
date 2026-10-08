@@ -13,6 +13,20 @@ fail() {
   exit 1
 }
 
+set_config() {
+  python3 - "$1" "$2" "$3" <<'PY'
+import re
+import sys
+from pathlib import Path
+path = Path(sys.argv[1])
+key, value = sys.argv[2:]
+pattern = re.compile(r"^" + re.escape(key) + r":[^\n]*$", re.M)
+text = path.read_text()
+assert len(pattern.findall(text)) == 1, (path, key)
+path.write_text(pattern.sub(lambda _: f"{key}: {value}" if value else "", text))
+PY
+}
+
 mkdir -p "$work/omp/profiles" "$work/bin"
 cp "$repo_root/omp/config.yml" "$work/omp/config.yml"
 cp "$repo_root/omp/README.md" "$work/omp/README.md"
@@ -139,8 +153,7 @@ if [[ "$output" != *"claude.yml: task.agentModelOverrides keys must be"* ]]; the
 fi
 cp "$repo_root/omp/profiles/claude.yml" "$work/omp/profiles/claude.yml"
 
-content="$(<"$work/omp/config.yml")"
-print -r -- "${content/    sonic: openai-codex\/gpt-6.1-sol:low/    sonic: \"@smol\"}" > "$work/omp/config.yml"
+set_config "$work/omp/config.yml" '    sonic' '"@smol"'
 if bash "$work/bin/omp-profile-check.sh" "$work" >"$output_file" 2>&1; then
   fail "expected profile check to reject config.yml override drift from the default profile"
 fi
