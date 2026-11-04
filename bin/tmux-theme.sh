@@ -64,6 +64,9 @@ tm_battery="#(~/.dotfiles/bin/battery-indicator.sh)"
 # cpu + memory
 tm_cpumem="#(~/.dotfiles/bin/cpu-mem-indicator.sh)"
 
+# disk: used % and free space of the data volume
+tm_disk="#(~/.dotfiles/bin/disk-indicator.sh)"
+
 # now playing (spotify / music): a background ticker scrolls long titles and
 # publishes the styled segment into @nowplaying (see bin/nowplaying-indicator.sh).
 # Launched once per server; it self-guards against duplicates on config reload.
@@ -78,7 +81,7 @@ tm_host="#[fg=$tm_color_feature,bold]#h"
 tm_session_name="#[fg=$tm_color_feature,bold]#S"
 
 set -g status-left ' '$tm_session_name' '
-# order: ♫ music │ cpu/mem │ battery │ host │ clock  (clock anchored at the
-# right edge; music emits its own trailing separator, so it cleanly vanishes
-# when nothing is playing).
-set -g status-right "$tm_nowplaying$tm_cpumem$tm_sep$tm_battery$tm_sep$tm_host$tm_sep$tm_date "
+# order: ♫ music │ cpu/mem/disk │ battery │ host │ clock  (clock anchored at
+# the right edge; music emits its own trailing separator, so it cleanly
+# vanishes when nothing is playing).
+set -g status-right "$tm_nowplaying$tm_cpumem  $tm_disk$tm_sep$tm_battery$tm_sep$tm_host$tm_sep$tm_date "
