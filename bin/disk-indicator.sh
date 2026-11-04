@@ -1,9 +1,10 @@
 #!/bin/bash
-# Disk usage for the tmux status bar (macOS / Linux):
-#   DISK 63% 352G
-# Used percentage of the volume holding user data, then the space still free.
-# Color shifts green -> orange -> red as the disk fills; below the 30 GiB
-# floor that `git worktree-new` enforces it is always red.
+# Disk usage gauge for the tmux status bar (macOS / Linux):
+#   DISK ▰▰▰▰▰▰▱▱▱▱ 61% 351G
+# Ten cells fill with the used percentage of the volume holding user data; the
+# trailing figure is the space still free. Filled cells and the percentage
+# shift green -> orange -> red as the disk fills; below the 30 GiB floor that
+# `git worktree-new` enforces they are always red.
 
 # On macOS / is the sealed system snapshot; user data lives on the Data volume.
 volume=/
@@ -21,4 +22,12 @@ else
   color=colour41 # green
 fi
 
-printf '#[fg=colour13,bold]DISK#[fg=%s,nobold] %d%% %dG' "$color" "$used" "$free_gib"
+filled=$(((used + 5) / 10))
+((filled > 10)) && filled=10
+gauge="#[fg=$color]"
+for ((i = 0; i < 10; i++)); do
+  ((i == filled)) && gauge+='#[fg=colour238]'
+  if ((i < filled)); then gauge+='▰'; else gauge+='▱'; fi
+done
+
+printf '#[fg=colour13,bold]DISK#[nobold] %s#[fg=%s] %d%%#[fg=colour245] %dG' "$gauge" "$color" "$used" "$free_gib"
