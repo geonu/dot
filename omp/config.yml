@@ -40,3 +40,7 @@ browser:
   relayUrl: http://127.0.0.1:27777
 composer:
   shape: field
+# Clone-first `git worktree add` copies every ignored directory and, in repos
+# that keep worktrees under .worktrees/, fails partway and leaves copies behind.
+worktree:
+  clone: false
