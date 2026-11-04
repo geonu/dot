@@ -98,6 +98,19 @@ with the root-anchored exact line `/.worktrees/`. Use
 branch, defaults `DIRECTORY` to `BRANCH` with `/` replaced by `-`, and works
 when invoked from either the main or a linked worktree.
 
+Each `git worktree-new` run first cleans the same repository. It removes a
+linked worktree under `.worktrees/` that is unlocked, older than 3 days, has no
+tracked or untracked changes, and whose HEAD is already in `origin/HEAD`,
+`main` or `master`. The branch is kept, but ignored files inside the worktree
+(`node_modules`, caches, runtime output) are deleted with it. A directory under
+`.worktrees/` that has no `.git` and is not registered (an interrupted copy) is
+deleted in the background after one hour. The run then refuses to create a
+worktree when less than 30 GiB is free. Use `git worktree lock` to keep a
+worktree, and `GIT_WORKTREE_GC=0`, `GIT_WORKTREE_GC_DAYS` and
+`GIT_WORKTREE_MIN_FREE_GIB` to change this for one call. It never runs
+`git worktree prune`, because worktrees registered from inside a container
+look missing on the host while they are still in use.
+
 Do **not** automatically migrate existing worktrees. After auditing its dirty
 state and active processes, migrate one deliberately with
 `git -C <main> worktree move <old-path> <main>/.worktrees/<name>`. Never use

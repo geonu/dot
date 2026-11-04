@@ -4,7 +4,9 @@ set -euo pipefail
 helper=$(cd "$(dirname "${BASH_SOURCE[0]}")/../bin" && pwd -P)/git-worktree-new
 tmp=$(mktemp -d)
 tmp=$(cd "$tmp" && pwd -P)
-trap 'rm -rf "$tmp"' EXIT
+trap 'chmod -R u+w "$tmp" 2>/dev/null; rm -rf "$tmp"' EXIT
+# Cases below that do not test the free-space floor must not depend on this disk.
+export GIT_WORKTREE_MIN_FREE_GIB=0
 
 fail() {
   printf 'FAIL: %s\n' "$*" >&2
@@ -180,3 +182,55 @@ run_from "$main" "$helper" feature/dirty "$base"
 after_status=$(git -C "$main" status --porcelain)
 assert_eq "$after_status" "$before_status"
 assert_eq "$(git -C "$main/.worktrees/feature-dirty" rev-parse HEAD)" "$base"
+
+# Creation first removes stale clean merged worktrees and abandoned copies;
+# changes, unmerged commits, locks and recent creation keep a worktree.
+backdate() {
+  touch -t 200001010000 "$1"
+  (($(stat -f %B -- "$1") < 946771200)) || fail "cannot backdate birth time: $1"
+}
+gc=$tmp/gc
+new_repo "$gc"
+for branch in stale/clean stale/dirty stale/untracked stale/unmerged stale/locked fresh/clean; do
+  run_from "$gc" "$helper" "$branch" >/dev/null 2>&1
+done
+printf 'edit\n' >> "$gc/.worktrees/stale-dirty/file"
+printf 'new\n' > "$gc/.worktrees/stale-untracked/new-file"
+printf 'commit\n' > "$gc/.worktrees/stale-unmerged/commit-file"
+git -C "$gc/.worktrees/stale-unmerged" add commit-file
+git -C "$gc/.worktrees/stale-unmerged" commit -qm unmerged
+git -C "$gc" worktree lock "$gc/.worktrees/stale-locked"
+for name in stale-clean stale-dirty stale-untracked stale-unmerged stale-locked; do
+  backdate "$(git -C "$gc/.worktrees/$name" rev-parse --absolute-git-dir)"
+done
+mkdir -p "$gc/.worktrees/abandoned-copy/frozen"
+printf 'frozen\n' > "$gc/.worktrees/abandoned-copy/frozen/file"
+chmod a-w "$gc/.worktrees/abandoned-copy/frozen/file" "$gc/.worktrees/abandoned-copy/frozen"
+backdate "$gc/.worktrees/abandoned-copy"
+mkdir "$gc/.worktrees/fresh-copy"
+
+GIT_WORKTREE_GC=0 run_from "$gc" "$helper" trigger/disabled >/dev/null 2>&1
+assert_path "$gc/.worktrees/stale-clean"
+assert_path "$gc/.worktrees/abandoned-copy"
+
+run_from "$gc" "$helper" trigger/enabled >/dev/null 2>&1
+assert_path "$gc/.worktrees/trigger-enabled"
+[[ ! -e $gc/.worktrees/stale-clean ]] || fail 'stale clean merged worktree was kept'
+git -C "$gc" show-ref --verify --quiet refs/heads/stale/clean || fail 'stale worktree branch was deleted'
+for name in stale-dirty stale-untracked stale-unmerged stale-locked fresh-clean fresh-copy trigger-disabled; do
+  assert_path "$gc/.worktrees/$name"
+done
+[[ ! -e $gc/.worktrees/abandoned-copy ]] || fail 'abandoned copy was not moved aside'
+for _ in 1 2 3 4 5 6 7 8 9 10; do
+  compgen -G "$gc/.worktrees/.gc-trash-*" >/dev/null || break
+  sleep 0.5
+done
+! compgen -G "$gc/.worktrees/.gc-trash-*" >/dev/null || fail 'background deletion left the abandoned copy'
+
+# Below the free-space floor nothing is created.
+expect_fail run_from "$main" env GIT_WORKTREE_MIN_FREE_GIB=999999999 "$helper" feature/floor
+[[ ! -e $main/.worktrees/feature-floor ]] || fail 'floor refusal created a worktree'
+if git -C "$main" show-ref --verify --quiet refs/heads/feature/floor; then
+  fail 'floor refusal created a branch'
+fi
+expect_fail run_from "$main" env GIT_WORKTREE_GC_DAYS=0 "$helper" feature/bad-days

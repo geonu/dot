@@ -7,6 +7,15 @@ Usage: git worktree-new [-n DIRECTORY] BRANCH [START_POINT]
 
 Create a new local branch and linked worktree at the main checkout's
 .worktrees/DIRECTORY. DIRECTORY defaults to BRANCH with slashes replaced by dashes.
+
+Before creating, it removes this repository's stale worktrees under .worktrees
+(clean, merged into origin/HEAD, main or master, older than the age limit) and
+abandoned copies without .git, then refuses to run below the free-space floor.
+
+Environment:
+  GIT_WORKTREE_GC=0             skip the cleanup (default 1)
+  GIT_WORKTREE_GC_DAYS=N        stale age limit in days (default 3)
+  GIT_WORKTREE_MIN_FREE_GIB=N   free-space floor in GiB, 0 disables (default 30)
 USAGE
 }
 
@@ -95,6 +104,138 @@ fi
 destination=$worktrees/$name
 [[ ! -e $destination && ! -L $destination ]] || die "destination already exists: $destination"
 git -C "$main" show-ref --verify --quiet "refs/heads/$branch" && die "local branch already exists: $branch"
+
+# Before every creation, remove what this repository's earlier runs left
+# behind, then refuse to check out onto a nearly full disk.
+#   - A linked worktree directly under .worktrees is removed when it is
+#     unlocked, older than GIT_WORKTREE_GC_DAYS, has no tracked or untracked
+#     changes and its HEAD is contained in origin/HEAD, main or master. Its
+#     ignored files (node_modules, caches, runtime output) go with it; its
+#     branch is kept.
+#   - A directory under .worktrees without .git that Git does not list (an
+#     interrupted copy) is moved aside after an hour and deleted in the
+#     background, because such copies can hold millions of files.
+# `git worktree prune` is never run: worktrees registered from a container
+# path look missing on the host but are still in use there.
+gc_enabled=${GIT_WORKTREE_GC:-1}
+gc_days=${GIT_WORKTREE_GC_DAYS:-3}
+min_free_gib=${GIT_WORKTREE_MIN_FREE_GIB:-30}
+[[ $gc_enabled == 0 || $gc_enabled == 1 ]] || die "GIT_WORKTREE_GC must be 0 or 1: $gc_enabled"
+[[ $gc_days =~ ^[1-9][0-9]*$ ]] || die "GIT_WORKTREE_GC_DAYS must be a positive integer: $gc_days"
+[[ $min_free_gib =~ ^[0-9]+$ ]] || die "GIT_WORKTREE_MIN_FREE_GIB must be a non-negative integer: $min_free_gib"
+
+note() {
+  printf 'git-worktree-new: %s\n' "$*" >&2
+}
+
+birth_time() {
+  if [[ $(uname -s) == Darwin ]]; then
+    stat -f %B -- "$1"
+  else
+    stat -c %W -- "$1"
+  fi
+}
+
+discard_in_background() {
+  # shellcheck disable=SC2016 # $1 is expanded by the child shell.
+  nohup sh -c 'chmod -R u+w -- "$1" 2>/dev/null; rm -rf -- "$1"' sh "$1" >/dev/null 2>&1 &
+}
+
+remove_if_stale() {
+  local path=$1 locked=$2 cutoff=$3 base_refs=$4 admin created head ref merged=false changes
+  [[ $path == "$worktrees/"* && $path != "$worktrees/"*/* ]] || return 0
+  [[ $locked == false && $path != "$caller_top" && -d $path && ! -L $path ]] || return 0
+  admin=$(git -C "$path" rev-parse --absolute-git-dir 2>/dev/null) || return 0
+  created=$(birth_time "$admin" 2>/dev/null) || return 0
+  ((created <= cutoff)) || return 0
+  head=$(git -C "$path" rev-parse -q --verify HEAD 2>/dev/null) || return 0
+  for ref in $base_refs; do
+    if git -C "$main" merge-base --is-ancestor "$head" "$ref" 2>/dev/null; then
+      merged=true
+      break
+    fi
+  done
+  $merged || return 0
+  changes=$(git -C "$path" status --porcelain 2>/dev/null) || return 0
+  [[ -z $changes ]] || return 0
+  if git -C "$main" worktree remove -- "$path" >/dev/null 2>&1; then
+    note "removed stale worktree: $path"
+  else
+    note "kept stale worktree (remove failed): $path"
+  fi
+}
+
+collect_garbage() {
+  local now lock lock_created base_refs='' ref registered=$'\n' record path='' locked=false dir trash created
+  now=$(date +%s)
+  lock=$common_dir/worktree-new-gc.lock
+  if ! mkdir "$lock" 2>/dev/null; then
+    lock_created=$(birth_time "$lock" 2>/dev/null) || lock_created=$now
+    if ((now - lock_created > 3600)) && rmdir "$lock" 2>/dev/null && mkdir "$lock" 2>/dev/null; then
+      :
+    else
+      note "cleanup skipped: another run holds $lock"
+      return 0
+    fi
+  fi
+
+  for ref in refs/remotes/origin/HEAD refs/heads/main refs/heads/master; do
+    if git -C "$main" rev-parse -q --verify "$ref^{commit}" >/dev/null; then
+      base_refs+=" $ref"
+    fi
+  done
+
+  while IFS= read -r -d '' record; do
+    case $record in
+      'worktree '*)
+        path=${record#worktree }
+        locked=false
+        ;;
+      locked | 'locked '*)
+        locked=true
+        ;;
+      '')
+        if [[ -n $path ]]; then
+          registered+=$path$'\n'
+          if [[ -n $base_refs ]]; then
+            remove_if_stale "$path" "$locked" "$((now - gc_days * 86400))" "$base_refs"
+          fi
+        fi
+        path=''
+        ;;
+    esac
+  done < <(git -C "$main" worktree list --porcelain -z)
+
+  for dir in "$worktrees"/*; do
+    [[ -d $dir && ! -L $dir && ! -e $dir/.git && ! -L $dir/.git ]] || continue
+    [[ $registered != *$'\n'"$dir"$'\n'* ]] || continue
+    created=$(birth_time "$dir" 2>/dev/null) || continue
+    ((now - created > 3600)) || continue
+    trash=$worktrees/.gc-trash-${dir##*/}-$now-$$
+    if mv -- "$dir" "$trash"; then
+      note "deleting abandoned non-worktree directory in background: $dir"
+      discard_in_background "$trash"
+    fi
+  done
+  # Resume background deletions that a crash or reboot interrupted.
+  for trash in "$worktrees"/.gc-trash-*; do
+    [[ -d $trash && ! -L $trash ]] || continue
+    created=$(birth_time "$trash" 2>/dev/null) || continue
+    ((now - created > 3600)) && discard_in_background "$trash"
+  done
+
+  rmdir "$lock" 2>/dev/null || true
+}
+
+if [[ $gc_enabled == 1 && -d $worktrees && ! -L $worktrees ]]; then
+  collect_garbage
+fi
+
+free_kib=$(df -Pk -- "$main" | awk 'NR == 2 { print $4 }')
+[[ $free_kib =~ ^[0-9]+$ ]] || die "cannot read free space for $main"
+if ((free_kib < min_free_gib * 1048576)); then
+  die "only $((free_kib / 1048576)) GiB free on the filesystem of $main; need $min_free_gib GiB (GIT_WORKTREE_MIN_FREE_GIB)"
+fi
 
 mkdir -p "$worktrees"
 git -C "$main" worktree add -b "$branch" "$destination" "$start_oid"
