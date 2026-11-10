@@ -1,0 +1,57 @@
+#!/usr/bin/env bash
+# Persist Hack Nerd Font Mono in one Terminal.app profile, preserving its size.
+set -euo pipefail
+
+if (( $# > 1 )); then
+  echo 'Usage: ./bin/terminal-font [profile name]' >&2
+  exit 2
+fi
+
+if [[ "$(uname -s)" != Darwin ]]; then
+  echo 'terminal-font: skipped (requires macOS).'
+  exit 0
+fi
+
+# Check without Apple Events so this helper never starts Terminal.
+if pgrep -x Terminal >/dev/null; then
+  :
+else
+  status=$?
+  if (( status != 1 )); then
+    exit "$status"
+  fi
+  echo 'terminal-font: skipped (Terminal.app is not running).'
+  exit 0
+fi
+
+osascript - "${1-}" <<'APPLESCRIPT'
+use framework "AppKit"
+use scripting additions
+
+on run argv
+  set hackFont to current application's NSFont's fontWithName:"HackNFM-Regular" |size|:12
+  if hackFont is missing value then
+    return "terminal-font: skipped (HackNFM-Regular is unavailable; install font-hack-nerd-font)."
+  end if
+  if application "Terminal" is not running then
+    return "terminal-font: skipped (Terminal.app is not running)."
+  end if
+
+  tell application "Terminal"
+    set profileName to item 1 of argv
+    if profileName is "" then set profileName to name of default settings
+    if not (exists settings set profileName) then
+      return "terminal-font: skipped (no Terminal profile named " & profileName & ")."
+    end if
+    set targetProfile to settings set profileName
+    if font name of targetProfile is "HackNFM-Regular" then
+      return "terminal-font: unchanged (" & profileName & " already uses HackNFM-Regular)."
+    end if
+    set originalSize to font size of targetProfile
+    -- Set the saved profile, not a tab's transient current settings.
+    set font name of targetProfile to "HackNFM-Regular"
+    if font size of targetProfile is not originalSize then set font size of targetProfile to originalSize
+    return "terminal-font: updated " & profileName & " to HackNFM-Regular (font size preserved)."
+  end tell
+end run
+APPLESCRIPT

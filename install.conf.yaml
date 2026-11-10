@@ -80,6 +80,18 @@
     stdout: true
     stderr: true
 
+# Only Terminal.app installs configure its saved default profile automatically.
+- shell:
+  - command: |
+      if [ "${TERM_PROGRAM:-}" = Apple_Terminal ]; then
+        ./bin/terminal-font
+      else
+        echo 'Terminal font skipped (not running from Terminal.app); run ./bin/terminal-font [profile name] separately.'
+      fi
+    description: Configuring Terminal.app font
+    stdout: true
+    stderr: true
+
 # Runtimes and user-level globals that live outside Homebrew. Each has exactly
 # one home: runtimes in mise (mise/config.toml), bun globals in ~/.bun, npm
 # globals under mise's node, pip --user packages under mise's python (lists in
