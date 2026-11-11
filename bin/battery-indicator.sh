@@ -32,20 +32,17 @@ esac
 percent=$((10#$percent))
 ((percent <= 100)) || exit 0
 
-case $state in
-  charged|Full) label=FULL ;;
-  charging|Charging|"finishing charge") label=CHG ;;
-  discharging|Discharging) label=BAT ;;
-  "not charging"|"Not charging") label=AC ;;
-  *) label=${power:-BAT} ;;
-esac
-
-color=colour41
-if [[ $label == BAT ]]; then
-  if ((percent <= 20)); then
-    color=colour196
-  elif ((percent <= 40)); then
-    color=colour214
-  fi
+printf '#[fg=colour241,nobold] │ #[fg=colour196]'
+if ((percent == 100)) && [[ $state != discharging && $state != Discharging ]] &&
+   [[ $power == AC || $state == Full || $state == Charging || $state == "Not charging" ]]; then
+  printf '∞'
+  exit 0
 fi
-printf '#[fg=colour241,nobold] │ #[fg=colour13,bold]%s#[fg=%s,nobold] %d%%' "$label" "$color" "$percent"
+
+# Keep the original three-heart gauge and its fill thresholds.
+filled=$((percent / 30 + 1))
+((filled > 3)) && filled=3
+for ((i = 0; i < 3; i++)); do
+  ((i == filled)) && printf '#[fg=colour254]'
+  printf '♥ '
+done

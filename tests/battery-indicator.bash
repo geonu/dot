@@ -30,21 +30,19 @@ record() {
 printf "Now drawing from 'AC Power'\n" > "$BATTERY_FIXTURE"
 check 'desktop without battery hides entire segment' ''
 record 'Battery Power' '62%' discharging
-check 'battery power shows remaining charge' ' │ BAT 62%'
-record 'AC Power' '62%' charging
-check 'charging differs from battery power' ' │ CHG 62%'
+check 'original heart gauge remains' ' │ ♥ ♥ ♥ '
 record 'AC Power' '100%' charged
-check 'full charge differs from charging' ' │ FULL 100%'
-record 'AC Power' '80%' 'not charging'
-check 'charge limit or paused charging stays explicit' ' │ AC 80%'
-record 'AC Power' '99%' 'finishing charge'
-check 'finishing charge is still charging' ' │ CHG 99%'
-record 'AC Power' '42%' discharging
-check 'discharging on an underpowered adapter is not called charging' ' │ BAT 42%'
+check 'full battery on AC shows infinity' ' │ ∞'
+record 'AC Power' '100%' charging
+check '100 percent while charging shows infinity' ' │ ∞'
+record 'AC Power' '99%' charging
+check 'not yet full keeps hearts' ' │ ♥ ♥ ♥ '
 record 'Battery Power' '100%' discharging
-check 'full capacity on battery power is not called plugged in' ' │ BAT 100%'
+check 'unplugged full battery keeps hearts' ' │ ♥ ♥ ♥ '
+record 'AC Power' '100%' discharging
+check 'discharging on AC does not imply unlimited power' ' │ ♥ ♥ ♥ '
 record 'Battery Power' '0%' discharging
-check 'empty battery remains visible' ' │ BAT 0%'
+check 'original empty-battery gauge remains visible' ' │ ♥ ♥ ♥ '
 record 'AC Power' '(no estimate)' charging
 check 'missing capacity does not invent a percentage' ''
 record 'AC Power' '101%' charging

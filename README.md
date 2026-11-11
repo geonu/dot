@@ -51,14 +51,8 @@ run, and Neovim installs its plugins (lazy.nvim) on first launch.
 
 The right-hand status bar hides the battery segment, including its separator,
 on desktops without a battery (such as Mac mini) or when capacity is unavailable.
-On laptops it shows the percentage and an explicit power state:
-
-| Label | Meaning |
-| ----- | ------- |
-| `BAT 62%` | Discharging, including while attached to an underpowered adapter |
-| `CHG 62%` | Charging |
-| `FULL 100%` | Battery reports fully charged |
-| `AC 80%` | Connected to power but not charging, e.g. a charge limit |
+On laptops it keeps the original three-heart gauge. At 100% while connected
+to power (and not discharging), it shows `∞` instead. No extra text labels.
 
 macOS uses `pmset -g batt`; Linux uses the first battery in
 `/sys/class/power_supply`. Run the macOS state regressions with
