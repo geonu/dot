@@ -47,6 +47,23 @@ packages (see [Where packages live](#where-packages-live)).
 Open a new shell afterwards: antidote installs the zsh plugins on first
 run, and Neovim installs its plugins (lazy.nvim) on first launch.
 
+## tmux battery status
+
+The right-hand status bar hides the battery segment, including its separator,
+on desktops without a battery (such as Mac mini) or when capacity is unavailable.
+On laptops it shows the percentage and an explicit power state:
+
+| Label | Meaning |
+| ----- | ------- |
+| `BAT 62%` | Discharging, including while attached to an underpowered adapter |
+| `CHG 62%` | Charging |
+| `FULL 100%` | Battery reports fully charged |
+| `AC 80%` | Connected to power but not charging, e.g. a charge limit |
+
+macOS uses `pmset -g batt`; Linux uses the first battery in
+`/sys/class/power_supply`. Run the macOS state regressions with
+`bash tests/battery-indicator.bash`.
+
 ## Keeping in sync
 
 Every step is idempotent — re-run it anytime to converge:

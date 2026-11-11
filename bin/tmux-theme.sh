@@ -58,7 +58,7 @@ set-option -g display-panes-colour $tm_color_inactive
  # clock
 set-window-option -g clock-mode-colour $tm_color_active
 
-# battery
+# battery: emits its own leading separator; absent on machines without a battery
 tm_battery="#(~/.dotfiles/bin/battery-indicator.sh)"
 
 # cpu + memory
@@ -82,6 +82,5 @@ tm_session_name="#[fg=$tm_color_feature,bold]#S"
 
 set -g status-left ' '$tm_session_name' '
 # order: ♫ music │ cpu/mem/disk │ battery │ host │ clock  (clock anchored at
-# the right edge; music emits its own trailing separator, so it cleanly
-# vanishes when nothing is playing).
-set -g status-right "$tm_nowplaying$tm_cpumem  $tm_disk$tm_sep$tm_battery$tm_sep$tm_host$tm_sep$tm_date "
+# the right edge; optional music and battery segments own their separators).
+set -g status-right "$tm_nowplaying$tm_cpumem  $tm_disk$tm_battery$tm_sep$tm_host$tm_sep$tm_date "
