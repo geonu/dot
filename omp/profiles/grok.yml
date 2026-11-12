@@ -18,6 +18,7 @@ retry:
       - openai-codex/gpt-6-luna:medium
 # Neutral pins: omp/config.yml overrides deep-merge into every overlay; keep bundled reviewer/sonic defaults.
 task:
+  perCallModel: "on"
   agentModelOverrides:
     reviewer: "@slow"
     sonic: "@smol"

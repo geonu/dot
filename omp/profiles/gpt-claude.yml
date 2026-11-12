@@ -22,6 +22,7 @@ retry:
       - openai-codex/gpt-6-luna:medium
       - openai-codex/gpt-6.1-sol:high
 task:
+  perCallModel: "on"
   agentModelOverrides:
     reviewer: openai-codex/gpt-6-astra:high
     sonic: openai-codex/gpt-6.1-sol:low

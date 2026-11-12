@@ -21,6 +21,7 @@ retry:
       - xai-oauth/grok-4.7:medium
 # Neutral pins: omp/config.yml overrides deep-merge into every overlay; keep bundled reviewer/sonic defaults.
 task:
+  perCallModel: "on"
   agentModelOverrides:
     reviewer: "@slow"
     sonic: "@smol"

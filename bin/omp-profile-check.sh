@@ -2,16 +2,17 @@
 set -euo pipefail
 
 repo_root="${1:-$(pwd)}"
-active_profile="${OMP_ACTIVE_PROFILE:-gpt-claude}"
+active_profile="${OMP_ACTIVE_PROFILE:-gpt}"
 config="$repo_root/omp/config.yml"
 profiles_dir="$repo_root/omp/profiles"
 readme="$repo_root/omp/README.md"
 models_db="${PI_CODING_AGENT_DIR:-$HOME/.omp/agent}/models.db"
+available_models_json="${OMP_AVAILABLE_MODELS_JSON:-}"
 zshrc="$repo_root/zshrc"
 tmux_conf="$repo_root/tmux.conf"
 save_script="$repo_root/bin/omp-save-panes"
 restore_script="$repo_root/bin/omp-restore-panes"
-python3 - "$config" "$profiles_dir" "$readme" "$models_db" "$active_profile" "$zshrc" "$tmux_conf" "$save_script" "$restore_script" <<'PY'
+python3 - "$config" "$profiles_dir" "$readme" "$models_db" "$active_profile" "$zshrc" "$tmux_conf" "$save_script" "$restore_script" "$available_models_json" <<'PY'
 import json
 import re
 import sqlite3
@@ -27,11 +28,12 @@ zshrc = Path(sys.argv[6])
 tmux_conf = Path(sys.argv[7])
 save_script = Path(sys.argv[8])
 restore_script = Path(sys.argv[9])
+available_models_json = sys.argv[10]
 role_keys = ["default", "smol", "slow", "vision", "plan", "commit", "task"]
 profile_names = ["gpt", "grok", "claude", "claude-gpt", "gpt-claude", "grok-gpt"]
 profile_choices = ["gpt", "grok", "claude", "claude-gpt", "gpt-claude", "grok-gpt", "config"]
 known_choices = set(profile_choices)
-default_profile = "gpt-claude"
+default_profile = "gpt"
 agent_override_keys = ["reviewer", "sonic"]
 
 
@@ -69,6 +71,21 @@ def parse_agent_overrides(path: Path) -> dict[str, str]:
     return overrides
 
 
+def check_per_call_gate(path: Path) -> str | None:
+    values = []
+    in_task = False
+    for raw in path.read_text().splitlines():
+        if not raw.strip() or raw.lstrip().startswith("#"):
+            continue
+        if not raw.startswith(" "):
+            in_task = raw.rstrip() == "task:"
+        elif in_task and re.match(r"^  perCallModel\s*:", raw):
+            values.append(raw.split(":", 1)[1].strip())
+    if len(values) != 1 or not re.fullmatch(r"""(?:"on"|'on')\s*(?:#.*)?""", values[0]):
+        return f'{path}: task.perCallModel must be the quoted string "on" (not absent, off, eval, or a boolean)'
+    return None
+
+
 def tmux_option(text: str, option: str):
     match = re.search(rf"^set -g {re.escape(option)} '([^']+)'$", text, re.M)
     return match.group(1) if match else None
@@ -86,17 +103,41 @@ missing = [str(path) for path in paths.values() if not path.exists()]
 if missing:
     raise SystemExit(f"missing profile files: {', '.join(missing)}")
 
+profile_paths = {"config": config, **{name: profiles_dir / f"{name}.yml" for name in profile_names}}
+gate_errors = [error for path in profile_paths.values() if (error := check_per_call_gate(path))]
+if gate_errors:
+    raise SystemExit("\n".join(gate_errors))
+
+available_models = None
+available_providers = set()
+if available_models_json:
+    snapshot = Path(available_models_json)
+    try:
+        payload = json.loads(snapshot.read_text())
+        catalog = payload.get("models") if isinstance(payload, dict) else None
+        if not isinstance(catalog, list) or any(
+            not isinstance(model, dict)
+            or not isinstance(model.get("provider"), str) or not model["provider"]
+            or not isinstance(model.get("id"), str) or not model["id"]
+            for model in catalog
+        ):
+            raise ValueError('expected {"models": [...]} with nonempty string provider and id fields on each model')
+        available_models = {(model["provider"], model["id"]) for model in catalog}
+        available_providers = {provider for provider, _ in available_models}
+    except (OSError, UnicodeError, ValueError) as exc:
+        raise SystemExit(f"cannot read OMP_AVAILABLE_MODELS_JSON snapshot {snapshot}: {exc}; supply saved `omp models --json` output") from exc
+
 if not models_db.exists():
-    raise SystemExit(f"models db missing: {models_db}; run OMP once or set PI_CODING_AGENT_DIR")
+    raise SystemExit(f"models metadata db missing: {models_db}; run OMP once or set PI_CODING_AGENT_DIR (cache metadata is not runtime availability)")
 
 providers = {}
 try:
-    conn = sqlite3.connect(f"file:{models_db}?mode=ro", uri=True)
-    for provider_id, models_json in conn.execute("select provider_id, models from model_cache"):
-        base_id = provider_id.split(":", 1)[0]
-        providers.setdefault(base_id, {}).update({m["id"]: m for m in json.loads(models_json)})
-except (sqlite3.Error, json.JSONDecodeError) as exc:
-    raise SystemExit(f"cannot read models db {models_db}: {exc}") from exc
+    with sqlite3.connect(f"file:{models_db}?mode=ro", uri=True) as conn:
+        for provider_id, models_json in conn.execute("select provider_id, models from model_cache"):
+            base_id = provider_id.split(":", 1)[0]
+            providers.setdefault(base_id, {}).update({m["id"]: m for m in json.loads(models_json)})
+except (sqlite3.Error, ValueError, TypeError, KeyError) as exc:
+    raise SystemExit(f"cannot read models metadata db {models_db}: {exc}") from exc
 
 errors = []
 
@@ -113,17 +154,24 @@ def check_selector(path: Path, label: str, selector: str) -> None:
     model, effort = rest.rsplit(":", 1) if ":" in rest else (rest, "")
     model_meta = providers.get(provider, {}).get(model)
     if model_meta is None:
-        errors.append(f"{path}: {label}: unknown model {provider}/{model}")
+        errors.append(f"{path}: {label}: unknown model {provider}/{model} in cached metadata; use an exact cached provider/model selector")
         return
     thinking = model_meta.get("thinking") or {}
     efforts = thinking.get("efforts") or []
     if effort == "off" and thinking.get("requiresEffort"):
-        errors.append(f"{path}: {label}: unsupported effort off for {provider}/{model}; model requires an effort; available={efforts}")
+        errors.append(f"{path}: {label}: unsupported effort off for {provider}/{model}; model requires an effort; cached efforts={efforts}")
+        return
     elif effort and effort != "off" and effort not in efforts:
-        errors.append(f"{path}: {label}: unsupported effort {effort} for {provider}/{model}; available={efforts}")
+        errors.append(f"{path}: {label}: unsupported effort {effort} for {provider}/{model}; cached efforts={efforts}")
+        return
+    if available_models is not None and (provider, model) not in available_models:
+        if provider not in available_providers:
+            errors.append(f"{path}: {label}: cached model {provider}/{model}, but provider {provider} is absent from the available registry snapshot; choose an available exact selector or explicitly configure that provider outside this checker")
+        else:
+            errors.append(f"{path}: {label}: cached model {provider}/{model} is not available in the supplied registry snapshot (provider {provider} is present); choose an available exact selector")
 
 
-for name, path in {"config": config, **{name: profiles_dir / f"{name}.yml" for name in profile_names}}.items():
+for name, path in profile_paths.items():
     # omp deep-merges config.yml under every --config overlay, so each profile must pin every override key.
     overrides = parse_agent_overrides(path)
     if sorted(overrides) != agent_override_keys:
@@ -132,20 +180,20 @@ for name, path in {"config": config, **{name: profiles_dir / f"{name}.yml" for n
         for candidate in selector.split(","):
             check_selector(path, f"agentModelOverrides.{agent}", candidate.strip())
     roles = parse_roles(path)
-    if list(roles.keys()) != role_keys:
-        errors.append(f"{path}: role keys mismatch: {list(roles.keys())}")
+    if set(roles) != set(role_keys):
+        errors.append(f"{path}: role keys must be {role_keys}, got {list(roles)}")
         continue
     for role, selector in roles.items():
         check_selector(path, role, selector)
 config_roles = parse_roles(config)
 if active_profile not in {"config", "default"}:
-    active_path = profiles_dir / f"{active_profile}.yml"
-    if not active_path.exists():
-        errors.append(f"unknown active profile: {active_profile} ({active_path} missing)")
+    active_path = paths.get(active_profile) if active_profile in known_choices else None
+    if active_path is None:
+        errors.append(f"unknown OMP_ACTIVE_PROFILE: {active_profile}; choose one of {profile_choices}")
     elif config_roles != parse_roles(active_path):
-        errors.append(f"omp/config.yml must match omp/profiles/{active_profile}.yml (active default profile)")
+        errors.append(f"omp/config.yml must match omp/profiles/{active_profile}.yml (OMP_ACTIVE_PROFILE equality assertion)")
     elif parse_agent_overrides(config) != parse_agent_overrides(active_path):
-        errors.append(f"omp/config.yml task.agentModelOverrides must match omp/profiles/{active_profile}.yml (active default profile)")
+        errors.append(f"omp/config.yml task.agentModelOverrides must match omp/profiles/{active_profile}.yml (OMP_ACTIVE_PROFILE equality assertion)")
 
 readme_text = readme.read_text()
 for name in profile_names:
@@ -204,7 +252,11 @@ for name in profile_names:
 if errors:
     raise SystemExit("\n".join(errors))
 
-print("OMP model profiles are consistent with README, shell helpers, tmux defaults, and local models.db")
-for name, path in {"config": config, **{name: profiles_dir / f"{name}.yml" for name in profile_names}}.items():
+print("OMP model profiles are consistent with README, shell helpers, tmux defaults, and cached models.db metadata")
+if available_models is None:
+    print("Cache-only check: runtime availability and model requests were not checked; supply OMP_AVAILABLE_MODELS_JSON from `omp models --json` for a registry snapshot comparison.")
+else:
+    print(f"Exact provider/model selectors match available registry snapshot {available_models_json}; runtime availability may change, and no model request was checked.")
+for name, path in profile_paths.items():
     print(f"- {name}: {path}")
 PY

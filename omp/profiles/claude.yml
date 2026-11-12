@@ -20,6 +20,7 @@ retry:
       - anthropic/claude-fable-5-1:medium
 # Neutral pins: omp/config.yml overrides deep-merge into every overlay; keep bundled reviewer/sonic defaults.
 task:
+  perCallModel: "on"
   agentModelOverrides:
     reviewer: "@slow"
     sonic: "@smol"

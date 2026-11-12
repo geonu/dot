@@ -25,68 +25,31 @@ after this ordered load do you begin other work.
   concrete model names by substring. Query the resolved `provider/model` ID
   instead; the effort suffix is not part of the catalog ID. Keep configured
   mapping, available registry listing, and actual request success distinct.
-- Keep `modelRoles` entries scalar: launchers and profile checks consume the
-  primary selector. Use the effective profile's primary, not a hardcoded model.
-  Request-time recovery is configured separately by `retry.modelFallback` and
-  `retry.fallbackChains`; a bare task `@role` does not install that role's tail.
-- The user preauthorizes these ordered fallback tails for the supported roles:
-
-  | Role | After the effective role primary |
-  | --- | --- |
-  | `plan` | configured default |
-  | `slow` | `openai-codex/gpt-6-astra:xhigh` -> configured default |
-  | `task` | `openai-codex/gpt-6-luna:medium` -> configured default |
-
-  These are role-specific, not model/provider-wide chains: `slow` and `task`
-  can share a primary model but need different tails.
-- Native chat retry tails use concrete `provider/model:effort` selectors.
-  OMP 18.6.1 skips role aliases such as `@default` in those tails; bare model
-  selectors inherit the failing turn's effort. Global config and each supported
-  profile therefore supply explicit, deduplicated role tails. Changing a native
-  role primary or configured default through `/models`, `--config`, or another
-  override requires updating the affected retry tails too; native recovery does
-  not regenerate them from `modelRoles`.
-- For role-directed `task` calls, construct an ordered concrete candidate list:
-  the effective `cfg://modelRoles` primary followed, for `plan`/`slow`/`task`,
-  by the role-specific candidates in the table above. Resolve configured
-  default afresh from effective `cfg://modelRoles.default`, with its effort;
-  never copy a stale concrete default from `cfg://retry.fallbackChains` after
-  a role/default override. Resolve primary aliases to concrete selectors too.
-  Task's literal `@default` means the parent's active model, not configured
-  default, so do not pass it as this fallback. Deduplicate by `provider/model`,
-  retaining the first selector and its effort; do not retry the same model at
-  another effort. Other roles get only their resolved primary unless separately
-  authorized.
-- Set `tasks[].model` explicitly to the remaining concrete candidates as an
-  ordered array. Start with the first currently eligible candidate; skip only
-  candidates with actual resolution/availability failures or known cooldowns.
-  This installs a per-spawn request retry chain as well as startup preferences.
-  A call's model selector overrides `task.agentModelOverrides`, which override
-  agent defaults. Agent names such as `reviewer` select behavior, not roles;
-  choosing `reviewer` does not guarantee `slow`.
-- Native selector lists are preferences, not a hard allowlist, and native
-  recovery can consult a fallback model's own chain. Require the actual selected
-  model and effort to remain in the approved resolved list; do not let child
-  work proceed on an out-of-list selection. Never accept an arbitrary caller
-  default, built-in fallback, or unapproved chain extension.
-- Track actual failures and cooldowns for the runnable slice. If child dispatch,
-  startup, or a request terminates before native recovery completes, retry the
-  unchanged runnable slice on the next approved candidate with the remaining
-  array. Never restart the list or revisit a failed/cooling-down model, including
-  after a long 429/Retry-After failure already observed once; do not hammer it
-  or raise retry/wait limits to force it through.
-- Announce each actual switch once as `role: previous -> selected (reason)`;
-  do not ask permission for these preapproved switches or stop at a suggestion.
-  Block only after approved candidates are exhausted or a real authority
-  prerequisite prevents proceeding. Report each
-  `role -> concrete selector -> exact error` (`unresolved` for a missing mapping).
-  Never infer exhaustion from a role-name substring search or guessed
-  unavailability; distinguish catalog availability from actual request success.
-- Fallback changes the model, not task scope, acceptance criteria, verification,
-  or security requirements. It does not authorize other roles' substitutions,
-  cross-identity/provider activation, new paid credentials, or changes to
-  `maxRetries`, `maxDelayMs`, `usageReservePolicy`, or `waitForUsageReset`.
-  All unrelated approval requirements remain in force.
+- Keep `modelRoles` entries scalar. Resolve the requested role from effective
+  `cfg://modelRoles` to one exact `provider/model:effort` selector before dispatch.
+  Ordinary `task` accepts one scalar selector, not an array or role alias.
+- Persist `task.perCallModel: "on"` in the base config and every profile so
+  ordinary task calls expose the per-call model gate. This enables selection,
+  not provider authentication or proof that a request will succeed.
+- An explicit `tasks[].model` conflicts with the selected agent's
+  `task.agentModelOverrides` entry. For a pinned agent, omit the per-call model
+  and use its effective override; resolve `@slow`/`@smol` against effective roles.
+  If that override does not match the requested role, report the conflict rather
+  than overriding it. Agent names select behavior, not model roles.
+- Direct per-call workers disable automatic fallback, context promotion, and
+  prewalk. Never construct candidate arrays, skip an unavailable requested model,
+  or silently substitute another model/provider. Report
+  `requested role -> exact selector -> exact error` (`unresolved` for a missing
+  mapping), and obtain explicit approval before changing the requested model.
+- Keep native chat retry configuration separate: `retry.modelFallback` and
+  concrete `retry.fallbackChains` govern native chat recovery, not permission
+  to substitute models in per-call workers. Preserve their configured semantics.
+  When changing a role/default, align the affected native tails explicitly;
+  they do not regenerate from `modelRoles`.
+- Cache metadata validates selector/effort shape only. A current available
+  registry listing is separate evidence, and neither proves request success.
+  Do not activate providers, change credentials, or raise `maxRetries`,
+  `maxDelayMs`, `usageReservePolicy`, or `waitForUsageReset` to bypass a failure.
 
 ## Escalate to `plan` before editing when ANY holds
 - The change touches 3+ files or crosses a module/package boundary.

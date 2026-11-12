@@ -59,4 +59,4 @@ PY
 
 bash "$work/bin/omp-profile-check.sh" "$work"
 
-print -- "ok: active config matches gpt-claude default profile"
+print -- "ok: active config matches gpt default profile"
