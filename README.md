@@ -58,6 +58,37 @@ macOS uses `pmset -g batt`; Linux uses the first battery in
 `/sys/class/power_supply`. Run the macOS state regressions with
 `bash tests/battery-indicator.bash`.
 
+## Terminal fonts
+
+The `Brewfile` package `font-hack-nerd-font` provides **Hack Nerd Font Mono**,
+which Alacritty is already configured to use.
+
+When `./install` runs from Terminal.app (`TERM_PROGRAM=Apple_Terminal`), it
+runs `bin/terminal-font` after Homebrew sync. The helper requires macOS,
+Terminal.app already running, and the installed `HackNFM-Regular` font. Missing
+prerequisites or a missing named profile produce a successful skip; unexpected
+automation errors fail the task. macOS may request Automation permission.
+
+For a font-only repair, run the helper directly from this repo:
+
+```bash
+./bin/terminal-font "Clear Dark"
+./bin/terminal-font               # saved default profile, not necessarily active
+```
+
+It changes only the saved profile's font name, preserves its size and other
+settings, and does nothing when it already uses Hack. It does not change which
+profile is the default or startup profile, create windows, or start Terminal.
+An active tab can use a different profile: pass that profile's name explicitly.
+Changing only a tab's current settings does not persist the profile.
+
+Alternatively, in Terminal → Settings → Profiles → Text → Font, choose **Hack
+Nerd Font Mono Regular** for the intended profile, keeping its current font
+size. Korean text is expected to use macOS system font fallback.
+
+Do not run the full installer for a font-only repair: it also converges packages,
+runtimes, and symlinks unrelated to the font.
+
 ## Keeping in sync
 
 Every step is idempotent — re-run it anytime to converge:
