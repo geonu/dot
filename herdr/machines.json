@@ -1,0 +1,10 @@
+{
+  "machines": [
+    {
+      "name": "geonu-hangers-mac-mini-1",
+      "target": "geonu-hanger@geonu-hangers-mac-mini-1.tail124ace.ts.net",
+      "via": false,
+      "temporary": false
+    }
+  ]
+}

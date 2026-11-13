@@ -101,21 +101,45 @@ local-only and is not backed up by Git.
 
 ## Herdr
 
-`Brewfile` installs the `herdr-app` cask. `./install` links
-`herdr/keys.json` to `~/.config/herdr-app/keys.json`; re-running it keeps the
-same link. Only shortcuts are versioned: spaces, terminal state, telemetry,
-generated mods and app-owned files stay local.
+`Brewfile` installs the `herdr-app` cask. The parts of Herdr that should match on
+every machine live here, and `git pull && ./install` applies them:
 
-If Herdr has already created a regular keys file, back it up before the first
-install. Dotbot deliberately refuses to overwrite it:
+| What | In this repo | On the machine |
+| ---- | ------------ | -------------- |
+| Shortcuts | `herdr/keys.json` | symlink `~/.config/herdr-app/keys.json` |
+| Theme, zoom, fonts, sounds | `herdr/settings.json` | symlink `~/.config/herdr-app/settings.json` |
+| Remote machines | `herdr/machines.json` | `./install` adds missing ones via `herdr-core machine add` |
+| Common SSH hosts | `ssh/herdr-hosts.conf` | symlink `~/.ssh/config.d/herdr-hosts.conf`, loaded by an `Include` appended to `~/.ssh/config` |
+
+Everything else stays local: `core.json` (this machine's identity), spaces,
+terminal and view state, sockets, logs, telemetry, generated mods, app-owned
+files, SSH keys, `known_hosts` and agents.
+
+The machine list is never symlinked: herdr-core replaces its
+`~/.local/state/herdr-core/default/machines.json` atomically, which would turn
+a link into a regular file. `./install` adds only machines whose SSH
+target is missing; it never removes, renames or updates one, and never installs
+herdr-core on the remote. Work continues across machines because every client
+connects to the same remote herdr-core, whose terminals keep running.
+
+Before linking, `./install` moves a regular `settings.json`/`keys.json` that
+Herdr created to
+`<file>.before-dotfiles-<time>`; dotbot refuses to overwrite regular files.
+The SSH `Include` is appended after `Match all`, so each machine's own `Host`
+rules keep precedence; `~/.ssh/config` is backed up first.
+
+After adding or renaming a machine in Herdr, publish the list:
 
 ```bash
-keys="$HOME/.config/herdr-app/keys.json"
-if [ -f "$keys" ] && [ ! -L "$keys" ]; then
-  mv "$keys" "$keys.before-dotfiles-$(date +%Y%m%d-%H%M%S)"
-fi
-./install
+cd ~/.dotfiles
+herdr-core machine ls --json \
+  | jq '{machines: [.machines[] | {name, target, via, temporary}]}' > herdr/machines.json
+git add herdr && git commit && git push
 ```
+
+Settings and shortcuts edited in Herdr already write into the repo through
+the symlinks. `settings.json` is shared as-is because it holds no paths; if
+you set a sound file, use a path relative to `~/.config/herdr-app`.
 
 The keys retain the macOS defaults and add the tmux `Ctrl+A` prefix:
 `h/j/k/l` or arrows move between panes, `%`/`"` split right/down, `z`/`f`

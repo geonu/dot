@@ -25,6 +25,21 @@
 - shell:
   - [git submodule update --init --recursive, Installing submodules]
 
+# Herdr creates regular settings/keys files that dotbot will not replace: move
+# them aside (timestamped) so the links below can take their place.
+- shell:
+  - command: |
+      for f in settings.json keys.json; do
+        p="$HOME/.config/herdr-app/$f"
+        if [ -f "$p" ] && [ ! -L "$p" ]; then
+          mv "$p" "$p.before-dotfiles-$(date +%Y%m%d-%H%M%S)"
+          echo "Moved regular $p aside"
+        fi
+      done
+    description: Moving regular Herdr settings/keys aside before linking
+    stdout: true
+    stderr: true
+
 - link:
     ~/.dotfiles: ''
     ~/.Brewfile: Brewfile
@@ -39,6 +54,8 @@
     ~/.config/nvim: nvim
     ~/.config/alacritty/alacritty.toml: alacritty/alacritty.toml
     ~/.config/herdr-app/keys.json: herdr/keys.json
+    ~/.config/herdr-app/settings.json: herdr/settings.json
+    ~/.ssh/config.d/herdr-hosts.conf: ssh/herdr-hosts.conf
     ~/.config/mise/config.toml: mise/config.toml
     ~/.tmux.conf: tmux.conf
     ~/.psqlrc: psqlrc
@@ -128,5 +145,40 @@
       [ -d "$tpm_dir" ] || git clone --depth 1 https://github.com/tmux-plugins/tpm "$tpm_dir"
       TMUX_PLUGIN_MANAGER_PATH="$HOME/.tmux/plugins/" "$tpm_dir/bin/install_plugins"
     description: Installing tmux plugins via TPM
+    stdout: true
+    stderr: true
+
+# Herdr: make ~/.ssh/config load the shared hosts (appended once, with a backup),
+# then add any remote machine from herdr/machines.json this machine lacks. It never
+# removes, renames or updates a machine, and never installs herdr-core remotely.
+- shell:
+  - command: |
+      cfg="$HOME/.ssh/config"
+      line='Include config.d/herdr-hosts.conf'
+      chmod 700 "$HOME/.ssh" "$HOME/.ssh/config.d"
+      if ! grep -qxF "$line" "$cfg" 2>/dev/null; then
+        [ -f "$cfg" ] && cp -p "$cfg" "$cfg.before-herdr-$(date +%Y%m%d-%H%M%S)"
+        printf '\n# Herdr common hosts from the dot repo (Match all keeps local Host rules first)\nMatch all\n%s\n' "$line" >> "$cfg"
+        echo "Added Herdr hosts Include to $cfg"
+      fi
+      hc="$(command -v herdr-core || echo "$HOME/.local/bin/herdr-core")"
+      if [ ! -x "$hc" ] || ! command -v jq >/dev/null 2>&1; then
+        echo "herdr-core or jq not installed; skipping Herdr machine sync"; exit 0
+      fi
+      have="$("$hc" machine ls --json | jq -r '.machines[].target')"
+      jq -c '.machines[]' herdr/machines.json | while read -r m; do
+        target="$(printf '%s' "$m" | jq -r '.target')"
+        if printf '%s\n' "$have" | grep -qxF -- "$target"; then
+          echo "Herdr machine present: $target"; continue
+        fi
+        name="$(printf '%s' "$m" | jq -r '.name // ""')"
+        via="$(printf '%s' "$m" | jq -r 'if (.via | type) == "string" then .via else "" end')"
+        set -- machine add "$target"
+        [ -n "$name" ] && set -- "$@" --name "$name"
+        [ -n "$via" ] && set -- "$@" --via "$via"
+        [ "$(printf '%s' "$m" | jq -r '.temporary // false')" = true ] && set -- "$@" --temp
+        "$hc" "$@" </dev/null || echo "Could not add $target; run: herdr-core $*"
+      done
+    description: Syncing Herdr SSH hosts and remote machines
     stdout: true
     stderr: true
