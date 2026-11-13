@@ -79,6 +79,7 @@ cask "font-hack-nerd-font" # terminal font (Alacritty config)
 cask "alacritty"           # terminal emulator (GPU, low-RAM, primary)
 cask "google-chrome"
 cask "gyorgysh/keepresso/keepresso", trusted: true # caffeinate-style sleep/idle keeper (menu bar)
+cask "herdr-app"           # terminal/agent workspace (tmux-style keys in herdr/)
 cask "notion"              # Notion desktop
 cask "orbstack"           # docker/linux runtime (Docker Desktop replacement)
 cask "rectangle"           # window manager
