@@ -1,0 +1,12 @@
+{
+  "version": 1,
+  "ssh": [
+    {
+      "id": "e1225b9d54a02fb4692d751e181eb495",
+      "label": "geonu-hangers-mac-mini-1",
+      "target": "geonu-hangers-mac-mini-1",
+      "session": "default",
+      "enabled": true
+    }
+  ]
+}

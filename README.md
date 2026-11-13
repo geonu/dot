@@ -101,52 +101,53 @@ local-only and is not backed up by Git.
 
 ## Herdr
 
-`Brewfile` installs the `herdr-app` cask. The parts of Herdr that should match on
-every machine live here, and `git pull && ./install` applies them:
+`mise/config.toml` installs the Herdr TUI. `git pull && ./install` applies its
+shared client settings and SSH machine list:
 
 | What | In this repo | On the machine |
 | ---- | ------------ | -------------- |
-| Shortcuts | `herdr/keys.json` | symlink `~/.config/herdr-app/keys.json` |
-| Theme, zoom, fonts, sounds | `herdr/settings.json` | symlink `~/.config/herdr-app/settings.json` |
-| Remote machines | `herdr/machines.json` | `./install` adds missing ones via `herdr-core machine add` |
+| Shortcuts and dark theme | `herdr/config.toml` | symlink `~/.config/herdr/config.toml` |
+| Remote machines | `herdr/endpoints.json` | `./install` merges missing target/session pairs into `~/.local/state/herdr/client/endpoints.json` |
 | Common SSH hosts | `ssh/herdr-hosts.conf` | symlink `~/.ssh/config.d/herdr-hosts.conf`, loaded by an `Include` appended to `~/.ssh/config` |
 
-Everything else stays local: `core.json` (this machine's identity), spaces,
-terminal and view state, sockets, logs, telemetry, generated mods, app-owned
-files, SSH keys, `known_hosts` and agents.
+Everything else stays local: TUI session and pane state, sockets, logs, SSH
+keys, `known_hosts`, and agents. `endpoints.json` is a real local file: the
+install step keeps existing profile IDs, labels, and enabled states and adds
+only missing SSH target/session pairs. It keeps a dated backup before a change
+and does not connect to, install, or update any remote server.
 
-The machine list is never symlinked: herdr-core replaces its
-`~/.local/state/herdr-core/default/machines.json` atomically, which would turn
-a link into a regular file. `./install` adds only machines whose SSH
-target is missing; it never removes, renames or updates one, and never installs
-herdr-core on the remote. Work continues across machines because every client
-connects to the same remote herdr-core, whose terminals keep running.
+`config.toml` uses the tmux-like `Ctrl+A` prefix. Herdr's TUI defaults
+already bind `h/j/k/l`, `z`, `x`, `c`, `n/p`, and `1–9` under that prefix.
+Splitting uses `Ctrl+A v` (right) and `Ctrl+A -` (down), rather than the
+desktop app's `%` and `"` bindings. The theme uses the built-in Catppuccin
+dark palette.
 
-Before linking, `./install` moves a regular `settings.json`/`keys.json` that
-Herdr created to
-`<file>.before-dotfiles-<time>`; dotbot refuses to overwrite regular files.
+Before linking, `./install` moves a regular TUI `config.toml` to
+`config.toml.before-dotfiles-<time>`; dotbot refuses to overwrite regular files.
 The SSH `Include` is appended after `Match all`, so each machine's own `Host`
 rules keep precedence; `~/.ssh/config` is backed up first.
 
-After adding or renaming a machine in Herdr, publish the list:
+After adding a machine in the TUI, merge any other machines already saved on
+that computer before publishing its catalog. Do not replace another
+computer's entries, profile IDs, labels, or enabled states:
 
 ```bash
 cd ~/.dotfiles
-herdr-core machine ls --json \
-  | jq '{machines: [.machines[] | {name, target, via, temporary}]}' > herdr/machines.json
+tmp="$(mktemp herdr/endpoints.json.XXXXXX)"
+jq --slurpfile local "$HOME/.local/state/herdr/client/endpoints.json" '
+  reduce $local[0].ssh[] as $entry (.;
+    if any(.ssh[]; .target == $entry.target and .session == $entry.session)
+    then . else .ssh += [$entry] end)
+' herdr/endpoints.json > "$tmp" && mv "$tmp" herdr/endpoints.json
+git diff -- herdr/endpoints.json
 git add herdr && git commit && git push
 ```
 
-Settings and shortcuts edited in Herdr already write into the repo through
-the symlinks. `settings.json` is shared as-is because it holds no paths; if
-you set a sound file, use a path relative to `~/.config/herdr-app`.
-
-The keys retain the macOS defaults and add the tmux `Ctrl+A` prefix:
-`h/j/k/l` or arrows move between panes, `%`/`"` split right/down, `z`/`f`
-toggle zoom, `c` creates a tab, and `n`/`p`/`1–9` switch tabs. Press
-`Ctrl+A Ctrl+A` to send a literal Ctrl+A to the program. `Ctrl+A x` closes
-a pane immediately, without tmux's confirmation. Pane resizing, tiled layout
-and synchronized input have no matching Herdr command and are not bound.
+`Brewfile` temporarily keeps `herdr-app`: removing it would cause the full
+installer's `brew bundle cleanup --force` to uninstall the desktop app on
+computers that still have running desktop sessions. The desktop app's local
+settings are retained, but no longer linked into the repo. Remove the cask
+only after those sessions have been migrated.
 
 ## Keeping in sync
 
