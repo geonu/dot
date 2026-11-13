@@ -9,6 +9,13 @@
 # session state (claude /remember)
 .remember/
 
+# local agent workspace
+.omo/
+
+# externally maintained Claude skills (keep user-authored skills trackable)
+/claude/skills/synced/
+/claude/skills/aside-browser/
+
 # host development linked worktrees
 /.worktrees/
 

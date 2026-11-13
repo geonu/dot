@@ -89,6 +89,16 @@ size. Korean text is expected to use macOS system font fallback.
 Do not run the full installer for a font-only repair: it also converges packages,
 runtimes, and symlinks unrelated to the font.
 
+## Claude skills
+
+`~/.claude/skills` links to `claude/skills`. Keep user-authored, portable
+skills there and commit them explicitly. Two externally maintained directories
+are ignored: `synced/` holds account-specific synchronized skills, and
+`aside-browser/` holds the Aside skill (also installed in `~/.agents/skills`).
+Leave their local contents intact; do not vendor them into this repo. Restore
+them through the respective app or account on a new machine. `.omo/` is also
+local-only and is not backed up by Git.
+
 ## Herdr
 
 `Brewfile` installs the `herdr-app` cask. `./install` links
