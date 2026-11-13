@@ -44,6 +44,10 @@ brew "ripgrep"             # modern `grep` file search (used by nvim)
 brew "starship"            # shell prompt
 brew "summarize"           # AI summarizer for URLs/media (SUMMARIZE_* config in zshrc)
 brew "supabase/tap/supabase", trusted: true # Supabase CLI (replaces supabase MCP)
+# macOS Tailscale SSH requires open-source tailscaled, not the GUI app.
+# Setup: sudo brew services start tailscale; sudo tailscale up; sudo tailscale set --ssh
+# Tailnet policy must allow both network access to port 22 and Tailscale SSH.
+brew "tailscale"           # mesh VPN (root service; do not use restart_service here)
 brew "tmux"                # terminal multiplexer
 brew "vercel"              # Vercel CLI (replaces vercel MCP)
 brew "yq"                  # YAML processor
@@ -84,7 +88,6 @@ cask "orbstack"           # docker/linux runtime (Docker Desktop replacement)
 cask "rectangle"           # window manager
 cask "slack"
 cask "spotify"
-cask "tailscale-app"       # mesh VPN
 cask "visual-studio-code"
 
 # --- Mac App Store (needs an App Store sign-in; IDs from `mas list`) ---------
