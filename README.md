@@ -47,6 +47,45 @@ packages (see [Where packages live](#where-packages-live)).
 Open a new shell afterwards: antidote installs the zsh plugins on first
 run, and Neovim installs its plugins (lazy.nvim) on first launch.
 
+## Herdr keys
+
+`herdr/keys.json` links to `~/.config/herdr-app/keys.json`. With a terminal
+focused, press **Ctrl+A**, release it, then:
+
+| Next key | Action |
+| --- | --- |
+| `h` / `j` / `k` / `l` | Focus left / down / up / right pane |
+| `z` / `f` | Toggle pane zoom |
+| `Ctrl+A` | Send one literal Ctrl+A (`U+0001`) to the terminal |
+
+Ctrl+A now starts a native key sequence instead of immediately reaching the
+shell; double Ctrl+A sends the literal key. Cmd+Left still sends literal
+Ctrl+A directly. All existing macOS/default shortcuts remain unchanged,
+including Cmd+D / Cmd+Shift+D splits and Cmd+T tabs; no standard tmux
+split/tab aliases are added.
+
+Herdr v0.1.15 has no directional pane-resize command, so tmux's prefix
+`H` / `J` / `K` / `L` resize bindings are not mapped (`layout.resize` sizes
+layout nodes, not terminal splits). Tmux-only tiled-layout selection,
+OMP respawn/profile selection, copy mode and session/plugin controls remain
+in `tmux.conf`; this file does not emulate them.
+
+Keys reload live in about a second, without restarting terminals. Invalid
+configuration keeps the last good map and writes `~/.config/herdr-app/keys.error`;
+inspect `herdr-app status` too. Native prefix dispatch must be checked in a
+disposable space/window using real window key events: `herdr-app do` and
+`hc keys` bypass the keymap and cannot verify it.
+
+For isolated macOS verification, launch the installed executable with a temporary
+`HERDR_APP_HOME` containing this keymap, a unique `HC_SESSION`, temporary
+`XDG_STATE_HOME`, `HERDR_APP_NO_SOUND=1` and `HERDR_TELEMETRY=0`.
+Create disposable panes there with `herdr-app do`. Inject native keyboard
+events only to that child PID with CoreGraphics `CGEvent.postToPid`, never
+global `post` or System Events keystrokes; macOS Accessibility permission is
+required. Compare focused pane/zoom in `herdr-app status`, and capture bytes
+in a raw-mode disposable terminal to check double Ctrl+A emits exactly `01`.
+Quit only that isolated app and stop only its isolated core afterward.
+
 ## tmux battery status
 
 The right-hand status bar hides the battery segment, including its separator,

@@ -38,6 +38,7 @@
     ~/.zsh_plugins.txt: zsh_plugins.txt
     ~/.config/nvim: nvim
     ~/.config/alacritty/alacritty.toml: alacritty/alacritty.toml
+    ~/.config/herdr-app/keys.json: herdr/keys.json
     ~/.config/mise/config.toml: mise/config.toml
     ~/.tmux.conf: tmux.conf
     ~/.psqlrc: psqlrc
