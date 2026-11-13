@@ -7,7 +7,7 @@ Personal macOS development environment, managed with
 
 | Area     | Tool                                                                                              |
 | -------- | ------------------------------------------------------------------------------------------------- |
-| Terminal | [Alacritty](https://alacritty.org)                                                                |
+| Terminal | [Alacritty](https://alacritty.org) + [Herdr](https://herdr.dev)                                      |
 | Shell    | zsh + [antidote](https://antidote.sh) plugins + [starship](https://starship.rs) prompt            |
 | Editor   | [Neovim](https://neovim.io) (Lua config, lazy.nvim)                                               |
 | Runtimes | [mise](https://mise.jdx.dev) — Node, Python, Java, …                                              |
@@ -88,6 +88,31 @@ size. Korean text is expected to use macOS system font fallback.
 
 Do not run the full installer for a font-only repair: it also converges packages,
 runtimes, and symlinks unrelated to the font.
+
+## Herdr
+
+`Brewfile` installs the `herdr-app` cask. `./install` links
+`herdr/keys.json` to `~/.config/herdr-app/keys.json`; re-running it keeps the
+same link. Only shortcuts are versioned: spaces, terminal state, telemetry,
+generated mods and app-owned files stay local.
+
+If Herdr has already created a regular keys file, back it up before the first
+install. Dotbot deliberately refuses to overwrite it:
+
+```bash
+keys="$HOME/.config/herdr-app/keys.json"
+if [ -f "$keys" ] && [ ! -L "$keys" ]; then
+  mv "$keys" "$keys.before-dotfiles-$(date +%Y%m%d-%H%M%S)"
+fi
+./install
+```
+
+The keys retain the macOS defaults and add the tmux `Ctrl+A` prefix:
+`h/j/k/l` or arrows move between panes, `%`/`"` split right/down, `z`/`f`
+toggle zoom, `c` creates a tab, and `n`/`p`/`1–9` switch tabs. Press
+`Ctrl+A Ctrl+A` to send a literal Ctrl+A to the program. `Ctrl+A x` closes
+a pane immediately, without tmux's confirmation. Pane resizing, tiled layout
+and synchronized input have no matching Herdr command and are not bound.
 
 ## Keeping in sync
 
