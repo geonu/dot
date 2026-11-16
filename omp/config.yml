@@ -9,7 +9,7 @@ modelRoles:
   plan: openai-codex/gpt-6-astra:xhigh
   commit: openai-codex/gpt-6-luna:off
   task: openai-codex/gpt-6.1-sol:medium
-  default: openai-codex/gpt-6.1-sol:medium
+  default: openai-codex/gpt-6.1-sol
 retry:
   modelFallback: true
   fallbackChains:
