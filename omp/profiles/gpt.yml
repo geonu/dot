@@ -2,7 +2,7 @@
 # Use when Anthropic/Claude quota is exhausted or intentionally avoided.
 # GPT-6.1 Sol owns default and task, GPT-6 Astra owns slow/vision/plan, and GPT-6 Luna keeps utilities lightweight.
 modelRoles:
-  default: openai-codex/gpt-6.1-sol:medium
+  default: openai-codex/gpt-6.1-sol
   smol: openai-codex/gpt-6-luna:low
   slow: openai-codex/gpt-6-astra:high
   vision: openai-codex/gpt-6-astra:high
@@ -13,9 +13,9 @@ modelRoles:
 retry:
   fallbackChains:
     plan:
-      - openai-codex/gpt-6.1-sol:medium
+      - openai-codex/gpt-6.1-sol
     slow:
-      - openai-codex/gpt-6.1-sol:medium
+      - openai-codex/gpt-6.1-sol
     task:
       - openai-codex/gpt-6-luna:medium
 # Neutral pins: omp/config.yml overrides deep-merge into every overlay; keep bundled reviewer/sonic defaults.

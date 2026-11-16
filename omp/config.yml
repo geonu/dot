@@ -14,9 +14,9 @@ retry:
   modelFallback: true
   fallbackChains:
     plan:
-      - openai-codex/gpt-6.1-sol:medium
+      - openai-codex/gpt-6.1-sol
     slow:
-      - openai-codex/gpt-6.1-sol:medium
+      - openai-codex/gpt-6.1-sol
     task:
       - openai-codex/gpt-6-luna:medium
 memory:

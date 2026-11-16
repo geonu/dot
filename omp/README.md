@@ -63,7 +63,7 @@ not permission to rewrite them or substitute providers.
 | `task` | GPT-6.1 Sol | coding fan-out |
 | `slow`, `vision`, `plan` | GPT-6 Astra | 실패 비용이 높은 추론·시각 작업 |
 
-`default`와 `task`는 GPT-6.1 Sol `medium`이다. `plan`만 Astra의 `xhigh`이고 `slow`와 `vision`은 `high`다. GPT-6 Luna는 text/image, registry `contextWindow` 272,000, `maxContextWindow` 872,000, 128,000 output과 `low`~`max` effort를 지원하며 `off`도 별도 effort 없이 허용한다. GPT-6.1 Sol은 text/image, registry `contextWindow` 272,000, `maxContextWindow` 872,000, 128,000 output과 `low`~`max` effort를 지원한다.
+`plan`만 Astra의 `xhigh`이고 `slow`와 `vision`은 `high`다. GPT-6 Luna는 text/image, registry `contextWindow` 272,000, `maxContextWindow` 872,000, 128,000 output과 `low`~`max` effort를 지원하며 `off`도 별도 effort 없이 허용한다. GPT-6.1 Sol은 text/image, registry `contextWindow` 272,000, `maxContextWindow` 872,000, 128,000 output과 `low`~`max` effort를 지원한다.
 
 ## Grok only
 
@@ -79,10 +79,11 @@ Fable 5.1은 `default:medium`/`slow:high`/`plan:xhigh`, Opus 5.5는 `vision:medi
 
 ## 현재 프로필 정책
 
-The approved base/default is now the existing GPT-only profile: Sol `medium`
-for default/task, Astra `high` for slow/vision and `xhigh` for plan, and Luna
-for smol/commit. Native chat retry tails follow `gpt.yml` (plan/slow → Sol
-`medium`; task → Luna `medium`); retry budgets and limits are unchanged.
+The approved base/GPT profile uses Sol for default with inherited effort
+(no selector suffix; base `defaultThinkingLevel: auto`), and explicit `medium`
+for task. Astra uses `high` for slow/vision and `xhigh` for plan; Luna handles
+smol/commit. Native chat retry tails follow `gpt.yml` (plan/slow → Sol with
+inherited effort; task → Luna `medium`); retry budgets and limits are unchanged.
 Named mixed/Claude/Grok profiles remain explicit opt-ins.
 
 Ordinary task dispatch uses one exact scalar selector resolved from effective
