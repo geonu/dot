@@ -8,7 +8,7 @@ modelRoles:
   vision: openai-codex/gpt-6.2-astra:high
   plan: openai-codex/gpt-6.2-astra:xhigh
   commit: openai-codex/gpt-6-luna:off
-  task: openai-codex/gpt-6.1-sol:medium
+  task: openai-codex/gpt-6.2-sol:medium
   default: openai-codex/gpt-6.2-sol
 retry:
   modelFallback: true

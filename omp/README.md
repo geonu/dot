@@ -6,12 +6,12 @@ metadata, not proof of current availability or request success. Run
 
 ## 모드 구분
 
-- **GPT only (default)**: GPT-6 Luna utilities, GPT-6.2 Sol default (global auto effort), GPT-6.1 Sol task, and GPT-6.2 Astra slow/vision/plan; Codex only.
+- **GPT only (default)**: GPT-6 Luna utilities, GPT-6.2 Sol default (global auto effort) and task (medium), and GPT-6.2 Astra slow/vision/plan; Codex only.
 - **Grok only**: Grok 4.7 단독. 장기 컨텍스트·비전·고추론을 한 모델이 처리.
 - **Claude only**: Fable 5.1을 상위 역할에, Opus 5.5를 비전에, Sonnet 5.5/Haiku 4.5를 보조 역할에 배정.
-- **claude-gpt**: Opus 5.5가 `default:high` 오케스트레이터를, GPT-6.2 Astra가 `slow`/`vision`/`plan`을, GPT-6.1 Sol이 `task`를, GPT-6 Luna가 유틸리티 역할을 맡음.
+- **claude-gpt**: Opus 5.5가 `default:high` 오케스트레이터를, GPT-6.2 Astra가 `slow`/`vision`/`plan`을, GPT-6.2 Sol이 `task:medium`을, GPT-6 Luna가 유틸리티 역할을 맡음.
 - **gpt-claude (opt-in)**: GPT-6.1 Sol `default:high`, GPT-6.2 Astra vision/plan/reviewer, Sonnet 5.5 task/slow, GPT-6 Luna utilities, and GPT-6.1 Sol `sonic:low`; separate provider quota pools.
-- **grok-gpt**: Grok 4.7이 장기 컨텍스트를, GPT-6.2 Astra가 `slow`/`vision`/`plan`을, GPT-6.1 Sol이 `task`를, GPT-6 Luna가 유틸리티 역할을 맡음.
+- **grok-gpt**: Grok 4.7이 장기 컨텍스트를, GPT-6.2 Astra가 `slow`/`vision`/`plan`을, GPT-6.2 Sol이 `task:medium`을, GPT-6 Luna가 유틸리티 역할을 맡음.
 
 
 ## 프로필 파일과 tmux 재시작
@@ -27,12 +27,12 @@ its explicit Astra/Sol overrides only when selected.
 
 | profile | 파일 | 용도 |
 |---------|------|------|
-| `gpt` | `omp/profiles/gpt.yml` | GPT-6 Luna + GPT-6.2 Sol `default` (global auto) + GPT-6.1 Sol `task:medium` + GPT-6.2 Astra `slow`/`vision`/`plan` Codex-only 구성 |
+| `gpt` | `omp/profiles/gpt.yml` | GPT-6 Luna + GPT-6.2 Sol `default` (global auto) + GPT-6.2 Sol `task:medium` + GPT-6.2 Astra `slow`/`vision`/`plan` Codex-only 구성 |
 | `grok` | `omp/profiles/grok.yml` | Grok 4.7 단독 구성 |
 | `claude` | `omp/profiles/claude.yml` | Fable 5.1 상위 역할 + Opus 5.5 비전 Claude-only 구성 |
-| `claude-gpt` | `omp/profiles/claude-gpt.yml` | Opus 5.5 `default:high` + GPT-6.2 Astra `slow`/`vision`/`plan` + GPT-6.1 Sol `task` + GPT-6 Luna utility |
+| `claude-gpt` | `omp/profiles/claude-gpt.yml` | Opus 5.5 `default:high` + GPT-6.2 Astra `slow`/`vision`/`plan` + GPT-6.2 Sol `task:medium` + GPT-6 Luna utility |
 | `gpt-claude` | `omp/profiles/gpt-claude.yml` | Opt-in GPT-6.1 Sol `default:high` + GPT-6.2 Astra vision/plan/reviewer + Sonnet 5.5 task/slow + Luna utilities + Sol sonic |
-| `grok-gpt` | `omp/profiles/grok-gpt.yml` | Grok 4.7 + GPT-6.2 Astra `slow`/`vision`/`plan` + GPT-6.1 Sol `task` + GPT-6 Luna utility |
+| `grok-gpt` | `omp/profiles/grok-gpt.yml` | Grok 4.7 + GPT-6.2 Astra `slow`/`vision`/`plan` + GPT-6.2 Sol `task:medium` + GPT-6 Luna utility |
 | `config` | 없음 | override 없이 현재 `config.yml` 그대로 resume |
 
 Inside tmux, `Ctrl-a R` resumes the current pane's session in the selected
@@ -60,10 +60,10 @@ not permission to rewrite them or substitute providers.
 |------|-------|----------|
 | `smol`, `commit` | GPT-6 Luna | 경량 lookup 및 thinking-off 메시지 |
 | `default` | GPT-6.2 Sol | 일반 장기 작업, global auto effort |
-| `task` | GPT-6.1 Sol | coding fan-out |
+| `task` | GPT-6.2 Sol | coding fan-out, medium effort |
 | `slow`, `vision`, `plan` | GPT-6.2 Astra | 실패 비용이 높은 추론·시각 작업 |
 
-`default`는 `openai-codex/gpt-6.2-sol`로 effort suffix 없이 global auto를 따른다. `task`는 GPT-6.1 Sol `medium`을 유지한다. `plan`만 GPT-6.2 Astra의 `xhigh`이고 `slow`와 `vision`은 `high`다. GPT-6 Luna는 text/image, registry `contextWindow` 272,000, `maxContextWindow` 872,000, 128,000 output과 `low`~`max` effort를 지원하며 `off`도 별도 effort 없이 허용한다. GPT-6.1 Sol은 text/image, registry `contextWindow` 272,000, `maxContextWindow` 872,000, 128,000 output과 `low`~`max` effort를 지원한다.
+`default`는 `openai-codex/gpt-6.2-sol`로 effort suffix 없이 global auto를 따른다. `task`는 GPT-6.2 Sol `medium`을 쓴다. `plan`만 GPT-6.2 Astra의 `xhigh`이고 `slow`와 `vision`은 `high`다. GPT-6 Luna는 text/image, registry `contextWindow` 272,000, `maxContextWindow` 872,000, 128,000 output과 `low`~`max` effort를 지원하며 `off`도 별도 effort 없이 허용한다. GPT-6.1 Sol은 text/image, registry `contextWindow` 272,000, `maxContextWindow` 872,000, 128,000 output과 `low`~`max` effort를 지원한다.
 
 현재 로컬 registry에서 GPT-6.2 Sol은 text/image, `contextWindow` 500,000, `maxContextWindow` 872,000, `maxTokens` 128,000, `low`~`max` effort를 지원한다. GPT-6.2 Astra는 text/image, `contextWindow` 272,000, `maxContextWindow` 872,000, `maxTokens` 128,000, `low`~`max` effort를 지원한다. 이전 모델의 벤치마크와 가격은 새 모델의 근거로 쓰지 않는다. 날짜별 과거 자료는 `BENCHMARKS.md`에 남긴다.
 
@@ -82,7 +82,7 @@ Fable 5.1은 `default:medium`/`slow:high`/`plan:xhigh`, Opus 5.5는 `vision:medi
 ## 현재 프로필 정책
 
 The approved base/default matches the GPT-only profile: GPT-6.2 Sol without
-an effort suffix (global auto) for default, GPT-6.1 Sol `medium` for task,
+an effort suffix (global auto) for default, GPT-6.2 Sol `medium` for task,
 GPT-6.2 Astra `high` for slow/vision and `xhigh` for plan, and Luna for
 smol/commit. Native chat retry tails follow `gpt.yml` (plan/slow →
 `openai-codex/gpt-6.2-sol`, no effort suffix; task → Luna `medium`);
@@ -105,8 +105,8 @@ rewrite saved profiles. Existing OMP sessions keep their active runtime roles
 until restarted. No `./install`, provider activation, or re-auth is needed.
 
 `claude-gpt`는 Opus 5.5를 `default:high`, GPT-6.2 Astra를 `slow:high`/`vision:high`/`plan:xhigh`,
-GPT-6.1 Sol을 `task`에 둔다. `grok-gpt`는 Grok 4.7을 `default`에
-`medium` effort로 유지하고 같은 GPT-6.2 Astra/GPT-6.1 Sol 역할 분리를 쓴다. 세 혼합 프로필 모두 GPT-6 Luna를 `smol`/`commit`에 둔다.
+GPT-6.2 Sol을 `task:medium`에 둔다. `grok-gpt`는 Grok 4.7을 `default`에
+`medium` effort로 유지하고 같은 GPT-6.2 Astra/GPT-6.2 Sol 역할 분리를 쓴다. 세 혼합 프로필 모두 GPT-6 Luna를 `smol`/`commit`에 둔다.
 
 
 ## 모델 갱신 기준
@@ -118,7 +118,7 @@ GPT-6.1 Sol을 `task`에 둔다. `grok-gpt`는 Grok 4.7을 `default`에
 ## 운용 원칙
 
 1. `smol`/`commit`은 경량 effort, `default`/`task`는 실행 균형, `slow`/`plan`/`vision`은 고추론으로 분리한다. `designer` 역할은 OMP 18.1.5(2026-09-03)에서 제거되어 프로필에 두지 않는다. single-model 프로필은 같은 모델에 effort 티어만 나눈다.
-2. GPT profile은 GPT-6 Luna 유틸리티, GPT-6.2 Sol `default`(global auto), GPT-6.1 Sol `task:medium`, GPT-6.2 Astra `slow`/`vision`/`plan`으로 역할을 나눈다. Grok-only는 Grok 4.7 한 모델에 effort 티어만 적용한다.
+2. GPT profile은 GPT-6 Luna 유틸리티, GPT-6.2 Sol `default`(global auto), GPT-6.2 Sol `task:medium`, GPT-6.2 Astra `slow`/`vision`/`plan`으로 역할을 나눈다. Grok-only는 Grok 4.7 한 모델에 effort 티어만 적용한다.
 3. `plan`만 예외적으로 `xhigh`를 쓴다. GPT-6.2 Astra, Fable 5.1, Opus 5.5처럼 registry가 `xhigh`를 제공하는 모델에만 배정하며, metadata가 지원하지 않는 effort는 배정하지 않는다.
 4. registry 갱신 뒤에는 `bin/omp-profile-check.sh`를 실행하고, 모든 기존 provider selector가 현재 metadata에 존재하는지 확인한다.
 
