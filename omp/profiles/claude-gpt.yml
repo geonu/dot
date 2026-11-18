@@ -4,9 +4,9 @@
 modelRoles:
   default: anthropic/claude-opus-5-5:high
   smol: openai-codex/gpt-6-luna:low
-  slow: openai-codex/gpt-6-astra:high
-  vision: openai-codex/gpt-6-astra:high
-  plan: openai-codex/gpt-6-astra:xhigh
+  slow: openai-codex/gpt-6.2-astra:high
+  vision: openai-codex/gpt-6.2-astra:high
+  plan: openai-codex/gpt-6.2-astra:xhigh
   commit: openai-codex/gpt-6-luna:off
   task: openai-codex/gpt-6.1-sol:medium
 # Concrete retry tails follow this profile's default; omit models already used by the primary.

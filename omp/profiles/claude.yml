@@ -14,7 +14,7 @@ retry:
   fallbackChains:
     plan: []
     slow:
-      - openai-codex/gpt-6-astra:xhigh
+      - openai-codex/gpt-6.2-astra:xhigh
     task:
       - openai-codex/gpt-6-luna:medium
       - anthropic/claude-fable-5-1:medium

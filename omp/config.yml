@@ -4,19 +4,19 @@ theme:
 setupVersion: 3
 modelRoles:
   smol: openai-codex/gpt-6-luna:low
-  slow: openai-codex/gpt-6-astra:high
-  vision: openai-codex/gpt-6-astra:high
-  plan: openai-codex/gpt-6-astra:xhigh
+  slow: openai-codex/gpt-6.2-astra:high
+  vision: openai-codex/gpt-6.2-astra:high
+  plan: openai-codex/gpt-6.2-astra:xhigh
   commit: openai-codex/gpt-6-luna:off
   task: openai-codex/gpt-6.1-sol:medium
-  default: openai-codex/gpt-6.1-sol:medium
+  default: openai-codex/gpt-6.2-sol
 retry:
   modelFallback: true
   fallbackChains:
     plan:
-      - openai-codex/gpt-6.1-sol:medium
+      - openai-codex/gpt-6.2-sol
     slow:
-      - openai-codex/gpt-6.1-sol:medium
+      - openai-codex/gpt-6.2-sol
     task:
       - openai-codex/gpt-6-luna:medium
 memory:

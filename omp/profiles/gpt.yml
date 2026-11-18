@@ -1,21 +1,21 @@
 # GPT-only OMP model profile.
 # Use when Anthropic/Claude quota is exhausted or intentionally avoided.
-# GPT-6.1 Sol owns default and task, GPT-6 Astra owns slow/vision/plan, and GPT-6 Luna keeps utilities lightweight.
+# GPT-6.2 Sol owns default, GPT-6.1 Sol owns task, GPT-6.2 Astra owns slow/vision/plan, and GPT-6 Luna keeps utilities lightweight.
 modelRoles:
-  default: openai-codex/gpt-6.1-sol:medium
+  default: openai-codex/gpt-6.2-sol
   smol: openai-codex/gpt-6-luna:low
-  slow: openai-codex/gpt-6-astra:high
-  vision: openai-codex/gpt-6-astra:high
-  plan: openai-codex/gpt-6-astra:xhigh
+  slow: openai-codex/gpt-6.2-astra:high
+  vision: openai-codex/gpt-6.2-astra:high
+  plan: openai-codex/gpt-6.2-astra:xhigh
   commit: openai-codex/gpt-6-luna:off
   task: openai-codex/gpt-6.1-sol:medium
 # Concrete retry tails follow this profile's default; omit models already used by the primary.
 retry:
   fallbackChains:
     plan:
-      - openai-codex/gpt-6.1-sol:medium
+      - openai-codex/gpt-6.2-sol
     slow:
-      - openai-codex/gpt-6.1-sol:medium
+      - openai-codex/gpt-6.2-sol
     task:
       - openai-codex/gpt-6-luna:medium
 # Neutral pins: omp/config.yml overrides deep-merge into every overlay; keep bundled reviewer/sonic defaults.
