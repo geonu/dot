@@ -84,9 +84,11 @@ Fable 5.1은 `default:medium`/`slow:high`/`plan:xhigh`, Opus 5.5는 `vision:medi
 The approved base/default matches the GPT-only profile: GPT-6.2 Sol without
 an effort suffix (global auto) for default, GPT-6.2 Sol `medium` for task,
 GPT-6.2 Astra `high` for slow/vision and `xhigh` for plan, and Luna for
-smol/commit. Native chat retry tails follow `gpt.yml` (plan/slow →
-`openai-codex/gpt-6.2-sol`, no effort suffix; task → Luna `medium`);
-retry budgets and limits are unchanged.
+smol/commit. For base/`gpt`, native chat retries for `plan` and `slow` fall back
+to `openai-codex/gpt-6.2-sol` without an effort suffix. Wherever GPT-6.2 Sol is
+the `task` primary (base/`gpt`, `claude-gpt`, and `grok-gpt`), native `task`
+retries try `openai-codex/gpt-6.1-terra:medium` first. In the mixed profiles,
+Opus 5.5 or Grok 4.7 remains next, respectively. Retry budgets and limits are unchanged.
 Named mixed/Claude/Grok profiles remain explicit opt-ins.
 
 Ordinary task dispatch uses one exact scalar selector resolved from effective

@@ -17,7 +17,7 @@ retry:
     slow:
       - xai-oauth/grok-4.7:medium
     task:
-      - openai-codex/gpt-6-luna:medium
+      - openai-codex/gpt-6.1-terra:medium
       - xai-oauth/grok-4.7:medium
 # Neutral pins: omp/config.yml overrides deep-merge into every overlay; keep bundled reviewer/sonic defaults.
 task:

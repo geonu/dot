@@ -18,7 +18,7 @@ retry:
     slow:
       - openai-codex/gpt-6.2-sol
     task:
-      - openai-codex/gpt-6-luna:medium
+      - openai-codex/gpt-6.1-terra:medium
 memory:
   backend: local
 defaultThinkingLevel: auto
