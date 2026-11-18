@@ -6,8 +6,8 @@ modelRoles:
   default: openai-codex/gpt-6.1-sol:high
   smol: openai-codex/gpt-6-luna:low
   slow: anthropic/claude-sonnet-5-5:xhigh
-  vision: openai-codex/gpt-6-astra:high
-  plan: openai-codex/gpt-6-astra:xhigh
+  vision: openai-codex/gpt-6.2-astra:high
+  plan: openai-codex/gpt-6.2-astra:xhigh
   commit: openai-codex/gpt-6-luna:off
   task: anthropic/claude-sonnet-5-5:medium
 # Chat retry tails require concrete selectors; keep these aligned with modelRoles.default.
@@ -16,7 +16,7 @@ retry:
     plan:
       - openai-codex/gpt-6.1-sol:high
     slow:
-      - openai-codex/gpt-6-astra:xhigh
+      - openai-codex/gpt-6.2-astra:xhigh
       - openai-codex/gpt-6.1-sol:high
     task:
       - openai-codex/gpt-6-luna:medium
@@ -24,5 +24,5 @@ retry:
 task:
   perCallModel: "on"
   agentModelOverrides:
-    reviewer: openai-codex/gpt-6-astra:high
+    reviewer: openai-codex/gpt-6.2-astra:high
     sonic: openai-codex/gpt-6.1-sol:low
