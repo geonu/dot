@@ -89,13 +89,39 @@ smol/commit. Native chat retry tails follow `gpt.yml` (plan/slow →
 retry budgets and limits are unchanged.
 Named mixed/Claude/Grok profiles remain explicit opt-ins.
 
-Ordinary task dispatch uses one exact scalar selector resolved from effective
-roles. `task.perCallModel: "on"` exposes that gate; arrays and role aliases are
-not accepted. An explicit model conflicts with an agent-model override, so a
-pinned reviewer/sonic uses its effective override without a per-call model.
-If that pin conflicts with the requested role, or dispatch fails, report
-`requested role -> selector -> exact error`; do not silently substitute models.
-Direct per-call workers do not use native chat fallback/promotion/prewalk.
+### Model routing diagnostics
+
+1. **Effective configuration.** Read `cfg://modelRoles` in the current
+   session. A fresh `omp config get modelRoles --json` is comparable only when
+   launched with the same profile, overlays, and environment. Resolve the
+   requested role to its exact scalar `provider/model-id[@upstream][:level]`;
+   the optional upstream and effort are part of the dispatch selector when
+   configured. Keep `task.perCallModel: "on"` in the base and every profile;
+   it enables selection, not authentication or availability.
+2. **Dispatch and pins.** For an unpinned agent, pass the resolved selector in
+   `tasks[].model`. For a pinned agent, read `cfg://task.agentModelOverrides`
+   and resolve any `@role` against the same effective mapping. Omit the
+   per-call selector only if the pin exactly matches the requested selector.
+   A mismatch stops dispatch; an explicit model cannot override the pin.
+   Direct per-call workers disable automatic fallback, context promotion, and
+   prewalk. Report `requested role -> exact selector -> exact error` for any
+   selection or dispatch failure (`unresolved` if the mapping is missing).
+   Do not try another model or provider without explicit approval.
+3. **Metadata, availability, and execution.** Cached metadata validates the
+   selector/effort contract. Check the current available registry separately
+   (`omp models --json`); compare the concrete provider and model ID, without
+   the effort suffix. Do not use `omp models find <role>`: it substring-matches
+   concrete model names. Neither cached metadata nor a registry listing proves
+   that an actual request succeeds.
+4. **Native chat retry.** `retry.modelFallback` and the concrete selectors in
+   `retry.fallbackChains` govern native chat recovery, not worker selection.
+   Preserve those semantics. If an approved role/default change affects the
+   native tails, align them explicitly; they do not regenerate from `modelRoles`.
+   Never activate a provider, change credentials, or adjust `maxRetries`,
+   `maxDelayMs`, `usageReservePolicy`, or `waitForUsageReset` to bypass a
+   dispatch failure.
+
+### Applying the GPT default change
 
 After landing into the existing symlink target, open a new shell (or reload
 `~/.zshrc`) and use a fresh/default GPT launch. Explicit `OMP_DEFAULT_PROFILE`
@@ -124,10 +150,8 @@ GPT-6.2 Sol을 `task:medium`에 둔다. `grok-gpt`는 Grok 4.7을 `default`에
 
 ## 오케스트레이션 정책 (APPEND_SYSTEM)
 
-모델 effort를 올리는 것보다, `default`(메인 루프)가 언제 `plan`/`slow`/`task`로
-넘기는지를 강제하는 게 효율적이다. OMP는 `SYSTEM.md`(기본 블록 교체)와
-`APPEND_SYSTEM.md`(기본 지침 + skills/rules/tool 가이드 유지하고 블록 추가) 두 경로를
-제공한다. delegation 규칙은 기본 지침을 살려야 하므로 `APPEND_SYSTEM.md`를 쓴다.
+OMP에서 `SYSTEM.md`는 기본 프롬프트를 교체한다. `APPEND_SYSTEM.md`는 기본 지침과
+skills/rules/tool 가이드를 유지한 채 오케스트레이션 정책을 추가한다.
 
 - 글로벌: `~/.omp/agent/APPEND_SYSTEM.md` ← `omp/APPEND_SYSTEM.md` 심링크(`install.conf.yaml`).
 - 프로젝트: 해당 repo에서 `omp`를 띄우는 cwd에 `<repo>/.omp/APPEND_SYSTEM.md`를 둔다.
@@ -136,13 +160,18 @@ GPT-6.2 Sol을 `task:medium`에 둔다. `grok-gpt`는 Grok 4.7을 `default`에
   단 셋 다 누적이 아니라 가장 높은 한 경로만 적용된다 — 프로젝트 파일을 두면 글로벌은
   무시되므로 프로젝트 파일에 글로벌 규칙을 포함하거나 글로벌만 유지한다.
 
-글로벌 정책은 default를 "작업자"가 아닌 "오케스트레이터"로 규정하고, plan/slow/task
-escalation 임계값과 default가 직접 처리해도 되는 범위를 못박는다. 모델 프로필과 독립이라
-`gpt`/`grok`/`claude`/`claude-gpt`/`gpt-claude`/`grok-gpt` 어디서나 동일하게 적용된다.
+메인은 먼저 작업 범위를 확인한다. 작업이 작거나 나눌 필요가 없으면 직접 처리한다.
+독립적으로 맡길 작업이 둘 이상일 때는 위임할 실익을 따진다. 별도 검토가 필요한 설계는
+`plan`으로, 원인 분석은 `slow`로 검토하고, 독립적인 구현은 `task`에 맡길 수 있다.
+통합 책임자가 변경을 모아 한 번 검증한다.
+[오케스트레이션 정책](APPEND_SYSTEM.md) (설치 후: `~/.dotfiles/omp/APPEND_SYSTEM.md`)은
+프로필과 별개로 적용한다. 워커는 [공통 규칙](RULES.md) (설치 후: `~/.dotfiles/omp/RULES.md`)도
+따른다. 편집할 때는 설치 경로 대신 배정된 작업트리의 파일을 사용한다.
 
-로드 확인: 새 세션에서
-`omp -p --no-tools "output verbatim the bullet lines under 'Anti-patterns'"`로
-정책 문구가 시스템 프롬프트에 들어갔는지 검증한다.
+로드를 확인하려면 새 세션에서 OMP가 실제로 선택한 소스나 렌더링한 프롬프트를 살핀다.
+이를 직접 볼 수 없으면 파일과 링크를 확인한 범위까지만 보고한다. 모델이 정책 문구를
+되풀이해도 주입 여부를 판단하는 간접 단서일 뿐, 우선순위나 워커 상속, 실제 준수를
+증명하지는 않는다.
 
 ## MCP → CLI 대체 (`omp/mcp.json`)
 

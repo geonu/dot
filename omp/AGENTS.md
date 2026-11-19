@@ -11,16 +11,16 @@ own check script) whose edits must stay in lockstep with `zshrc`, `tmux.conf`,
 |------|----------|-------|
 | Base role map, retry tails, agent overrides | `config.yml` | Linked to `~/.omp/agent/config.yml`; the `config` choice uses it as-is |
 | Named profiles (`gpt`, `grok`, `claude`, `claude-gpt`, `gpt-claude`, `grok-gpt`) | `profiles/<name>.yml` | Deep-merged over `config.yml` when selected |
-| Orchestration policy (main session) | `APPEND_SYSTEM.md` | Role resolution, plan/slow/task escalation |
-| Rules that must reach subagents | `RULES.md` | Keep minimal |
+| Orchestration policy (main session) | `APPEND_SYSTEM.md` | Inline scoping, delegation, integration |
+| Rules that must reach subagents | `RULES.md` | Worktree/policies, exact selectors, verification handoff |
 | Pane "needs you" markers | `extensions/tmux-attention.ts` | Sets `@omp_attn_pane` / `@omp_attn_win` |
 | Model/effort rationale | `README.md`, `BENCHMARKS.md` | README profile table is machine-checked |
 | MCP servers | `mcp.json` | Only disables servers; `mcpServers` empty |
 
 ## CONVENTIONS
 - Profile naming: single provider = provider name; mixed = `<default-provider>-<rest-provider>`.
-- `modelRoles` values stay scalar `provider/model:effort`; fallback candidates live only in
-  `retry.fallbackChains` per role.
+- `modelRoles` values stay scalar `provider/model-id[@upstream][:level]`;
+  `retry.fallbackChains` contains native chat recovery tails, not worker fallbacks.
 - Profiles deep-merge over `config.yml`, so every profile pins `task.agentModelOverrides`
   (`reviewer`, `sonic`) and `task.perCallModel: "on"` explicitly; base uses `"@slow"`/`"@smol"`.
 

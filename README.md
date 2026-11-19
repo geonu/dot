@@ -24,13 +24,22 @@ Personal macOS development environment, managed with
 
 Linked onto the machine by `./install`:
 
-- `~/workspace/AGENTS.md` ← `workspace/AGENTS.md` (fleet rules)
+- `~/workspace/AGENTS.md` ← [workspace/AGENTS.md](workspace/AGENTS.md) (installed source: `~/.dotfiles/workspace/AGENTS.md`)
 - `~/.local/bin/claw-id`, `credentials-init`, `git-worktree-new`
 
 After bootstrap on a new Mac: `credentials-init && claw-id company`, then restore
-or re-auth tool credentials into `~/credentials/<identity>/` (see fleet AGENTS).
+or re-auth tool credentials into `~/credentials/<identity>/` (see the fleet policy above).
 
 ## Install
+
+Run `./bootstrap` and `./install` only from the permanent checkout.
+`~/.dotfiles` can be that checkout itself or a symlink to it; it must not
+point into a linked worktree. Both commands change the live host: they
+update home-directory links and converge packages, including removing
+undeclared Homebrew packages and taps. Agents must obtain explicit approval
+before running either command. Use the targeted checks in
+[AGENTS.md](AGENTS.md#verification) (`~/.dotfiles/AGENTS.md` on installed
+hosts) to verify changes in a worktree instead.
 
 Fresh machine — `./bootstrap` installs Homebrew, all `Brewfile`
 packages, the dotfile symlinks, and the `mise` runtimes in one go:
@@ -101,8 +110,8 @@ local-only and is not backed up by Git.
 
 ## Herdr
 
-`mise/config.toml` installs the Herdr TUI. `git pull && ./install` applies its
-shared client settings and SSH machine list:
+`mise/config.toml` installs the Herdr TUI. The host installer applies its
+shared client settings and SSH machine list (see [Install](#install)):
 
 | What | In this repo | On the machine |
 | ---- | ------------ | -------------- |
@@ -151,16 +160,17 @@ only after those sessions have been migrated.
 
 ## Keeping in sync
 
-Every step is idempotent — re-run it anytime to converge:
+To inspect which Homebrew packages are outside the Brewfile, run this from
+the permanent checkout (no packages are removed without `--force`):
 
 ```bash
-./install                              # symlinks + Brewfile sync + mise/globals
-brew bundle install   --file=Brewfile  # install missing packages
 brew bundle cleanup   --file=Brewfile  # show packages not in the Brewfile
-mise install                           # install runtimes from mise/config.toml
 ```
 
-`brew bundle cleanup --force` actually removes the untracked packages.
+To apply host changes, follow [Install](#install) from the permanent checkout.
+You can also run `brew bundle install --file=Brewfile` to install missing
+packages or `mise install` to install runtimes. These commands change the live
+host; `brew bundle cleanup --force` removes undeclared packages.
 
 ## Where packages live
 

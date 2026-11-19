@@ -1,12 +1,10 @@
 # PROJECT KNOWLEDGE BASE
 
-**Generated:** 2026-11-13
-**Commit:** 4737e62
-**Branch:** main
-
 ## OVERVIEW
 Personal macOS dotfiles (`geonu/dot`), applied with dotbot (git submodule `dotbot/`).
-Also ships the multi-claw fleet policy and host helpers. Checked out at `~/.dotfiles`.
+Also ships the multi-claw fleet policy and host helpers. `~/.dotfiles` is the
+installed path to the permanent checkout: it can be the checkout itself or a
+symlink to it, never a path into `.worktrees/`.
 
 ## STRUCTURE
 ```
@@ -31,22 +29,28 @@ dot/
 | Shell / OMP wrappers (`omp`, `ompr`, `omp<profile>`) | `zshrc` | `_omp_*` helpers |
 | tmux keys, `Ctrl-a R` profile respawn | `tmux.conf`, `bin/tmux-theme.sh` | `@omp-default-profile`, `@omp-profile-choices` |
 | Packages | `Brewfile`, `mise/config.toml`, `packages/*.txt` | One home per package (README table) |
-| Agent behavior for every CLI | `agents/CORE.md` | Linked into 4 locations |
+| Agent behavior for every CLI | [agents/CORE.md](agents/CORE.md) | Installed source: `~/.dotfiles/agents/CORE.md` |
 | Terminal.app font | `bin/terminal-font` | `./install` runs it only from Terminal.app |
-| Worktree helper | `bin/git-worktree-new` | Used as `git worktree-new` |
-| Fleet / credentials identity | `workspace/AGENTS.md`, `bin/claw-id`, `bin/credentials-init` | |
+| Worktree helper | `bin/git-worktree-new` | Agent default: `GIT_WORKTREE_GC=0 git worktree-new BRANCH` |
+| Fleet / credentials identity | [workspace/AGENTS.md](workspace/AGENTS.md), `bin/claw-id`, `bin/credentials-init` | Installed policy source: `~/.dotfiles/workspace/AGENTS.md` |
 
 ## CONVENTIONS
 - Every installed file is a symlink declared in `install.conf.yaml`; never copy into `$HOME`.
 - `./install` must stay convergent: `clean` removes dead links, Brewfile sync installs and
   `cleanup --force` uninstalls anything undeclared, globals are install-if-missing only.
 - Runtimes come from mise, not Homebrew's `node`/`python` (those exist only as deps).
-- File-modifying work goes in a linked worktree under `.worktrees/` (gitignored), created with
-  `git worktree-new BRANCH`. Ignore `.worktrees/` when searching.
+- File-modifying work goes in a linked worktree under `.worktrees/` (gitignored).
+  Agents create it with `GIT_WORKTREE_GC=0 git worktree-new BRANCH` to avoid deleting
+  other worktrees or their ignored files. Do not enable cleanup without explicit
+  approval. Ignore `.worktrees/` when searching from the permanent checkout.
+- Edit sources in the task worktree, not through installed links or the
+  `~/.dotfiles` path to the permanent checkout.
 - `omp/README.md` mixes Korean and English; keep the surrounding language when editing.
 
 ## ANTI-PATTERNS (THIS PROJECT)
-- NEVER commit secrets, OAuth stores, API keys, or `~/credentials` content (fleet policy §1, §8).
+- NEVER commit secrets, OAuth stores, API keys, or `~/credentials` content. See
+  the credentials and backup rules in [the fleet policy](workspace/AGENTS.md)
+  (`~/.dotfiles/workspace/AGENTS.md` on installed hosts).
 - NEVER edit `workspace/AGENTS.md` as if it described this repo; it is machine-wide fleet policy.
 - NEVER add a Homebrew package outside `Brewfile`; `cleanup --force` removes undeclared ones.
 - Do not add a `link:` entry whose source file is not committed; fresh clones and `clean` break.
@@ -58,19 +62,29 @@ dot/
 - zsh tests: `emulate -R zsh; set -eo pipefail`, `repo_root="${0:A:h:h}"`, temp dirs removed
   by `trap ... EXIT`.
 
-## COMMANDS
+## VERIFICATION
+Run the narrowest relevant checks in the worktree:
 ```bash
-./bootstrap                         # fresh Mac: Homebrew -> Brewfile -> ./install
-./install                           # links + Brewfile sync (destructive cleanup) + mise/globals + TPM
 bin/omp-profile-check.sh            # OMP profile/README/zshrc/tmux consistency; needs ~/.omp/agent/models.db
 for t in tests/*.zsh; do zsh "$t"; done
 bash tests/git-worktree-new.bash && bash tests/battery-indicator.bash
 # CI (.github/workflows/ci.yml) only checks syntax: bash -n, zsh -n zshrc, luajit, yq, actionlint
 ```
 
+CI does not run `tests/`; run the relevant tests locally before claiming a change works.
+
+## HOST SETUP (NOT VERIFICATION)
+- `./bootstrap` provisions a fresh Mac: Homebrew, Brewfile packages, then `./install`.
+- `./install` re-applies home-directory symlinks and settings, converges Homebrew
+  (`brew bundle cleanup --global --force` removes undeclared packages), and sets
+  up mise runtimes, globals, and TPM.
+
+Both mutate the live host. Agents need explicit approval to run either, and
+must run them from the permanent checkout, never from a linked worktree.
+They are not smoke tests. See [Install](README.md#install)
+(`~/.dotfiles/README.md` on installed hosts).
+
 ## NOTES
-- CI does not run `tests/`; run the relevant tests locally before claiming a change works.
-- `./install` runs `brew bundle cleanup --global --force`: treat it as destructive.
 - `~/.omp/agent/AGENTS.md` links to `~/AGENTS.md`, which links to `agents/CORE.md`.
 - Tailscale SSH needs the open-source `tailscale` formula and manual root setup (see `Brewfile`).
 - The main checkout often carries uncommitted OMP work; check `git status` and compare with
