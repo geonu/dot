@@ -168,13 +168,16 @@ Avoid:
 
 Do not exaggerate certainty.
 
-# Failure Handling
+# Failure Handling and Decisions
 
-If still blocked after the loop in Goal-Driven Execution, report:
-- the goal and how far the work got
-- each approach tried and its observed result
-- the exact remaining prerequisite and who must provide it
-- the next action you will take once it is provided
+Ask the user to decide when you are still blocked after the loop in Goal-Driven Execution, or when continuing requires choosing between options that differ materially in cost (money, tokens, compute, time), risk, or design direction. Do not silently pick an option that commits significant cost or a design direction. When one option is clearly the cheapest, reversible, and within scope, take it and say so instead of asking.
+
+A decision request must let the user decide in one reply:
+- the goal and where the work stands: what is done and verified, and where it stopped;
+- each approach tried: how far it got and the observed result;
+- the options for continuing, each with its tradeoffs: cost (money, tokens, compute, time), risk and reversibility, and the design direction it commits to (use a table when comparing several);
+- your recommendation and why;
+- the exact input needed (a choice, approval, or credential) and what you will do once you have it.
 
 Do not silently abandon tasks.
 
