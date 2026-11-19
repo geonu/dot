@@ -48,7 +48,7 @@ with tempfile.TemporaryDirectory(prefix="omp-profile-check-drift.") as directory
     ]:
         shutil.copyfile(repo / relative, work / relative)
     paths = [work / "omp/config.yml"] + [work / f"omp/profiles/{name}.yml" for name in profiles]
-    base, gpt, grok, claude = paths[:4]
+    base, gpt, grok, claude, claude_gpt = paths[:5]
     models_dir = work / "models"
     models_dir.mkdir()
     metadata = {
@@ -124,15 +124,19 @@ with tempfile.TemporaryDirectory(prefix="omp-profile-check-drift.") as directory
     replace(claude, '    sonic: "@smol"\n', "")
     check("task.agentModelOverrides keys must be")
 
-    # The GPT default and explicit equality assertions reject role and override drift.
+    # The implicit claude-gpt check is independent of explicit profile selection.
     reset()
-    replace(base, "  default: fixture/large:medium", "  default: fixture/large:high")
-    check("OMP_ACTIVE_PROFILE equality assertion", OMP_ACTIVE_PROFILE="gpt")
-    check("OMP_ACTIVE_PROFILE equality assertion")
+    replace(gpt, "  default: fixture/large:medium", "  default: fixture/large:high")
+    check()
+    check("omp/config.yml must match omp/profiles/gpt.yml", OMP_ACTIVE_PROFILE="gpt")
+    reset()
+    replace(claude_gpt, "  default: fixture/large:medium", "  default: fixture/large:high")
+    check("omp/config.yml must match omp/profiles/claude-gpt.yml")
+    check(OMP_ACTIVE_PROFILE="gpt")
     check(OMP_ACTIVE_PROFILE="config")
     reset()
     replace(base, '    sonic: "@smol"', '    sonic: "@slow"')
-    check("task.agentModelOverrides must match", OMP_ACTIVE_PROFILE="gpt")
+    check("task.agentModelOverrides must match omp/profiles/claude-gpt.yml")
     reset()
     check("unknown OMP_ACTIVE_PROFILE", OMP_ACTIVE_PROFILE="not-a-profile")
 

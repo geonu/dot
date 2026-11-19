@@ -1,12 +1,12 @@
 # Claude-primary OMP model profile.
 # Keep normal traffic on Anthropic; approved recovery may use Astra or Luna.
-# Fable 5.1 owns default/slow/plan in a separate Anthropic Fable quota bucket; Opus 5.5 stays on vision, Sonnet 5.5 on task, and Haiku 4.5 on utility roles.
+# Opus 5.5 owns default/slow/vision/plan; Sonnet 5.5 handles task, and Haiku 4.5 handles utilities.
 modelRoles:
-  default: anthropic/claude-fable-5-1:medium
+  default: anthropic/claude-opus-5-5:medium
   smol: anthropic/claude-haiku-4-5:minimal
-  slow: anthropic/claude-fable-5-1:high
+  slow: anthropic/claude-opus-5-5:high
   vision: anthropic/claude-opus-5-5:medium
-  plan: anthropic/claude-fable-5-1:xhigh
+  plan: anthropic/claude-opus-5-5:xhigh
   commit: anthropic/claude-haiku-4-5:off
   task: anthropic/claude-sonnet-5-5:medium
 # Concrete retry tails follow this profile's default; omit models already used by the primary.
@@ -17,7 +17,7 @@ retry:
       - openai-codex/gpt-6.2-astra:xhigh
     task:
       - openai-codex/gpt-6-luna:medium
-      - anthropic/claude-fable-5-1:medium
+      - anthropic/claude-opus-5-5:medium
 # Neutral pins: omp/config.yml overrides deep-merge into every overlay; keep bundled reviewer/sonic defaults.
 task:
   perCallModel: "on"

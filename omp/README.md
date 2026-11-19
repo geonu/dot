@@ -6,10 +6,10 @@ metadata, not proof of current availability or request success. Run
 
 ## 모드 구분
 
-- **GPT only (default)**: GPT-6 Luna utilities, GPT-6.2 Sol default (global auto effort) and task (medium), and GPT-6.2 Astra slow/vision/plan; Codex only.
+- **GPT only**: GPT-6 Luna utilities, GPT-6.2 Sol default (global auto effort) and task (medium), and GPT-6.2 Astra slow/vision/plan; Codex only.
 - **Grok only**: Grok 4.7 단독. 장기 컨텍스트·비전·고추론을 한 모델이 처리.
-- **Claude only**: Fable 5.1을 상위 역할에, Opus 5.5를 비전에, Sonnet 5.5/Haiku 4.5를 보조 역할에 배정.
-- **claude-gpt**: Opus 5.5가 `default:high` 오케스트레이터를, GPT-6.2 Astra가 `slow`/`vision`/`plan`을, GPT-6.2 Sol이 `task:medium`을, GPT-6 Luna가 유틸리티 역할을 맡음.
+- **Claude only**: Opus 5.5가 `default`/`slow`/`plan`/`vision`을 맡는다. `task`는 Sonnet 5.5, `smol`/`commit`은 Haiku 4.5를 쓴다.
+- **claude-gpt (기본값)**: Opus 5.5가 `default:high`로 작업을 조율한다. GPT-6.2 Astra는 `slow`/`vision`/`plan`, GPT-6.1 Terra는 `task:high`, GPT-6 Luna는 `smol`/`commit`을 맡는다.
 - **gpt-claude (opt-in)**: GPT-6.1 Sol `default:high`, GPT-6.2 Astra vision/plan/reviewer, Sonnet 5.5 task/slow, GPT-6 Luna utilities, and GPT-6.1 Sol `sonic:low`; separate provider quota pools.
 - **grok-gpt**: Grok 4.7이 장기 컨텍스트를, GPT-6.2 Astra가 `slow`/`vision`/`plan`을, GPT-6.2 Sol이 `task:medium`을, GPT-6 Luna가 유틸리티 역할을 맡음.
 
@@ -17,26 +17,26 @@ metadata, not proof of current availability or request success. Run
 ## 프로필 파일과 tmux 재시작
 
 `omp/profiles/*.yml` stores the six named overlays. The base `config.yml`
-matches `gpt`; launch with `--config ~/.dotfiles/omp/profiles/<profile>.yml`
+matches `claude-gpt`; launch with `--config ~/.dotfiles/omp/profiles/<profile>.yml`
 to opt into another profile. Mixed names identify the default provider first.
 
 OMP deep-merges overlays over `config.yml`. Every profile therefore explicitly
-pins `reviewer`/`sonic` overrides and `task.perCallModel: "on"`. The base and GPT
-profile use neutral `reviewer: "@slow"` / `sonic: "@smol"`; `gpt-claude` retains
+pins `reviewer`/`sonic` overrides and `task.perCallModel: "on"`. The base and
+`claude-gpt` use neutral `reviewer: "@slow"` / `sonic: "@smol"`; `gpt-claude` retains
 its explicit Astra/Sol overrides only when selected.
 
 | profile | 파일 | 용도 |
 |---------|------|------|
 | `gpt` | `omp/profiles/gpt.yml` | GPT-6 Luna + GPT-6.2 Sol `default` (global auto) + GPT-6.2 Sol `task:medium` + GPT-6.2 Astra `slow`/`vision`/`plan` Codex-only 구성 |
 | `grok` | `omp/profiles/grok.yml` | Grok 4.7 단독 구성 |
-| `claude` | `omp/profiles/claude.yml` | Fable 5.1 상위 역할 + Opus 5.5 비전 Claude-only 구성 |
-| `claude-gpt` | `omp/profiles/claude-gpt.yml` | Opus 5.5 `default:high` + GPT-6.2 Astra `slow`/`vision`/`plan` + GPT-6.2 Sol `task:medium` + GPT-6 Luna utility |
+| `claude` | `omp/profiles/claude.yml` | Opus 5.5 `default`/`slow`/`plan`/`vision` + Sonnet 5.5 `task` + Haiku 4.5 `smol`/`commit` |
+| `claude-gpt` | `omp/profiles/claude-gpt.yml` | 기본 프로필: Opus 5.5 `default:high` + GPT-6.2 Astra `slow`/`vision`/`plan` + GPT-6.1 Terra `task:high` + GPT-6 Luna `smol`/`commit` |
 | `gpt-claude` | `omp/profiles/gpt-claude.yml` | Opt-in GPT-6.1 Sol `default:high` + GPT-6.2 Astra vision/plan/reviewer + Sonnet 5.5 task/slow + Luna utilities + Sol sonic |
 | `grok-gpt` | `omp/profiles/grok-gpt.yml` | Grok 4.7 + GPT-6.2 Astra `slow`/`vision`/`plan` + GPT-6.2 Sol `task:medium` + GPT-6 Luna utility |
 | `config` | 없음 | override 없이 현재 `config.yml` 그대로 resume |
 
 Inside tmux, `Ctrl-a R` resumes the current pane's session in the selected
-profile. The prompt defaults to `gpt`; choices remain
+profile. The prompt defaults to `claude-gpt`; choices remain
 `gpt`, `grok`, `claude`, `claude-gpt`, `gpt-claude`, `grok-gpt`, and `config`.
 OMP has no config hot reload; resume can restore the session's active model,
 so the wrapper passes both `--resume <session-id>` and provider overrides.
@@ -76,18 +76,19 @@ not permission to rewrite them or substitute providers.
 
 ## Claude only
 
-Fable 5.1은 `default:medium`/`slow:high`/`plan:xhigh`, Opus 5.5는 `vision:medium`, Sonnet 5.5는
-`task:medium`, Haiku 4.5는 `smol`/`commit`을 맡는다. Fable 5.1·Opus 5.5·Sonnet 5.5는 1M context·128K output을 지원한다.
+Opus 5.5는 `default:medium`/`slow:high`/`plan:xhigh`와 `vision:medium`을 맡는다.
+`task:medium`은 Sonnet 5.5, `smol`/`commit`은 Haiku 4.5를 쓴다.
+Opus 5.5와 Sonnet 5.5는 1M context·128K output을 지원한다.
+네이티브 재시도에서 `plan`은 대체 모델이 없고, `slow`는 GPT-6.2 Astra `xhigh`로,
+`task`는 GPT-6 Luna `medium`, Opus 5.5 `medium` 순으로 넘어간다.
 
 ## 현재 프로필 정책
 
-The approved base/default matches the GPT-only profile: GPT-6.2 Sol without
-an effort suffix (global auto) for default, GPT-6.2 Sol `medium` for task,
-GPT-6.2 Astra `high` for slow/vision and `xhigh` for plan, and Luna for
-smol/commit. Native chat retry tails follow `gpt.yml` (plan/slow →
-`openai-codex/gpt-6.2-sol`, no effort suffix; task → Luna `medium`);
-retry budgets and limits are unchanged.
-Named mixed/Claude/Grok profiles remain explicit opt-ins.
+The base matches `claude-gpt`: Opus 5.5 `high` for default, GPT-6.1 Terra
+`high` for task, GPT-6.2 Astra `high` for slow/vision and `xhigh` for plan,
+and Luna for smol/commit. Native chat retries for plan and slow use Opus 5.5
+`high`; task retries use Luna `medium`, then Opus 5.5 `high`. Retry budgets
+and limits are unchanged. The other named profiles remain explicit opt-ins.
 
 ### Model routing diagnostics
 
@@ -121,18 +122,18 @@ Named mixed/Claude/Grok profiles remain explicit opt-ins.
    `maxDelayMs`, `usageReservePolicy`, or `waitForUsageReset` to bypass a
    dispatch failure.
 
-### Applying the GPT default change
+### Applying the claude-gpt default change
 
 After landing into the existing symlink target, open a new shell (or reload
-`~/.zshrc`) and use a fresh/default GPT launch. Explicit `OMP_DEFAULT_PROFILE`
-still takes precedence. For a running tmux server, apply only
-`tmux set-option -g @omp-default-profile gpt`; do not respawn healthy panes or
+`~/.zshrc`) and launch a new session. Explicit `OMP_DEFAULT_PROFILE`
+still takes precedence for shell launchers. For a running tmux server, apply only
+`tmux set-option -g @omp-default-profile claude-gpt`; do not respawn healthy panes or
 rewrite saved profiles. Existing OMP sessions keep their active runtime roles
-until restarted. No `./install`, provider activation, or re-auth is needed.
+until restarted. Applying the config does not require `./install`.
 
-`claude-gpt`는 Opus 5.5를 `default:high`, GPT-6.2 Astra를 `slow:high`/`vision:high`/`plan:xhigh`,
-GPT-6.2 Sol을 `task:medium`에 둔다. `grok-gpt`는 Grok 4.7을 `default`에
-`medium` effort로 유지하고 같은 GPT-6.2 Astra/GPT-6.2 Sol 역할 분리를 쓴다. 세 혼합 프로필 모두 GPT-6 Luna를 `smol`/`commit`에 둔다.
+`grok-gpt`는 `default`에 Grok 4.7 `medium`을, `task`에 GPT-6.2 Sol `medium`을 쓴다.
+`slow`/`vision`/`plan`은 `claude-gpt`와 같은 GPT-6.2 Astra를 쓴다.
+세 혼합 프로필 모두 GPT-6 Luna를 `smol`/`commit`에 둔다.
 
 
 ## 모델 갱신 기준
@@ -145,7 +146,7 @@ GPT-6.2 Sol을 `task:medium`에 둔다. `grok-gpt`는 Grok 4.7을 `default`에
 
 1. `smol`/`commit`은 경량 effort, `default`/`task`는 실행 균형, `slow`/`plan`/`vision`은 고추론으로 분리한다. `designer` 역할은 OMP 18.1.5(2026-09-03)에서 제거되어 프로필에 두지 않는다. single-model 프로필은 같은 모델에 effort 티어만 나눈다.
 2. GPT profile은 GPT-6 Luna 유틸리티, GPT-6.2 Sol `default`(global auto), GPT-6.2 Sol `task:medium`, GPT-6.2 Astra `slow`/`vision`/`plan`으로 역할을 나눈다. Grok-only는 Grok 4.7 한 모델에 effort 티어만 적용한다.
-3. `plan`만 예외적으로 `xhigh`를 쓴다. GPT-6.2 Astra, Fable 5.1, Opus 5.5처럼 registry가 `xhigh`를 제공하는 모델에만 배정하며, metadata가 지원하지 않는 effort는 배정하지 않는다.
+3. `xhigh`는 GPT-6.2 Astra, Opus 5.5, Sonnet 5.5처럼 registry가 해당 effort를 지원하는 모델에만 배정한다. 주로 `plan`에 쓰며, `gpt-claude`의 Sonnet 5.5 `slow`도 `xhigh`를 쓴다.
 4. registry 갱신 뒤에는 `bin/omp-profile-check.sh`를 실행하고, 모든 기존 provider selector가 현재 metadata에 존재하는지 확인한다.
 
 ## 오케스트레이션 정책 (APPEND_SYSTEM)

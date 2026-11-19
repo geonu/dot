@@ -43,8 +43,9 @@ Touch all of these in one change, then run the check:
 
 ## VERIFY
 ```bash
-bin/omp-profile-check.sh                  # OMP_ACTIVE_PROFILE defaults to gpt; reads ~/.omp/agent/models.db
+bin/omp-profile-check.sh                  # OMP_ACTIVE_PROFILE defaults to claude-gpt; reads ~/.omp/agent/models.db
 zsh tests/omp-profile-check-drift.zsh     # check-script regression
-zsh tests/omp-active-config-profile.zsh   # pane profile selection
+zsh tests/omp-active-config-profile.zsh   # base/default equality
+zsh tests/omp-tmux-respawn-race.zsh       # pane respawn and default choice
 ```
 The check validates references, not auth or live call success.

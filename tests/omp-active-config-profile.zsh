@@ -21,6 +21,7 @@ cp "$repo_root/bin/omp-restore-panes" "$work/bin/omp-restore-panes"
 models_dir="$work/models"
 mkdir -p "$models_dir"
 export PI_CODING_AGENT_DIR="$models_dir"
+unset OMP_ACTIVE_PROFILE OMP_AVAILABLE_MODELS_JSON
 python3 - "$models_dir/models.db" <<'PY'
 import json
 import sqlite3
@@ -29,7 +30,7 @@ import sys
 providers = {
     "openai-codex:0.155.1": [
         {"id": "gpt-6-luna", "thinking": {"efforts": ["low", "medium", "high", "xhigh", "max"]}},
-        {"id": "gpt-5.6-terra", "thinking": {"efforts": ["medium", "high", "xhigh"]}},
+        {"id": "gpt-6.1-terra", "thinking": {"efforts": ["low", "medium", "high", "xhigh", "max"]}},
         {"id": "gpt-6-sol", "thinking": {"efforts": ["low", "medium", "high", "xhigh", "max"]}},
         {"id": "gpt-6.1-sol", "thinking": {"efforts": ["low", "medium", "high", "xhigh", "max"]}},
         {"id": "gpt-6.2-sol", "thinking": {"efforts": ["low", "medium", "high", "xhigh", "max"]}},
@@ -42,7 +43,6 @@ providers = {
         {"id": "claude-opus-5-5", "thinking": {"efforts": ["low", "medium", "high", "xhigh", "max"]}},
         {"id": "claude-sonnet-5", "thinking": {"efforts": ["medium", "high"]}},
         {"id": "claude-sonnet-5-5", "thinking": {"efforts": ["low", "medium", "high", "xhigh", "max"]}},
-        {"id": "claude-fable-5-1", "thinking": {"efforts": ["low", "medium", "high", "xhigh", "max"]}},
     ],
     "xai-oauth": [
         {"id": "grok-4.7", "thinking": {"efforts": ["minimal", "low", "medium", "high", "xhigh"]}},
@@ -61,4 +61,4 @@ PY
 
 bash "$work/bin/omp-profile-check.sh" "$work"
 
-print -- "ok: active config matches gpt default profile"
+print -- "ok: active config matches claude-gpt default profile"

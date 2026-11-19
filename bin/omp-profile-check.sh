@@ -2,7 +2,6 @@
 set -euo pipefail
 
 repo_root="${1:-$(pwd)}"
-active_profile="${OMP_ACTIVE_PROFILE:-gpt}"
 config="$repo_root/omp/config.yml"
 profiles_dir="$repo_root/omp/profiles"
 readme="$repo_root/omp/README.md"
@@ -12,7 +11,7 @@ zshrc="$repo_root/zshrc"
 tmux_conf="$repo_root/tmux.conf"
 save_script="$repo_root/bin/omp-save-panes"
 restore_script="$repo_root/bin/omp-restore-panes"
-python3 - "$config" "$profiles_dir" "$readme" "$models_db" "$active_profile" "$zshrc" "$tmux_conf" "$save_script" "$restore_script" "$available_models_json" <<'PY'
+python3 - "$config" "$profiles_dir" "$readme" "$models_db" "${OMP_ACTIVE_PROFILE:-}" "$zshrc" "$tmux_conf" "$save_script" "$restore_script" "$available_models_json" <<'PY'
 import json
 import re
 import sqlite3
@@ -23,7 +22,6 @@ config = Path(sys.argv[1])
 profiles_dir = Path(sys.argv[2])
 readme = Path(sys.argv[3])
 models_db = Path(sys.argv[4])
-active_profile = sys.argv[5]
 zshrc = Path(sys.argv[6])
 tmux_conf = Path(sys.argv[7])
 save_script = Path(sys.argv[8])
@@ -33,7 +31,8 @@ role_keys = ["default", "smol", "slow", "vision", "plan", "commit", "task"]
 profile_names = ["gpt", "grok", "claude", "claude-gpt", "gpt-claude", "grok-gpt"]
 profile_choices = ["gpt", "grok", "claude", "claude-gpt", "gpt-claude", "grok-gpt", "config"]
 known_choices = set(profile_choices)
-default_profile = "gpt"
+default_profile = "claude-gpt"
+active_profile = sys.argv[5] or default_profile
 agent_override_keys = ["reviewer", "sonic"]
 
 

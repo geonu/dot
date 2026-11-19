@@ -8,17 +8,18 @@ modelRoles:
   vision: openai-codex/gpt-6.2-astra:high
   plan: openai-codex/gpt-6.2-astra:xhigh
   commit: openai-codex/gpt-6-luna:off
-  task: openai-codex/gpt-6.2-sol:medium
-  default: openai-codex/gpt-6.2-sol
+  task: openai-codex/gpt-6.1-terra:high
+  default: anthropic/claude-opus-5-5:high
 retry:
   modelFallback: true
   fallbackChains:
     plan:
-      - openai-codex/gpt-6.2-sol
+      - anthropic/claude-opus-5-5:high
     slow:
-      - openai-codex/gpt-6.2-sol
+      - anthropic/claude-opus-5-5:high
     task:
       - openai-codex/gpt-6-luna:medium
+      - anthropic/claude-opus-5-5:high
 memory:
   backend: local
 defaultThinkingLevel: auto

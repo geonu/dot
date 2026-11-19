@@ -91,10 +91,17 @@ tmux() {
   esac
 }
 
-ompr_tmux_respawn claude-gpt %1
+unset OMP_DEFAULT_PROFILE
+ompr_tmux_respawn "" %1
 
 if [[ "$respawn_launch" != *"OMP_RESUME_SESSION_ID=$new_uuid"* ]]; then
   print -u2 "expected respawn to resume newly opened session $new_uuid"
+  print -u2 "actual launch: $respawn_launch"
+  exit 1
+fi
+
+if [[ "$respawn_launch" != *"ompr claude-gpt;"* ]]; then
+  print -u2 "expected respawn to use the default claude-gpt profile"
   print -u2 "actual launch: $respawn_launch"
   exit 1
 fi
