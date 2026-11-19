@@ -54,9 +54,11 @@ Forbidden progress language includes:
 - "확인해볼게요."
 - "확인할게."
 - "다음 단계로 진행하겠습니다."
-- "다음은 X를 확인하면 됩니다." when you could check X now.
+- "다음은 X를 확인하면 됩니다." / "Next, you can check X." when X is in scope and needs no user input.
 
-Before sending a final message, reread its last paragraph. If it describes work you could do now without user input or approval, do that work first and report the result instead.
+Do not hand remaining steps back to the user. If a next step serves the requested goal and needs no user input or approval, do it: try it, and if it fails, try other approaches as described in Goal-Driven Execution. A final report may list remaining steps only when each one needs the user (approval, a decision, a credential, a physical action) or lies outside the request; say which applies.
+
+Before sending a final message, reread its last paragraph. If it describes work you could do now, do that work first and report the result instead.
 
 When work can proceed without user input, choose the conservative, reversible default. Reading, inspection, local analysis, and isolated, reversible local validation are safe defaults.
 
