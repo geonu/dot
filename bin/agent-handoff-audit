@@ -1,0 +1,95 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+usage() {
+  cat <<'USAGE'
+Usage: agent-handoff-audit [-v] [--since YYYY-MM-DD] [DIR...]
+
+Screen OMP session transcripts for turns that end by handing work back to the
+user: stated intentions, "next, check X", or requests to do or send something.
+The count is a regex screen, not a verdict; sample the matches (-v) and classify
+them by hand. Subagent transcripts are skipped.
+
+DIR defaults to $AGENT_SESSIONS_DIR, else ~/.omp/agent/sessions.
+
+Options:
+  -v              print each matching turn ending (session id, last lines)
+  --since DATE    only transcripts modified on or after DATE
+USAGE
+}
+
+die() {
+  printf 'agent-handoff-audit: %s\n' "$*" >&2
+  exit 1
+}
+
+verbose=0
+since=''
+while (($#)); do
+  case "$1" in
+    -h|--help) usage; exit 0 ;;
+    -v) verbose=1; shift ;;
+    --since)
+      (($# >= 2)) || die '--since needs a date'
+      since=$2
+      shift 2
+      ;;
+    --) shift; break ;;
+    -*) die "unknown option: $1" ;;
+    *) break ;;
+  esac
+done
+
+command -v jq >/dev/null || die 'jq is required'
+dirs=("$@")
+((${#dirs[@]})) || dirs=("${AGENT_SESSIONS_DIR:-$HOME/.omp/agent/sessions}")
+for d in "${dirs[@]}"; do
+  [[ -d $d ]] || die "not a directory: $d"
+done
+
+find_args=(-type f -name '*.jsonl')
+[[ -z $since ]] || find_args+=(-newermt "$since")
+
+# The last three lines of the final assistant text before each user message
+# (and at the end of the transcript), joined into one line.
+# shellcheck disable=SC2016  # jq program, not shell expansion
+endings_jq='
+  def text: if type == "array"
+    then map(select(type == "object" and .type == "text") | .text) | join("")
+    else (. // "") end;
+  reduce (inputs | fromjson? | .message? // empty) as $m ({last: null, out: []};
+    if $m.role == "assistant" then
+      ($m.content | text) as $t
+      | if ($t | test("\\S")) then .last = $t else . end
+    elif $m.role == "user" and .last != null then
+      .out += [.last] | .last = null
+    else . end)
+  | (.out + (if .last then [.last] else [] end))[]
+  | split("\n") | .[-3:] | join(" ")'
+
+pattern='(다음(은|으로|[[:space:]]*단계)|하면 됩니다|하면 돼|남은 (작업|건|일)|할게|하겠습니다|해[[:space:]]*주세요|해줘\.?$|주시면|알려[[:space:]]*주|보내[[:space:]]*주|I will |I.ll |[Nn]ext,? (you|I) |[Ll]et me know)'
+
+sessions=0
+turns=0
+matches=0
+while IFS= read -r -d '' file; do
+  # Subagent transcripts live in a directory named after the parent transcript.
+  [[ ! -f "$(dirname "$file").jsonl" ]] || continue
+  sessions=$((sessions + 1))
+  id=$(basename "$file" .jsonl)
+  id=${id##*_}
+  while IFS= read -r ending; do
+    turns=$((turns + 1))
+    if grep -Eq -- "$pattern" <<<"$ending"; then
+      matches=$((matches + 1))
+      ((verbose == 0)) || printf '%s\t%s\n' "${id:0:8}" "${ending:$((${#ending} > 200 ? ${#ending} - 200 : 0))}"
+    fi
+  done < <(jq -nRr "$endings_jq" "$file")
+done < <(find "${dirs[@]}" "${find_args[@]}" -print0)
+
+if ((turns)); then
+  pct=$((matches * 100 / turns))
+else
+  pct=0
+fi
+printf 'sessions=%d turn_endings=%d handoff_like=%d (%d%%)\n' "$sessions" "$turns" "$matches" "$pct"

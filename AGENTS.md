@@ -12,10 +12,11 @@ dot/
 ├── install.conf.yaml   # single source of truth for every symlink + converge step
 ├── bootstrap / install # fresh-Mac setup / re-apply (idempotent)
 ├── agents/CORE.md      # global agent prompt -> ~/AGENTS.md, ~/agents.md, ~/.codex/AGENTS.md, ~/.omp/agent/AGENTS.md
+│                       #   PLAYBOOK.md (linked on demand), README.md (maintenance loop)
 ├── workspace/AGENTS.md # fleet policy -> ~/workspace/AGENTS.md (NOT a guide for this repo)
 ├── omp/                # OMP agent config, profiles, extensions (see omp/AGENTS.md)
 ├── claude/             # ~/.claude: CLAUDE.md (@~/agents.md), settings.json, skills/
-├── bin/                # tmux status helpers, OMP pane save/restore, terminal-font, claw-id, credentials-init, git-worktree-new
+├── bin/                # tmux status helpers, OMP pane save/restore, terminal-font, claw-id, credentials-init, git-worktree-new, agent-handoff-audit
 ├── tests/              # zsh/bash regression tests for OMP wrappers, battery indicator, git-worktree-new
 ├── packages/           # npm / pip --user / bun global lists
 ├── docs/superpowers/   # historical plan/spec for a past change
@@ -29,7 +30,7 @@ dot/
 | Shell / OMP wrappers (`omp`, `ompr`, `omp<profile>`) | `zshrc` | `_omp_*` helpers |
 | tmux keys, `Ctrl-a R` profile respawn | `tmux.conf`, `bin/tmux-theme.sh` | `@omp-default-profile`, `@omp-profile-choices` |
 | Packages | `Brewfile`, `mise/config.toml`, `packages/*.txt` | One home per package (README table) |
-| Agent behavior for every CLI | [agents/CORE.md](agents/CORE.md) | Installed source: `~/.dotfiles/agents/CORE.md` |
+| Agent behavior for every CLI | [agents/CORE.md](agents/CORE.md), [agents/PLAYBOOK.md](agents/PLAYBOOK.md) | Installed source: `~/.dotfiles/agents/`; change process in [agents/README.md](agents/README.md) |
 | Terminal.app font | `bin/terminal-font` | `./install` runs it only from Terminal.app |
 | Worktree helper | `bin/git-worktree-new` | Agent default: `GIT_WORKTREE_GC=0 git worktree-new BRANCH` |
 | Fleet / credentials identity | [workspace/AGENTS.md](workspace/AGENTS.md), `bin/claw-id`, `bin/credentials-init` | Installed policy source: `~/.dotfiles/workspace/AGENTS.md` |
