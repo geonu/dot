@@ -25,6 +25,21 @@
 - shell:
   - [git submodule update --init --recursive, Installing submodules]
 
+# Herdr desktop app creates regular settings/keys files that dotbot will not
+# replace: move them aside (timestamped) so the links below can take their place.
+- shell:
+  - command: |
+      for f in settings.json keys.json; do
+        p="$HOME/.config/herdr-app/$f"
+        if [ -f "$p" ] && [ ! -L "$p" ]; then
+          mv "$p" "$p.before-dotfiles-$(date +%Y%m%d-%H%M%S)"
+          echo "Moved regular $p aside"
+        fi
+      done
+    description: Preserving local Herdr settings/keys before linking
+    stdout: true
+    stderr: true
+
 - link:
     ~/.dotfiles: ''
     ~/.Brewfile: Brewfile
@@ -38,6 +53,8 @@
     ~/.zsh_plugins.txt: zsh_plugins.txt
     ~/.config/nvim: nvim
     ~/.config/alacritty/alacritty.toml: alacritty/alacritty.toml
+    ~/.config/herdr-app/keys.json: herdr/keys.json
+    ~/.config/herdr-app/settings.json: herdr/settings.json
     ~/.ssh/config.d/herdr-hosts.conf: ssh/herdr-hosts.conf
     ~/.config/mise/config.toml: mise/config.toml
     ~/.tmux.conf: tmux.conf
@@ -143,5 +160,32 @@
         echo "Added Herdr hosts Include to $cfg"
       fi
     description: Syncing shared SSH hosts
+    stdout: true
+    stderr: true
+
+# Herdr desktop app: add any remote machine from herdr/machines.json this machine
+# lacks. It never removes, renames or updates a machine, and never installs
+# herdr-core remotely.
+- shell:
+  - command: |
+      hc="$(command -v herdr-core || echo "$HOME/.local/bin/herdr-core")"
+      if [ ! -x "$hc" ] || ! command -v jq >/dev/null 2>&1; then
+        echo "herdr-core or jq not installed; skipping Herdr desktop machine sync"; exit 0
+      fi
+      have="$("$hc" machine ls --json | jq -r '.machines[].target')"
+      jq -c '.machines[]' herdr/machines.json | while read -r m; do
+        target="$(printf '%s' "$m" | jq -r '.target')"
+        if printf '%s\n' "$have" | grep -qxF -- "$target"; then
+          echo "Herdr machine present: $target"; continue
+        fi
+        name="$(printf '%s' "$m" | jq -r '.name // ""')"
+        via="$(printf '%s' "$m" | jq -r 'if (.via | type) == "string" then .via else "" end')"
+        set -- machine add "$target"
+        [ -n "$name" ] && set -- "$@" --name "$name"
+        [ -n "$via" ] && set -- "$@" --via "$via"
+        [ "$(printf '%s' "$m" | jq -r '.temporary // false')" = true ] && set -- "$@" --temp
+        "$hc" "$@" </dev/null || echo "Could not add $target; run: herdr-core $*"
+      done
+    description: Syncing Herdr desktop app machines
     stdout: true
     stderr: true

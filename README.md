@@ -110,13 +110,40 @@ local-only and is not backed up by Git.
 
 ## Herdr
 
-`Brewfile` installs the Herdr desktop app (`herdr-app`). Its local settings
-are not linked into the repo.
+`Brewfile` installs the Herdr desktop app (`herdr-app`). The host installer
+applies its shared settings and machine list (see [Install](#install)):
 
-`./install` links `ssh/herdr-hosts.conf` to
-`~/.ssh/config.d/herdr-hosts.conf` and appends an `Include` after `Match all`
-to `~/.ssh/config`, so each machine's own `Host` rules keep precedence;
-`~/.ssh/config` is backed up first. SSH keys and `known_hosts` stay local.
+| What | In this repo | On the machine |
+| ---- | ------------ | -------------- |
+| Shortcuts | `herdr/keys.json` | symlink `~/.config/herdr-app/keys.json` |
+| Theme, zoom, fonts, sounds | `herdr/settings.json` | symlink `~/.config/herdr-app/settings.json` |
+| Remote machines | `herdr/machines.json` | `./install` adds missing ones via `herdr-core machine add` |
+| Common SSH hosts | `ssh/herdr-hosts.conf` | symlink `~/.ssh/config.d/herdr-hosts.conf`, loaded by an `Include` appended to `~/.ssh/config` |
+
+Before linking, `./install` moves a regular `settings.json`/`keys.json` that
+Herdr created to `<file>.before-dotfiles-<time>`; dotbot refuses to overwrite
+regular files. The SSH `Include` is appended after `Match all`, so each
+machine's own `Host` rules keep precedence; `~/.ssh/config` is backed up first.
+SSH keys and `known_hosts` stay local.
+
+The keys keep the macOS defaults and add the tmux `Ctrl+A` prefix:
+`h/j/k/l` or arrows move between panes, `%`/`"` split right/down, `z`/`f`
+toggle zoom, `c` creates a tab, and `n`/`p`/`1–9` switch tabs. Press
+`Ctrl+A Ctrl+A` to send a literal Ctrl+A. Settings and shortcuts edited in the
+app write into the repo through the symlinks.
+
+The machine list is never symlinked: herdr-core replaces
+`~/.local/state/herdr-core/default/machines.json` atomically. `./install` adds
+only machines whose SSH target is missing; it never removes, renames or updates
+one, and never installs herdr-core on the remote. After adding a machine in
+Herdr, publish the list:
+
+```bash
+cd ~/.dotfiles
+herdr-core machine ls --json \
+  | jq '{machines: [.machines[] | {name, target, via, temporary}]}' > herdr/machines.json
+git add herdr && git commit && git push
+```
 
 ## Keeping in sync
 
