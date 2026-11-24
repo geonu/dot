@@ -5,6 +5,12 @@
       "target": "geonu-hanger@geonu-hangers-mac-mini-1.tail124ace.ts.net",
       "via": false,
       "temporary": false
+    },
+    {
+      "name": "macbook-pro-2-1",
+      "target": "geonu@macbook-pro-2-1.tail124ace.ts.net",
+      "via": false,
+      "temporary": false
     }
   ]
 }
