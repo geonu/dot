@@ -25,18 +25,6 @@
 - shell:
   - [git submodule update --init --recursive, Installing submodules]
 
-# Herdr creates a regular config file that dotbot will not replace.
-- shell:
-  - command: |
-      p="$HOME/.config/herdr/config.toml"
-      if [ -f "$p" ] && [ ! -L "$p" ]; then
-        mv "$p" "$p.before-dotfiles-$(date +%Y%m%d-%H%M%S)"
-        echo "Moved regular $p aside"
-      fi
-    description: Preserving local Herdr config before linking
-    stdout: true
-    stderr: true
-
 - link:
     ~/.dotfiles: ''
     ~/.Brewfile: Brewfile
@@ -50,7 +38,6 @@
     ~/.zsh_plugins.txt: zsh_plugins.txt
     ~/.config/nvim: nvim
     ~/.config/alacritty/alacritty.toml: alacritty/alacritty.toml
-    ~/.config/herdr/config.toml: herdr/config.toml
     ~/.ssh/config.d/herdr-hosts.conf: ssh/herdr-hosts.conf
     ~/.config/mise/config.toml: mise/config.toml
     ~/.tmux.conf: tmux.conf
@@ -144,8 +131,7 @@
     stdout: true
     stderr: true
 
-# Make SSH load shared hosts, then merge missing TUI profiles without touching
-# existing profile IDs, labels, enabled states, or running remote sessions.
+# Make SSH load the shared hosts file.
 - shell:
   - command: |
       cfg="$HOME/.ssh/config"
@@ -156,39 +142,6 @@
         printf '\n# Herdr common hosts from the dot repo (Match all keeps local Host rules first)\nMatch all\n%s\n' "$line" >> "$cfg"
         echo "Added Herdr hosts Include to $cfg"
       fi
-      catalog="$HOME/.local/state/herdr/client/endpoints.json"
-      dir="$(dirname "$catalog")"
-      mkdir -p "$dir"
-      chmod 700 "$dir"
-      if [ ! -f "$catalog" ]; then
-        printf '{"version":1,"ssh":[]}\n' > "$catalog"
-        chmod 600 "$catalog"
-      fi
-      snapshot="$dir/.endpoints.before-dotfiles.$$"
-      merged="$dir/.endpoints.merged.$$"
-      cp -p "$catalog" "$snapshot"
-      jq -e '.version == 1 and (.ssh | type == "array")' "$snapshot" >/dev/null
-      jq --slurpfile shared herdr/endpoints.json '
-        reduce $shared[0].ssh[] as $entry (.;
-          if any(.ssh[]; .target == $entry.target and .session == $entry.session)
-          then . else .ssh += [$entry] end)
-      ' "$snapshot" > "$merged"
-      chmod 600 "$merged"
-      if ! jq -e --slurpfile merged "$merged" '. == $merged[0]' "$snapshot" >/dev/null; then
-        if ! cmp -s "$snapshot" "$catalog"; then
-          mv "$merged" "$catalog.conflict-$(date +%Y%m%d-%H%M%S)"
-          rm "$snapshot"
-          echo "Herdr catalog changed during merge; preserved conflict" >&2
-          exit 1
-        fi
-        backup="$(mktemp "$catalog.before-dotfiles-$(date +%Y%m%d-%H%M%S).XXXXXX")"
-        cp -p "$catalog" "$backup"
-        mv "$merged" "$catalog"
-        echo "Added missing Herdr TUI machines"
-      else
-        rm "$merged"
-      fi
-      rm "$snapshot"
-    description: Syncing Herdr SSH hosts and remote machines
+    description: Syncing shared SSH hosts
     stdout: true
     stderr: true

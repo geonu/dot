@@ -110,53 +110,13 @@ local-only and is not backed up by Git.
 
 ## Herdr
 
-`mise/config.toml` installs the Herdr TUI. The host installer applies its
-shared client settings and SSH machine list (see [Install](#install)):
+`Brewfile` installs the Herdr desktop app (`herdr-app`). Its local settings
+are not linked into the repo.
 
-| What | In this repo | On the machine |
-| ---- | ------------ | -------------- |
-| Shortcuts and dark theme | `herdr/config.toml` | symlink `~/.config/herdr/config.toml` |
-| Remote machines | `herdr/endpoints.json` | `./install` merges missing target/session pairs into `~/.local/state/herdr/client/endpoints.json` |
-| Common SSH hosts | `ssh/herdr-hosts.conf` | symlink `~/.ssh/config.d/herdr-hosts.conf`, loaded by an `Include` appended to `~/.ssh/config` |
-
-Everything else stays local: TUI session and pane state, sockets, logs, SSH
-keys, `known_hosts`, and agents. `endpoints.json` is a real local file: the
-install step keeps existing profile IDs, labels, and enabled states and adds
-only missing SSH target/session pairs. It keeps a dated backup before a change
-and does not connect to, install, or update any remote server.
-
-`config.toml` uses the tmux-like `Ctrl+A` prefix. Herdr's TUI defaults
-already bind `h/j/k/l`, `z`, `x`, `c`, `n/p`, and `1–9` under that prefix.
-Splitting uses `Ctrl+A v` (right) and `Ctrl+A -` (down), rather than the
-desktop app's `%` and `"` bindings. The theme uses the built-in Catppuccin
-dark palette.
-
-Before linking, `./install` moves a regular TUI `config.toml` to
-`config.toml.before-dotfiles-<time>`; dotbot refuses to overwrite regular files.
-The SSH `Include` is appended after `Match all`, so each machine's own `Host`
-rules keep precedence; `~/.ssh/config` is backed up first.
-
-After adding a machine in the TUI, merge any other machines already saved on
-that computer before publishing its catalog. Do not replace another
-computer's entries, profile IDs, labels, or enabled states:
-
-```bash
-cd ~/.dotfiles
-tmp="$(mktemp herdr/endpoints.json.XXXXXX)"
-jq --slurpfile local "$HOME/.local/state/herdr/client/endpoints.json" '
-  reduce $local[0].ssh[] as $entry (.;
-    if any(.ssh[]; .target == $entry.target and .session == $entry.session)
-    then . else .ssh += [$entry] end)
-' herdr/endpoints.json > "$tmp" && mv "$tmp" herdr/endpoints.json
-git diff -- herdr/endpoints.json
-git add herdr && git commit && git push
-```
-
-`Brewfile` temporarily keeps `herdr-app`: removing it would cause the full
-installer's `brew bundle cleanup --force` to uninstall the desktop app on
-computers that still have running desktop sessions. The desktop app's local
-settings are retained, but no longer linked into the repo. Remove the cask
-only after those sessions have been migrated.
+`./install` links `ssh/herdr-hosts.conf` to
+`~/.ssh/config.d/herdr-hosts.conf` and appends an `Include` after `Match all`
+to `~/.ssh/config`, so each machine's own `Host` rules keep precedence;
+`~/.ssh/config` is backed up first. SSH keys and `known_hosts` stay local.
 
 ## Keeping in sync
 

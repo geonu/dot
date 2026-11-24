@@ -83,7 +83,7 @@ cask "font-hack-nerd-font" # terminal font (Alacritty config)
 cask "alacritty"           # terminal emulator (GPU, low-RAM, primary)
 cask "google-chrome"
 cask "gyorgysh/keepresso/keepresso", trusted: true # caffeinate-style sleep/idle keeper (menu bar)
-cask "herdr-app"           # retain running desktop sessions until all machines migrate to TUI
+cask "herdr-app"           # Herdr desktop app
 cask "hop"                 # view and edit HWP documents
 cask "notion"              # Notion desktop
 cask "orbstack"           # docker/linux runtime (Docker Desktop replacement)
