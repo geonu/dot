@@ -60,7 +60,7 @@ Do not remove or prune the registration as part of migration.
 
 ## Credential layout and host CLI selection
 
-`credentials-init` creates or repairs the host-only tree. The canonical store (L0) is `~/credentials/<identity>/`; keep `~/credentials` private (`chmod 700`) and outside Git. Example layout:
+`credentials-init` creates or repairs the host-only tree. The canonical store (L0) is `~/credentials/<identity>/`; keep `~/credentials` private (`chmod 700`) and outside Git. What may live there and how each credential class is maintained: [credentials store rules](../credentials/AGENTS.md). Example layout:
 
 ```text
 ~/credentials/
@@ -69,8 +69,7 @@ Do not remove or prune the registration as part of migration.
     notion/vibe-notion/
     notion/ntn/
     agent-messenger/     # Slack user session for collectors
-    cafe24/
-    hwahae/              # token cache, if separate from its app package
+    <tool>/              # identity-specific stores; inventory lives in the claw's private doc
   personal/
     gogcli/
     notion/vibe-notion/
@@ -78,6 +77,7 @@ Do not remove or prune the registration as part of migration.
     agent-messenger/
   shared/               # empty by default; explicit RO exceptions only
     data/
+  AGENTS.md             # link to geonu/dot credentials/AGENTS.md (working rules)
   README.md             # optional local map, not tracked
   active -> company|personal
 ```
@@ -96,9 +96,9 @@ In `typeclaw.json`, use `mounts` entries with an explicit host `path` and `readO
 | `~/credentials/company/notion/vibe-notion` | RO | vibe-notion |
 | `~/credentials/company/notion/ntn` | RO | ntn |
 | `~/credentials/company/agent-messenger` | RO | Slack user session, if collectors need it |
-| `~/credentials/company/cafe24` | RO unless refresh requires RW | Cafe24 token store, company only |
+| `~/credentials/company/<tool>` | RO unless refresh requires RW | Company-only stores listed in the claw's private credential doc |
 
-The personal claw uses its own corresponding `~/credentials/personal/...` tool directories; do not give it company-only commerce or bot tokens. An explicitly approved non-secret dataset such as `~/credentials/shared/data` is RO. A permitted product checkout such as `~/workspace/jangbu` is code only, with no foreign tokens; the default RO policy applies. TypeClaw mounts are boot-only: restart or rebuild as required after a mount change.
+The personal claw uses its own corresponding `~/credentials/personal/...` tool directories; do not give it company-only commerce or bot tokens. An explicitly approved non-secret dataset such as `~/credentials/shared/data` is RO. A permitted product checkout under `~/workspace/` is code only, with no foreign tokens; the default RO policy applies. TypeClaw mounts are boot-only: restart or rebuild as required after a mount change.
 
 ### Migrating an existing tool store
 

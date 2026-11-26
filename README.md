@@ -19,12 +19,13 @@ Personal macOS development environment, managed with
 | Tree | Role |
 | ---- | ---- |
 | **This repo (`dot`)** | Machine config: shell, editor, brew, **fleet policy**, small PATH helpers. No API keys, no OAuth stores, no company KB. |
-| **`~/workspace/*`** | Work checkouts and claw agent folders (e.g. `tandum`, product repos). |
+| **`~/workspace/*`** | Work checkouts and claw agent folders (company claw, product repos). |
 | **`~/credentials/`** | Host-local tool sessions/OAuth by identity (`company` / `personal`). **Never git.** Created by `credentials-init`. |
 
 Linked onto the machine by `./install`:
 
 - `~/workspace/AGENTS.md` ← [workspace/AGENTS.md](workspace/AGENTS.md) (installed source: `~/.dotfiles/workspace/AGENTS.md`)
+- `~/credentials/AGENTS.md` ← [credentials/AGENTS.md](credentials/AGENTS.md) (credentials store rules)
 - `~/.local/bin/claw-id`, `credentials-init`, `git-worktree-new`
 
 After bootstrap on a new Mac: `credentials-init && claw-id company`, then restore

@@ -78,6 +78,7 @@
     ~/Library/LaunchAgents/com.geonu.alacritty-login.plist: launchd/com.geonu.alacritty-login.plist
     # Fleet multi-claw policy + host helpers (see workspace/AGENTS.md)
     ~/workspace/AGENTS.md: workspace/AGENTS.md
+    ~/credentials/AGENTS.md: credentials/AGENTS.md
     ~/.local/bin/claw-id: bin/claw-id
     ~/.local/bin/credentials-init: bin/credentials-init
     ~/.local/bin/git-worktree-new: bin/git-worktree-new

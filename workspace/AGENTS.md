@@ -7,16 +7,17 @@ Read the [fleet runbook](FLEET-RUNBOOK.md) for setup, migration, mount examples,
 ## Identity and credentials
 
 - One claw, one identity: `company` uses `~/credentials/company` and normally lives at `~/workspace/<company-claw>`; `personal` uses `~/credentials/personal` and lives at `~/workspace/personal`. `shared` is an exception directory, not a claw identity.
-- Tool OAuth and user sessions (gog, Notion, Slack) belong in the matching `~/credentials/<identity>/` tool directory (L0, the canonical store). Keep `~/credentials` private (`0700`). Company admin, PII, and commerce credentials (e.g. Cafe24, Hwahae) stay in `company`, never `personal` or `shared`.
+- Tool OAuth and user sessions (gog, Notion, Slack) belong in the matching `~/credentials/<identity>/` tool directory (L0, the canonical store). Keep `~/credentials` private (`0700`). Company admin, PII, and commerce credentials stay in `company`, never `personal` or `shared`.
 - No default sharing. Use `~/credentials/shared/` only for a deliberately approved non-admin artifact needed by more than one claw, mounted read-only. Prefer separate copies or re-authentication.
 - LLM provider keys and chat **bot** tokens belong in each claw’s own runtime secrets (`secrets.json` / `.env`), not in `~/credentials`; do not share them by default. CLI login residue (e.g. Codex/Claude) stays in that claw’s runtime home (`.typeclaw/home`).
 - `~/credentials/active` and the host `~/.config` links managed by `claw-id` are for host CLIs only. Claws use matching L0 mounts directly, never `active` or host config links. Do not run concurrent host writers on one store; allow at most one RW container mount per OAuth store.
+- Before adding, moving, rotating, or backing up anything under `~/credentials`, read the [credentials store principles](../credentials/AGENTS.md) (installed: `~/credentials/AGENTS.md`). Identity-specific inventories and procedures stay in private claw-repo documents, never in `geonu/dot`.
 
 ## Sandbox and mounts
 
 - One container or equivalent sandbox per claw. TypeClaw binds only that claw’s folder at `/agent`; any other host data needs an explicit mount (`typeclaw.json` → `/agent/mounts/<name>`). Keep these boundaries if the runtime changes.
 - Mount only the matching identity’s tool directory, an explicitly approved `shared/` path, or a code checkout the claw is allowed to access. Scope each mount narrowly and point the tool at it via an in-container environment variable or symlink.
-- Default to `readOnly: true`; `readOnly: false` is only for stores that need to refresh tokens (e.g. gog keyring, Cafe24 token file). Shared mounts are always RO. TypeClaw mounts are boot-only; restart or rebuild as required after changes.
+- Default to `readOnly: true`; `readOnly: false` is only for stores that need to refresh tokens (e.g. gog keyring, OAuth token files). Shared mounts are always RO. TypeClaw mounts are boot-only; restart or rebuild as required after changes.
 - Never mount all of `$HOME`, a grab bag of `~/.config`, another identity’s credentials, the Docker socket (`docker.sock`), or whole trees for SSH, Keychains, browsers, or cloud credentials (e.g. `~/.aws`).
 
 ## Git and backups

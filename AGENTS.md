@@ -14,6 +14,7 @@ dot/
 ├── agents/CORE.md      # global agent prompt -> ~/AGENTS.md, ~/agents.md, ~/.codex/AGENTS.md, ~/.omp/agent/AGENTS.md
 │                       #   PLAYBOOK.md (linked on demand), README.md (maintenance loop)
 ├── workspace/AGENTS.md # fleet policy -> ~/workspace/AGENTS.md (NOT a guide for this repo)
+├── credentials/AGENTS.md # credentials store rules -> ~/credentials/AGENTS.md (NOT a guide for this repo)
 ├── omp/                # OMP agent config, profiles, extensions (see omp/AGENTS.md)
 ├── claude/             # ~/.claude: CLAUDE.md (@~/agents.md), settings.json, skills/
 ├── bin/                # tmux status helpers, OMP pane save/restore, terminal-font, claw-id, credentials-init, git-worktree-new, agent-handoff-audit
@@ -33,7 +34,7 @@ dot/
 | Agent behavior for every CLI | [agents/CORE.md](agents/CORE.md), [agents/PLAYBOOK.md](agents/PLAYBOOK.md) | Installed source: `~/.dotfiles/agents/`; change process in [agents/README.md](agents/README.md) |
 | Terminal.app font | `bin/terminal-font` | `./install` runs it only from Terminal.app |
 | Worktree helper | `bin/git-worktree-new` | Agent default: `GIT_WORKTREE_GC=0 git worktree-new BRANCH` |
-| Fleet / credentials identity | [workspace/AGENTS.md](workspace/AGENTS.md), `bin/claw-id`, `bin/credentials-init` | Installed policy source: `~/.dotfiles/workspace/AGENTS.md` |
+| Fleet / credentials identity | [workspace/AGENTS.md](workspace/AGENTS.md), [credentials/AGENTS.md](credentials/AGENTS.md), `bin/claw-id`, `bin/credentials-init` | Installed policy sources: `~/.dotfiles/workspace/AGENTS.md`, `~/.dotfiles/credentials/AGENTS.md` |
 
 ## CONVENTIONS
 - Every installed file is a symlink declared in `install.conf.yaml`; never copy into `$HOME`.
