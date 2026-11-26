@@ -67,6 +67,7 @@ brew "typescript-language-server" # TS/JS LSP (auto-attaches in TS projects: pac
 # `brew install --cask --adopt`; Homebrew tracks them and the app keeps
 # updating itself. AdGuard Mini has no cask and stays a manual install.
 cask "1password"          # password manager (1Password for Safari is under mas)
+cask "1password-cli"      # `op`: renders static secrets into ~/credentials (see credentials/AGENTS.md)
 cask "aside"               # Aside browser (also links ~/.local/bin/aside)
 cask "charles"             # HTTP(S) debugging proxy
 cask "chatgpt"           # OpenAI ChatGPT desktop app
